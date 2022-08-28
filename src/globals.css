@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scroll-behavior: smooth;
+  box-sizing: border-box;
+  /* border: 1px solid ;
+    border-color: red; */
+}
+html {
+  height: 100%;
+}
+body {
+  height: 100%;
+}
+#__next {
+  height: 100%;
+}
