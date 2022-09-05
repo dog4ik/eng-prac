@@ -29,35 +29,32 @@ const Learning = () => {
       </Link>
     );
   };
+  if (query.isLoading) return <Loading />;
   return (
     <>
       <Head>
         <title>Learn</title>
       </Head>
 
-      {query.isLoading ? (
-        <Loading />
-      ) : (
-        <>
-          <div className="flex w-full">
-            <div className="flex justify-center items-center flex-col w-full">
-              <div className="w-full">
-                <h1 className="text-4xl">Select Wordbooks</h1>
-              </div>
-              <div className="w-full self-center grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-5 auto-cols-max">
-                {query.data?.data.map((item) => (
-                  <WordBook
-                    key={item.id}
-                    name={item.name}
-                    id={item.id}
-                    words={item.words}
-                  ></WordBook>
-                ))}
-              </div>
+      <>
+        <div className="flex w-full">
+          <div className="flex justify-center items-center flex-col w-full">
+            <div className="w-full">
+              <h1 className="text-4xl">Select Wordbooks</h1>
+            </div>
+            <div className="w-full self-center grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-5 auto-cols-max">
+              {query.data?.data.map((item) => (
+                <WordBook
+                  key={item.id}
+                  name={item.name}
+                  id={item.id}
+                  words={item.words}
+                ></WordBook>
+              ))}
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </>
     </>
   );
 };
