@@ -15,6 +15,7 @@
 
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+
 async function GetIAM() {
   await axios
     .post("https://iam.api.cloud.yandex.net/iam/v1/tokens", {
@@ -47,8 +48,8 @@ export default async function handler(
         {
           texts: req.body.text,
           folderId: "b1gnh7tkfjoto94lju6t",
-          targetLanguageCode: req.body.target,
-          sourceLanguageCode: req.body.source,
+          targetLanguageCode: "ru",
+          sourceLanguageCode: "en",
         },
         {
           headers: {

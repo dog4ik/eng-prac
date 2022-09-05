@@ -14,11 +14,11 @@ const Input = React.forwardRef(
           placeholder="placeholder"
         />
         {props.required ? (
-          <label className="pointer-events-none select-none absolute left-2 top-0 text-gray-400 font-semibold text-xs transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:text-xs peer-focus:top-0 after:content-['*'] after:text-red-500 ">
+          <label className="pointer-events-none select-none absolute left-2 top-0 text-gray-400 text-xs transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:text-xs peer-focus:top-0 after:content-['*'] after:text-red-500 ">
             {props.label}
           </label>
         ) : (
-          <label className="pointer-events-none select-none absolute left-2 top-0 text-gray-400 font-semibold text-xs transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:text-xs peer-focus:top-0">
+          <label className="pointer-events-none select-none absolute left-2 top-0 text-gray-400 text-xs transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:text-xs peer-focus:top-0">
             {props.label}
           </label>
         )}

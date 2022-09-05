@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { ReactElement, useContext, useEffect, useRef } from "react";
@@ -15,26 +15,34 @@ const SignUp = () => {
   }, []);
 
   const router = useRouter();
-  const query = useQuery(["register"], reg, {
-    retry: false,
-    enabled: false,
-    refetchOnWindowFocus: false,
-    onSuccess: (data) => {
-      console.log("success");
-      router.push("/");
+  const mutation = useMutation(
+    (data: { email?: string; password?: string }) => {
+      return axios.post(
+        process.env.NEXT_PUBLIC_API_LINK + "/users/create",
+        data
+      );
     },
-    onError: async (err: any) => {
-      console.log(err);
-      email.current!.style.borderColor = "red";
-      console.log("error adding user");
-    },
-  });
+    {
+      onSuccess: (data) => {
+        console.log("success");
+        router.push("/");
+      },
+      onError: async (err: any) => {
+        console.log(err);
+        email.current!.style.borderColor = "red";
+        console.log("error adding user");
+      },
+    }
+  );
   const password = useRef<HTMLInputElement>(null);
   const r_password = useRef<HTMLInputElement>(null);
   const email = useRef<HTMLInputElement>(null);
   const handleSubmit = () => {
     if (passwordTest() && test(emailEx, email) && test(passwordEx, password)) {
-      query.refetch();
+      mutation.mutate({
+        email: email.current?.value,
+        password: password.current?.value,
+      });
     } else {
       passwordTest();
       test(emailEx, email);
@@ -49,12 +57,6 @@ const SignUp = () => {
     } else {
       return true;
     }
-  }
-  function reg() {
-    return axios.post(process.env.NEXT_PUBLIC_API_LINK + "/users/create", {
-      email: email?.current?.value,
-      password: password?.current?.value,
-    });
   }
   const Loading = () => {
     return (
@@ -135,7 +137,7 @@ const SignUp = () => {
               autoComplete="password"
               id="password"
             ></Input>
-            {query.isFetching ? (
+            {mutation.isLoading ? (
               <Loading />
             ) : (
               <button type="submit" className="p-2 rounded-xl bg-green-600">

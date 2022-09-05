@@ -6,11 +6,10 @@ import { ReactElement, ReactNode } from "react";
 import UserProvider from "../context/UserProvider";
 import Layout from "../components/Layout";
 import LikedWordsProvider from "../context/LikedWordsProvider";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+const queryClient = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const queryClient = new QueryClient();
-  console.log(process.env.NEXT_PUBLIC_API_LINK);
-
   return (
     <QueryClientProvider client={queryClient}>
       <UserProvider>
@@ -20,6 +19,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           </Layout>
         </LikedWordsProvider>
       </UserProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import PrismaClient from "../../../../prisma/PrismaClient";
 import TokenDecode from "../../../utils/Tokendecode";
@@ -17,9 +16,7 @@ export default async function handler(
       .create({
         data: {
           userId: user_id,
-          name: req.body?.name,
-          source: req.body?.source,
-          target: req.body?.target,
+          name: req.body.name,
         },
       })
       .then((response) => {

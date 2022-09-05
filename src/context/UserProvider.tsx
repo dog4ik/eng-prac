@@ -94,7 +94,7 @@ const UserProvider = ({ children }: Props) => {
   }
   async function refreshToken() {
     return await authApi
-      .post(process.env.NEXT_PUBLIC_API_LINK + "/users/refresh", {
+      .post("/users/refresh", {
         refresh_token: GetRefresh_token(),
       })
       .then(async (res) => {

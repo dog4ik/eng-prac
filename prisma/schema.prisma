@@ -11,29 +11,39 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  email         String     @unique
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
   password      String
   name          String?
-  notifications Json[]
-  createdAt     DateTime   @default(now())
-  role          Role       @default(user)
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  role          Role           @default(user)
   Wordbook      Wordbook[]
   Stats         Stats[]
   Tests         Tests[]
+  Collection    Collection[]
+}
+
+model Collection {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @db.ObjectId
+  learnedWords   Word[]
+  likedWords     Word[]
+  likedWordbooks String[]
+  likeTests      String[]
 }
 
 model Wordbook {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @db.ObjectId
-  source    String?  @default("eng")
-  name      String?  @default("My Workbook")
-  target    String?  @default("ru")
-  words     Word[]
-  category  Category @default(any)
-  private   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @db.ObjectId
+  name        String?  @default("My Wordbook")
+  description String?
+  likes       Int      @default(0)
+  words       Word[]
+  private     Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
 model Stats {
@@ -45,7 +55,7 @@ model Stats {
   wronganswers Int     @default(0)
   lvl          Int     @default(0)
   points       Int?    @default(0)
-  private      Boolean @default(false)
+  private      Boolean @default(true)
 }
 
 model Tests {
@@ -54,8 +64,9 @@ model Tests {
   userId  String   @db.ObjectId
   name    String   @default("My Test")
   data    Json[]
+  likes   Int      @default(0)
   created DateTime @default(now())
-  private Boolean  @default(false)
+  private Boolean  @default(true)
 }
 
 enum Role {

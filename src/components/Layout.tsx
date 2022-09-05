@@ -1,19 +1,19 @@
 import Head from "next/head";
 import React, { ReactNode } from "react";
-import Footer from "./Footer";
 import Navbar from "./Navbar";
+import NavMob from "./NavMob";
 type Props = {
   children: ReactNode;
 };
 const Layout = ({ children }: Props) => {
   return (
     <>
-      <div className="flex h-full flex-col dark:bg-neutral-800 dark:text-white">
+      <div className="flex min-h-screen flex-col py-2 bg-neutral-800 text-white">
         <Navbar />
-        <main className="flex-1 flex flex-col px-10 dark:bg-neutral-800">
+        <main className="flex w-full flex-1 flex-col px-5 md:px-20 bg-neutral-800">
           {children}
         </main>
-        <Footer />
+        <NavMob />
       </div>
     </>
   );

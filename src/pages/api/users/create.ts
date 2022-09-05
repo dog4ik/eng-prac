@@ -13,14 +13,14 @@ export default async function handler(
     .create({
       data: {
         email: req.body.email,
-        name: req.body.name,
+        name: req.body?.name,
         password: passwordHash,
-        Wordbook: {
+        Collection: {
           create: {
-            name: "Liked words",
-            category: "liked",
-            source: "ru",
-            target: "eng",
+            likedWords: [],
+            learnedWords: [],
+            likedWordbooks: [],
+            likeTests: [],
           },
         },
         Stats: { create: {} },

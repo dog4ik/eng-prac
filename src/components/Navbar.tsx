@@ -7,6 +7,8 @@ import {
   FiLogOut,
   FiLogIn,
   FiArrowUp,
+  FiChevronDown,
+  FiChevronUp,
 } from "react-icons/fi";
 import { UserContext } from "../context/UserProvider";
 import useToggle from "../utils/useToggle";
@@ -38,35 +40,41 @@ const Navbar = () => {
   };
   const User = () => {
     return (
-      <div
+      <ul
         onClick={(event) => {}}
-        className="absolute -translate-x-full cursor-default top-7 animate-fade-in rounded-xl bg-neutral-700 max-w-md w-80 max-h-80"
+        className="absolute z-10 right-0 top-6 w-60 animate-fade-in rounded-xl bg-neutral-700 overflow-hidden"
       >
         {user.islogged ? (
-          <div
-            onClick={() => user.logout()}
-            className="h-16 dark:hover:bg-neutral-500 rounded-xl flex gap-5 items-center px-3 cursor-pointer"
-          >
-            <FiLogOut />
-            <span className="text-center ">Logout</span>
-          </div>
+          <>
+            <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer ">
+              <FiUser className="pointer-events-none" />
+              <p className="text-center after:border-b after:w-full">Profile</p>
+            </li>
+            <li
+              onClick={() => user.logout()}
+              className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer"
+            >
+              <FiLogOut className="pointer-events-none" />
+              <span className="text-center ">Logout</span>
+            </li>
+          </>
         ) : (
           <>
             <Link href={"/login"}>
-              <div className="h-16 dark:hover:bg-neutral-500 rounded-xl flex gap-5 items-center px-3 cursor-pointer">
+              <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer">
                 <FiLogIn />
                 <span className="text-center ">Login</span>
-              </div>
+              </li>
             </Link>
             <Link href={"/signup"}>
-              <div className="h-16 dark:hover:bg-neutral-500 rounded-xl flex gap-5 items-center px-3 cursor-pointer">
+              <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer">
                 <FiArrowUp />
                 <span className="text-center ">Sign Up</span>
-              </div>
+              </li>
             </Link>
           </>
         )}
-      </div>
+      </ul>
     );
   };
   const Loading = () => {
@@ -75,8 +83,8 @@ const Navbar = () => {
     );
   };
   return (
-    <div className="flex px-16 items-center justify-between dark:bg-neutral-700 dark:text-white">
-      <div className="flex gap-7 justify-around dark:text-white select-none text-lg">
+    <div className="hidden md:flex px-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
+      <div className="flex gap-10 justify-around dark:text-white select-none text-lg">
         <Link
           href={"/"}
           className="text-xl hover:scale-125 transition duration-300 p-5"
@@ -108,32 +116,43 @@ const Navbar = () => {
         <div className="flex gap-7 justify-center items-center">
           <div
             ref={notificationRef}
-            className="relative cursor-pointer"
+            className="cursor-pointer"
             onClick={() => {
               setNotification();
             }}
           >
-            <FiBell
-              size={20}
-              className="dark:fill-white cursor-pointer pointer-events-none"
-            />
-            <span className="absolute select-none pointer-events-none text-[10px] left-3 font-bold bottom-2 bg-red-500 rounded-full px-1">
-              1
-            </span>
-            {notification ? <Notifications /> : null}
+            <div className="relative">
+              <FiBell
+                size={20}
+                className="dark:fill-white cursor-pointer pointer-events-none"
+              ></FiBell>
+              <span className="absolute select-none pointer-events-none text-[10px] left-3 font-bold bottom-2 bg-red-500 rounded-full px-1">
+                1
+              </span>
+              {notification ? <Notifications /> : null}
+            </div>
           </div>
           <div className="flex gap-2 justify-center items-center cursor-pointer">
             <FiStar size={20} className="dark:fill-white" />0
           </div>
 
-          <div>{user.user?.email ? user.user?.email : "Guest"}</div>
           <div
             onClick={() => setProfile()}
             ref={userRef}
-            className="p-1 rounded-full bg-neutral-500"
+            className="p-1 cursor-pointer select-none flex gap-2 items-center justify-center rounded-full bg-neutral-500"
           >
-            <FiUser size={20} className="dark:fill-white cursor-pointer" />
-            {profile ? <User /> : null}
+            <div className=" bg-neutral-800 rounded-full p-1">
+              <FiUser size={20} className="dark:fill-white cursor-pointer" />
+            </div>
+            <span className="hidden lg:block">
+              {user.user?.email ? user.user?.email : "Guest"}
+            </span>
+            {profile ? (
+              <FiChevronUp size={25} className="pointer-events-none" />
+            ) : (
+              <FiChevronDown size={25} className="pointer-events-none" />
+            )}
+            <div className="relative">{profile ? <User /> : null}</div>
           </div>
         </div>
       )}

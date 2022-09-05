@@ -1,3 +1,4 @@
+import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import PrismaClient from "../../../../../prisma/PrismaClient";
 import TokenDecode from "../../../../utils/Tokendecode";
@@ -12,26 +13,41 @@ export default async function handler(
     res.status(401).send("token expired");
     return;
   }
+  if (req.body.id === undefined) {
+    res.send("ID not provided");
+    return;
+  }
   if (req.method == "DELETE") {
     await prisma.wordbook
       .updateMany({
-        where: { id: req.body.id, userId: user_id, category: { not: "liked" } },
+        where: { id: req.body.id, userId: user_id },
         data: {
           words: {
             deleteMany: {
-              where: { OR: [{ rus: req.body.word }, { eng: req.body.word }] },
+              where: { eng: req.body.word },
             },
           },
         },
       })
       .then((data) => {
+        console.log("deleted");
+
         res.status(200).send("Deleted");
       });
   }
   if (req.method == "POST") {
+    if (req.body.rus === undefined) {
+      await axios
+        .post("http://localhost:3000/api/translate", {
+          text: req.body.eng,
+        })
+        .then((data) => {
+          req.body.rus = data.data.translations[0].text;
+        });
+    }
     prisma.wordbook
       .updateMany({
-        where: { id: req.body.id, userId: user_id, category: { not: "liked" } },
+        where: { id: req.body.id, userId: user_id },
         data: {
           words: {
             push: { eng: req.body.eng, rus: req.body.rus },
@@ -44,7 +60,7 @@ export default async function handler(
   if (req.method == "PATCH") {
     await prisma.wordbook
       .updateMany({
-        where: { id: req.body.id, userId: user_id, category: { not: "liked" } },
+        where: { id: req.body.id, userId: user_id },
         data: {
           words: {
             updateMany: {

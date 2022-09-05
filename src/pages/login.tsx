@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import axios from "axios";
 import React, { ReactElement, useContext, useRef } from "react";
@@ -12,27 +12,28 @@ const Login = () => {
   const user = useContext(UserContext);
   const email = useRef<HTMLInputElement>(null);
   const password = useRef<HTMLInputElement>(null);
-  const query = useQuery(["login"], log, {
-    retry: false,
-    enabled: false,
-    onSuccess(data) {
-      console.log("successful login");
-      localStorage.setItem("access_token", data.data.access_token);
-      localStorage.setItem("refresh_token", data.data.refresh_token);
-      router.push("/").then(() => user.query?.refetch());
+  const mutation = useMutation(
+    (data: { email: string | undefined; password: string | undefined }) => {
+      return axios.post(
+        process.env.NEXT_PUBLIC_API_LINK + "/users/login",
+        data
+      );
     },
-    onError(err) {
-      console.log("error");
-      email.current!.style.borderColor = "red";
-      console.log(err);
-    },
-  });
-  async function log() {
-    return axios.post(process.env.NEXT_PUBLIC_API_LINK + "/users/login", {
-      email: email?.current?.value,
-      password: password?.current?.value,
-    });
-  }
+    {
+      onSuccess(data) {
+        console.log("successful login");
+        localStorage.setItem("access_token", data.data.access_token);
+        localStorage.setItem("refresh_token", data.data.refresh_token);
+        router.push("/").then(() => user.query?.refetch());
+      },
+      onError(err) {
+        console.log("error");
+        email.current!.style.borderColor = "red";
+        console.log(err);
+      },
+    }
+  );
+
   const Loading = () => {
     return (
       <button className="p-2 flex justify-center items-center rounded-xl bg-green-600 transition ease-in-out duration-150 cursor-not-allowed">
@@ -61,9 +62,6 @@ const Login = () => {
     );
   };
 
-  const handleSubmit = () => {
-    query.refetch();
-  };
   return (
     <div className="flex justify-center items-center">
       <div className="flex flex-col gap-5">
@@ -75,7 +73,10 @@ const Login = () => {
             method="post"
             onSubmit={(event) => {
               event.preventDefault();
-              handleSubmit();
+              mutation.mutate({
+                email: email.current?.value,
+                password: password.current?.value,
+              });
             }}
             className="flex flex-col gap-5"
           >
@@ -90,6 +91,7 @@ const Login = () => {
               type="email"
               autoComplete="email"
               id="email"
+              name="email"
             ></Input>
             <Input
               ref={password}
@@ -98,8 +100,9 @@ const Login = () => {
               type="password"
               autoComplete="password"
               id="password"
+              name="password"
             ></Input>
-            {query.isFetching ? (
+            {mutation.isLoading ? (
               <Loading />
             ) : (
               <button type="submit" className="p-2 rounded-xl bg-green-600">

@@ -8,6 +8,7 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: { sans: ["Inter", "system-ui"] },
       animation: {
         "fade-in": "fadein 0.5s ease-in-out",
         "fade-out": "fadeout 0.5s ease-in-out",
