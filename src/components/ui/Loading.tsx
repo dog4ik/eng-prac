@@ -1,4 +1,3 @@
-import { Head } from "next/document";
 import React from "react";
 import { FiLoader } from "react-icons/fi";
 
