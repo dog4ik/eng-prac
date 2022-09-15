@@ -9,7 +9,7 @@ import { UserContext } from "../../context/UserProvider";
 
 const Learning = () => {
   const user = useContext(UserContext);
-  const query = useQuery<AxiosResponse<Book[]>>(["wordbooks"], () =>
+  const query = useQuery<AxiosResponse<Book[]>>(["get-wordbooks"], () =>
     user.authApi!.get("/wordbooks")
   );
   const WordBook = ({ name, words, id }: Book) => {

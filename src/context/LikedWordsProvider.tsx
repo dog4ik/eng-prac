@@ -19,6 +19,7 @@ export type Word = {
   date: string;
 };
 export type Book = {
+  private: boolean;
   id: string;
   name: string;
   description?: string;
@@ -30,16 +31,12 @@ type LikedWordsContext = {
 };
 export const LikedWordsContext = createContext({} as LikedWordsContext);
 const LikedWordsProvider = ({ children }: Props) => {
-  const queryClient = useQueryClient();
   const user = useContext(UserContext);
   const likesQuery = useQuery<AxiosResponse<Word[]>, Error>(
     ["get-likes"],
     () => user.authApi!.get("/wordbooks/words/likes"),
     {
       refetchOnWindowFocus: false,
-      onSuccess: (data) => {
-        console.log("words", data.data);
-      },
     }
   );
 

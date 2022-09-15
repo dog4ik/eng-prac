@@ -22,6 +22,7 @@ export default async function handler(
         process.env.ACCESS_TOKEN_SECRET!,
         { expiresIn: "30m" }
       );
+      console.log("token refreshed");
       res.status(200).json({ access_token: new_access_token! });
     }
   );

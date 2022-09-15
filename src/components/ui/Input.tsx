@@ -1,7 +1,7 @@
 import React, { ForwardedRef, forwardRef, HTMLProps, ReactNode } from "react";
 interface Props extends HTMLProps<HTMLInputElement> {
   label: string;
-  required: boolean;
+  required?: boolean;
 }
 const Input = React.forwardRef(
   (props: Props, ref: ForwardedRef<HTMLInputElement>) => {

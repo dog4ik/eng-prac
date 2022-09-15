@@ -17,8 +17,6 @@ type User = {
   notifications: string;
 };
 type UserContext = {
-  user?: User;
-  islogged?: boolean;
   query?: UseQueryResult<AxiosResponse<User, any>, Error>;
   authApi?: AxiosInstance;
   logout: () => void;
@@ -42,9 +40,8 @@ const UserProvider = ({ children }: Props) => {
       Authorization: "Bearer " + GetAccess_token(),
     },
   });
-  const [islogged, setIslogged] = useState(false);
-  const [user, setUser] = useState<User>();
   const router = useRouter();
+  const queryClient = useQueryClient();
   authApi.interceptors.response.use(
     (response) => {
       return response;
@@ -71,24 +68,16 @@ const UserProvider = ({ children }: Props) => {
   const query = useQuery<AxiosResponse<User>, Error>(["userdata"], getUser, {
     retry: false,
     refetchOnWindowFocus: false,
-    onSuccess: (data) => {
-      setUser(data.data);
-      setIslogged(true);
-    },
+    onSuccess: (data) => {},
     onError: async (err: any) => {
-      setIslogged(false);
-      console.log(err);
-
       console.log("error");
     },
   });
-  function login() {}
   function logout() {
     if (typeof window != "undefined") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      setUser(undefined);
-      setIslogged(false);
+      queryClient.removeQueries(["userdata"], { exact: true });
       router.push("/");
     }
   }
@@ -107,7 +96,7 @@ const UserProvider = ({ children }: Props) => {
   useEffect(() => {}, []);
 
   return (
-    <UserContext.Provider value={{ user, islogged, query, authApi, logout }}>
+    <UserContext.Provider value={{ query, authApi, logout }}>
       {children}
     </UserContext.Provider>
   );

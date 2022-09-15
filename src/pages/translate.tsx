@@ -1,10 +1,13 @@
 import {
   QueryClient,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import React, {
   ReactElement,
   useContext,
@@ -14,30 +17,36 @@ import React, {
 } from "react";
 import { FiHeart } from "react-icons/fi";
 import Layout from "../components/Layout";
-import { LikedWordsContext } from "../context/LikedWordsProvider";
+import { LikedWordsContext, Word } from "../context/LikedWordsProvider";
 import { UserContext } from "../context/UserProvider";
 import useDebounce from "../utils/useDebounce";
-
-const Translate = () => {
-  const like = useContext(LikedWordsContext);
-  const [isLiked, setIsLiked] = useState<boolean>();
+export const getServerSideProps: GetServerSideProps<{
+  text?: string | string[] | null;
+}> = async (context) => {
+  const text = context.query.text ? context.query.text : null;
+  return { props: { text } };
+};
+const Translate = (
+  props: InferGetServerSidePropsType<typeof getServerSideProps>
+) => {
   const user = useContext(UserContext);
   const input = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const debouncedSearch = useDebounce(searchTerm, 500);
-  let likes = like.likesQuery.data?.data;
   useEffect(() => {
     input.current?.focus();
+    if (props.text) input.current!.value = props.text.toString();
   }, []);
+  const likesQuery = useQuery<AxiosResponse<Word[]>, Error>(["get-likes"], () =>
+    user.authApi!.get("/wordbooks/words/likes")
+  );
   const likeMutation = useMutation(
     (word: { eng?: string; rus?: string }) => {
       return user.authApi!.post("/wordbooks/words/likes", word);
     },
     {
-      onSuccess() {
-        setIsLiked(true);
-      },
       async onSettled() {
         await queryClient.invalidateQueries(["get-likes"]);
       },
@@ -48,9 +57,6 @@ const Translate = () => {
       return user.authApi!.delete("/wordbooks/words/likes", { data: word });
     },
     {
-      onSuccess() {
-        setIsLiked(false);
-      },
       async onSettled() {
         await queryClient.invalidateQueries(["get-likes"]);
       },
@@ -63,14 +69,7 @@ const Translate = () => {
   );
   useEffect(() => {
     translateMutation.mutate({ text: input.current?.value });
-    if (
-      likes?.find((item) => item.eng === debouncedSearch)?.eng ===
-      debouncedSearch
-    ) {
-      setIsLiked(true);
-    } else {
-      setIsLiked(false);
-    }
+    router.push("?text=" + input.current?.value);
   }, [debouncedSearch]);
 
   return (
@@ -102,7 +101,9 @@ const Translate = () => {
                   <div className="absolute inline right-0 top-0">
                     <FiHeart
                       onClick={() => {
-                        isLiked
+                        likesQuery.data?.data.find(
+                          (item) => item.eng == input.current?.value
+                        )
                           ? delikeMutation.mutate({ eng: input.current?.value })
                           : likeMutation.mutate({
                               eng: input.current?.value,
@@ -111,7 +112,9 @@ const Translate = () => {
                             });
                       }}
                       className={
-                        isLiked
+                        likesQuery.data?.data.find(
+                          (item) => item.eng == input.current?.value
+                        )
                           ? "self-center cursor-pointer duration-100 fill-pink-500 hover:fill-pink-400 stroke-pink-500 hover:stroke-pink-400"
                           : "self-center cursor-pointer duration-100 stroke-gray-400 hover:stroke-gray-600"
                       }

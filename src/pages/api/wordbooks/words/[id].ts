@@ -13,14 +13,14 @@ export default async function handler(
     res.status(401).send("token expired");
     return;
   }
-  if (req.body.id === undefined) {
+  if (req.query.id === undefined) {
     res.send("ID not provided");
     return;
   }
   if (req.method == "DELETE") {
     await prisma.wordbook
       .updateMany({
-        where: { id: req.body.id, userId: user_id },
+        where: { id: req.query.id.toString(), userId: user_id },
         data: {
           words: {
             deleteMany: {
@@ -47,7 +47,7 @@ export default async function handler(
     }
     prisma.wordbook
       .updateMany({
-        where: { id: req.body.id, userId: user_id },
+        where: { id: req.query.id.toString(), userId: user_id },
         data: {
           words: {
             push: { eng: req.body.eng, rus: req.body.rus },
@@ -60,7 +60,7 @@ export default async function handler(
   if (req.method == "PATCH") {
     await prisma.wordbook
       .updateMany({
-        where: { id: req.body.id, userId: user_id },
+        where: { id: req.query.id.toString(), userId: user_id },
         data: {
           words: {
             updateMany: {

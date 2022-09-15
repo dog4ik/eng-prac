@@ -7,7 +7,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
   let user_id: string;
-  let user;
   const token =
     req.headers.authorization && req.headers.authorization.split(" ")[1];
   jwt.verify(
@@ -25,7 +24,21 @@ export default async function handler(
       } else {
         user_id = token_data.id;
         await prisma.user
-          .findUnique({ where: { id: user_id! } })
+          .findUnique({
+            where: { id: user_id! },
+            select: {
+              Collection: true,
+              createdAt: true,
+              email: true,
+              name: true,
+              id: true,
+              notifications: true,
+              role: true,
+              Stats: true,
+              Tests: true,
+              Wordbook: true,
+            },
+          })
           .then((user) => {
             res.status(200).json(user);
             return;

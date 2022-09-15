@@ -22,8 +22,8 @@ const Test = (
   const [count, setCount] = useState(0);
   const nextButton = useRef<HTMLButtonElement>(null);
   const query = useQuery<AxiosResponse<Book>, Error>(
-    ["getone"],
-    () => user.authApi!.post("/wordbooks/getone", { id: props.id }),
+    ["wordbook"],
+    () => user.authApi!.get("/wordbooks/" + props.id),
     {
       refetchOnWindowFocus: false,
       onError(err) {

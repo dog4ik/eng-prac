@@ -32,9 +32,12 @@ export default async function handler(
     prisma.collection
       .findFirst({
         where: { userId: user_id },
+        select: {
+          likedWords: true,
+        },
       })
       .then((data) => {
-        res.status(200).json(data?.likedWords);
+        res.status(200).json(data?.likedWords.reverse());
         return;
       })
       .catch((err) => res.status(400).send(err));

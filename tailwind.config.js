@@ -10,8 +10,8 @@ module.exports = {
     extend: {
       fontFamily: { sans: ["Inter", "system-ui"] },
       animation: {
-        "fade-in": "fadein 0.5s ease-in-out",
-        "fade-out": "fadeout 0.5s ease-in-out",
+        "fade-in": "fadein 0.3s ease-in-out",
+        "fade-out": "fadeout 0.3s ease-in-out",
       },
       keyframes: {
         fadein: {

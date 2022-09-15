@@ -2,14 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: "/api/:path*",
-  //       destination: "http://127.0.0.1:3000/:path*",
-  //     },
-  //   ];
-  // },
+  images: {
+    domains: ["www.fillmurray.com"],
+  },
 };
 
 module.exports = nextConfig;

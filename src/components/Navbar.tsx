@@ -44,7 +44,7 @@ const Navbar = () => {
         onClick={(event) => {}}
         className="absolute z-10 right-0 top-6 w-60 animate-fade-in rounded-xl bg-neutral-700 overflow-hidden"
       >
-        {user.islogged ? (
+        {user.query?.isSuccess ? (
           <>
             <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer ">
               <FiUser className="pointer-events-none" />
@@ -145,7 +145,9 @@ const Navbar = () => {
               <FiUser size={20} className="dark:fill-white cursor-pointer" />
             </div>
             <span className="hidden lg:block">
-              {user.user?.email ? user.user?.email : "Guest"}
+              {user.query?.data?.data.email
+                ? user.query.data.data.email
+                : "Guest"}
             </span>
             {profile ? (
               <FiChevronUp size={25} className="pointer-events-none" />

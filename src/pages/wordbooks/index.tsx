@@ -13,13 +13,14 @@ import { FiHeart, FiPlusCircle } from "react-icons/fi";
 import Loading from "../../components/ui/Loading";
 import { Book, LikedWordsContext } from "../../context/LikedWordsProvider";
 import { UserContext } from "../../context/UserProvider";
-import useToggle from "../../utils/useToggle";
 
 const WordBook = ({ name, words, id }: Book) => {
   return (
     <Link href={`/wordbooks/${encodeURIComponent(id)}`}>
-      <div className=" h-full w-full px-10 rounded-2xl dark:bg-neutral-700 aspect-video hover:dark:bg-neutral-600 cursor-pointer duration-100 ">
-        <div className="self-center text-2xl truncate">{name}</div>
+      <div className=" h-full w-full px-5 rounded-2xl dark:bg-neutral-700 aspect-video hover:dark:bg-neutral-600 cursor-pointer duration-100 ">
+        <div className="self-center text-2xl font-semibold text-center truncate">
+          {name}
+        </div>
         <div className="flex justify-between">
           <p className="pr-2">Words:</p>
           <p>{words?.length ? words.length : 0}</p>
@@ -84,6 +85,7 @@ const Wordbooks = () => {
                   name={item.name}
                   id={item.id}
                   words={item.words}
+                  private={item.private}
                 ></WordBook>
               ))}
 
