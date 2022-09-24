@@ -8,9 +8,11 @@ type Props = {
 const Layout = ({ children }: Props) => {
   return (
     <>
-      <div className="flex min-h-screen flex-col py-2 bg-neutral-800 text-white">
+      <div className="flex min-h-screen max-h-screen overflow-hidden flex-col bg-neutral-800 text-white">
         <Navbar />
-        <main className="flex w-full flex-col bg-neutral-800">{children}</main>
+        <main className="flex relative md:max-h-[clac(100vh-80px))] overflow-y-auto md:mt-20 flex-1 flex-col bg-neutral-800">
+          {children}
+        </main>
         <NavMob />
       </div>
     </>

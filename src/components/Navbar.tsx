@@ -10,13 +10,12 @@ import {
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
-import { UserContext } from "../context/UserProvider";
-import useToggle from "../utils/useToggle";
 import usePopout from "../utils/usePopout";
+import { useUser } from "../utils/useUser";
 const Navbar = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
+  const user = useUser();
   const userRef = useRef<HTMLDivElement>(null);
-  const user = useContext(UserContext);
   const [notification, setNotification] = usePopout(notificationRef);
   const [profile, setProfile] = usePopout(userRef);
 
@@ -44,14 +43,14 @@ const Navbar = () => {
         onClick={(event) => {}}
         className="absolute z-10 right-0 top-6 w-60 animate-fade-in rounded-xl bg-neutral-700 overflow-hidden"
       >
-        {user.query?.isSuccess ? (
+        {user.isSuccess ? (
           <>
             <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer ">
               <FiUser className="pointer-events-none" />
               <p className="text-center after:border-b after:w-full">Profile</p>
             </li>
             <li
-              onClick={() => user.logout()}
+              onClick={() => console.log("loggout")}
               className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer"
             >
               <FiLogOut className="pointer-events-none" />
@@ -83,7 +82,7 @@ const Navbar = () => {
     );
   };
   return (
-    <div className="hidden md:flex px-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
+    <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-10 w-full md:flex px-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
       <div className="flex gap-10 justify-around dark:text-white select-none text-lg">
         <Link
           href={"/"}
@@ -110,7 +109,7 @@ const Navbar = () => {
           Translate
         </Link>
       </div>
-      {user.query?.isFetching ? (
+      {user.isFetching ? (
         <Loading />
       ) : (
         <div className="flex gap-7 justify-center items-center">
@@ -145,9 +144,7 @@ const Navbar = () => {
               <FiUser size={20} className="dark:fill-white cursor-pointer" />
             </div>
             <span className="hidden lg:block">
-              {user.query?.data?.data.email
-                ? user.query.data.data.email
-                : "Guest"}
+              {user.data?.email ? user.data.email : "Guest"}
             </span>
             {profile ? (
               <FiChevronUp size={25} className="pointer-events-none" />

@@ -4,7 +4,7 @@ import { FiBook, FiCheck, FiHome, FiUser } from "react-icons/fi";
 
 const NavMob = () => {
   return (
-    <div className="flex fixed bottom-0 left-0 right-0 z-10 h-16 bg-black/90 items-center md:hidden">
+    <div className="flex flex-1 z-10 max-h-16 h-full bg-black/90 items-center md:hidden">
       <Link href={"/"}>
         <div className="flex-1 w-full flex flex-col gap-1 justify-center items-center">
           <FiHome size={25} />

@@ -1,17 +1,33 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import axios from "axios";
-import React, { ReactElement, useContext, useRef } from "react";
+import React, { ReactElement, useContext, useRef, useState } from "react";
 import Layout from "../components/Layout";
 import Input from "../components/ui/Input";
 import test, { emailEx, passwordEx } from "../utils/TestInput";
 import Link from "next/link";
-import { UserContext } from "../context/UserProvider";
+import { User, useUser } from "../utils/useUser";
+
 const Login = () => {
+  const [token, setToken] = useState(null);
   const router = useRouter();
-  const user = useContext(UserContext);
   const email = useRef<HTMLInputElement>(null);
   const password = useRef<HTMLInputElement>(null);
+  useQuery(
+    ["userdata"],
+    async (): Promise<User> => {
+      return await axios
+        .get("http://localhost:3000/api/users/credentials", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        })
+        .then((data) => data.data);
+    },
+    {
+      enabled: !!token,
+    }
+  );
   const mutation = useMutation(
     (data: { email: string | undefined; password: string | undefined }) => {
       return axios.post(
@@ -20,11 +36,12 @@ const Login = () => {
       );
     },
     {
-      onSuccess(data) {
+      async onSuccess(data) {
         console.log("successful login");
         localStorage.setItem("access_token", data.data.access_token);
         localStorage.setItem("refresh_token", data.data.refresh_token);
-        router.push("/").then(() => user.query?.refetch());
+        setToken(data.data.access_token);
+        router.push("/");
       },
       onError(err) {
         console.log("error");

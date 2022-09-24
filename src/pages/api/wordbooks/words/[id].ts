@@ -18,22 +18,36 @@ export default async function handler(
     return;
   }
   if (req.method == "DELETE") {
+    const old = await prisma.wordbook
+      .findFirst({
+        where: {
+          userId: user_id,
+          id: req.query.id.toString(),
+        },
+      })
+      .catch((err) => console.log(err));
+
+    const filtered = old?.words.filter(
+      (item: any) => item.eng != req.body.word
+    );
+
     await prisma.wordbook
       .updateMany({
-        where: { id: req.query.id.toString(), userId: user_id },
+        where: {
+          id: req.query.id.toString(),
+          userId: user_id,
+        },
         data: {
           words: {
-            deleteMany: {
-              where: { eng: req.body.word },
-            },
+            set: filtered,
           },
         },
       })
-      .then((data) => {
-        console.log("deleted");
-
-        res.status(200).send("Deleted");
+      .catch((err) => {
+        console.log(err);
+        res.status(400).send(err);
       });
+    res.status(200).send("Deleted");
   }
   if (req.method == "POST") {
     if (req.body.rus === undefined) {
@@ -45,7 +59,7 @@ export default async function handler(
           req.body.rus = data.data.translations[0].text;
         });
     }
-    prisma.wordbook
+    await prisma.wordbook
       .updateMany({
         where: { id: req.query.id.toString(), userId: user_id },
         data: {
@@ -54,7 +68,7 @@ export default async function handler(
           },
         },
       })
-      .then((data) => res.status(204).json(data))
+      .then((data) => res.status(200).send("add"))
       .catch((err) => res.status(400).send(err));
   }
   if (req.method == "PATCH") {
@@ -74,4 +88,5 @@ export default async function handler(
         res.status(200).send("Deleted");
       });
   }
+  prisma.$disconnect();
 }

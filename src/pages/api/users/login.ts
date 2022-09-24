@@ -27,4 +27,5 @@ export default async function handler(
   } else {
     res.status(401).json({ error: "Error" });
   }
+  prisma.$disconnect();
 }

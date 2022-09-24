@@ -1,16 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
 import Head from "next/head";
-import { useContext, useEffect, useState, useRef } from "react";
 import { FiHeart } from "react-icons/fi";
 import Loading from "../../components/ui/Loading";
-import {
-  Book,
-  LikedWordsContext,
-  Word,
-} from "../../context/LikedWordsProvider";
-import { UserContext } from "../../context/UserProvider";
-import useToggle from "../../utils/useToggle";
+import authApi from "../../utils/authApi";
+import { useLikes } from "../../utils/useLikes";
+import { useUser } from "../../utils/useUser";
+import { Word } from "../../utils/useWordbook";
 
 interface Props extends Word {
   isLiked: boolean;
@@ -18,11 +13,11 @@ interface Props extends Word {
 }
 const Liked = () => {
   const queryClient = useQueryClient();
-  const like = useContext(LikedWordsContext);
-  const user = useContext(UserContext);
+  const like = useLikes();
+  const user = useUser();
   const delikeMutation = useMutation(
     (word: { eng?: string }) => {
-      return user.authApi!.delete("/wordbooks/words/likes", { data: word });
+      return authApi!.delete("/wordbooks/words/likes", { data: word });
     },
     {
       async onSettled() {
@@ -31,7 +26,7 @@ const Liked = () => {
     }
   );
   const Item = ({ rus, eng, date, index, isLiked }: Props) => {
-    const calculate = (date: string) => {
+    const calculate = (date: number) => {
       const diff = Date.now() - new Date(date).getTime();
       if (Math.floor(diff / 1000) < 60)
         return Math.floor(diff / 1000) + "s ago";
@@ -44,8 +39,9 @@ const Liked = () => {
       if (Math.floor(diff / (1000 * 60 * 60 * 24)) > 30)
         return new Date(date).toLocaleDateString();
     };
+    console.log(date);
 
-    const createdAt = calculate(date.toString());
+    const createdAt = calculate(Number(date));
     const handleLike = () => {
       if (isLiked) {
         delikeMutation.mutate({ eng: eng });
@@ -87,15 +83,13 @@ const Liked = () => {
   return (
     <>
       <Head>
-        <title>
-          {like.likesQuery.isSuccess ? "Liked words" : "Loading..."}
-        </title>
+        <title>{like.isSuccess ? "Liked words" : "Loading..."}</title>
       </Head>
 
-      {like.likesQuery.isLoading ? (
+      {like.isLoading ? (
         <Loading />
       ) : (
-        <div className="w-full">
+        <div className="w-full px-5 md:px-20">
           <div className="flex flex-col py-5 gap-10">
             <div className="flex gap-5">
               <img
@@ -107,7 +101,7 @@ const Liked = () => {
                 <span className="uppercase text-xs">wordbook</span>
                 <h1 className="text-6xl font-semibold">Liked words</h1>
 
-                <p>{like.likesQuery.data?.data.length + " words"}</p>
+                <p>{like.data?.length + " words"}</p>
               </div>
             </div>
             <div className="">
@@ -125,13 +119,12 @@ const Liked = () => {
                   <p className="font-extrabold text-md">Addded</p>
                 </div>
               </div>
-              {like.likesQuery.data?.data?.map((item, index) => (
+              {like.data?.map((item, index) => (
                 <Item
                   key={index}
                   isLiked={
-                    like.likesQuery.data?.data?.find(
-                      (like) => like.eng === item.eng
-                    )?.eng === item.eng
+                    like.data?.find((like) => like.eng === item.eng)?.eng ===
+                    item.eng
                       ? true
                       : false
                   }

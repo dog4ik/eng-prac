@@ -2,8 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosResponse } from "axios";
 import Head from "next/head";
 import React, {
-  CSSProperties,
-  MouseEventHandler,
   useCallback,
   useContext,
   useEffect,
@@ -14,7 +12,6 @@ import React, {
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   FiArrowRight,
-  FiCamera,
   FiHeart,
   FiImage,
   FiLock,
@@ -24,19 +21,26 @@ import {
   FiX,
 } from "react-icons/fi";
 import Input from "../../components/ui/Input";
-import { UserContext } from "../../context/UserProvider";
-import {
-  Word,
-  LikedWordsContext,
-  Book,
-} from "../../context/LikedWordsProvider";
 import useDebounce from "../../utils/useDebounce";
 import useToggle from "../../utils/useToggle";
 import Loading from "../../components/ui/Loading";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { v4 } from "uuid";
+import {
+  Word,
+  Book,
+  useWordbook,
+  removeWordMutation,
+} from "../../utils/useWordbook";
+import {
+  useLikeMutaton,
+  useLikes,
+  useUnLikeMutation,
+} from "../../utils/useLikes";
+import { useUser } from "../../utils/useUser";
+import authApi from "../../utils/authApi";
+import Error from "../../components/ui/Error";
 interface Props extends Word {
   isLiked: boolean;
   isSelected: boolean;
@@ -57,16 +61,15 @@ export const getServerSideProps: GetServerSideProps<{
 const EditWordbook = ({ handleClose, props }: ModalProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const query = useQuery<AxiosResponse<Book>, Error>(["wordbook", props.id]);
-  const user = useContext(UserContext);
-  const [isPrivate, setIsPrivate] = useToggle(query.data!.data.private);
+  const query = useWordbook(props.id);
+  const [isPrivate, setIsPrivate] = useToggle(query.data!.private);
   const nameRef = useRef<HTMLInputElement>(null);
   const deleteMutation = useMutation(
     () => {
-      return user.authApi!.delete("wordbooks/" + props.id);
+      return authApi!.delete("wordbooks/" + props.id);
     },
     {
-      async onSuccess(data, variables, context) {
+      async onSuccess() {
         await queryClient.invalidateQueries(["get-wordbooks"]);
         router.replace("/wordbooks");
       },
@@ -74,7 +77,7 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
   );
   const editMutation = useMutation(
     (data: { private: boolean; name: string }) => {
-      return user.authApi!.patch("wordbooks/" + props.id, data);
+      return authApi!.patch("wordbooks/" + props.id, data);
     },
     {
       onSuccess() {
@@ -89,7 +92,7 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
       className="fixed top-0 left-0 h-screen w-screen backdrop-filter backdrop-blur-sm z-20 flex justify-center items-center animate-fade-in transition-opacity duration-300"
     >
       <div
-        className="h-2/3 relative w-1/3 p-5 bg-neutral-600 rounded-2xl flex flex-col "
+        className="md:h-2/3 h-5/6 w-5/6 md:w-1/3 p-5 relative bg-neutral-600 rounded-2xl flex flex-col "
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -105,11 +108,7 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
             <FiImage className="w-full fill-neutral-600 h-full" />
           </div>
           <div>
-            <Input
-              label="Name"
-              defaultValue={query.data?.data.name}
-              ref={nameRef}
-            />
+            <Input label="Name" defaultValue={query.data?.name} ref={nameRef} />
             <div className="flex gap-3 items-center">
               <p>Is private?</p>
               <div
@@ -157,7 +156,7 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
 const Modal = ({ handleClose, props }: ModalProps) => {
   const [option, setOption] = useState<"Auto" | "Manual" | "Export">("Auto");
   const [transition, setTranslation] = useState("");
-  const user = useContext(UserContext);
+  const user = useUser();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const input = useRef<HTMLInputElement>(null);
@@ -172,22 +171,32 @@ const Modal = ({ handleClose, props }: ModalProps) => {
   }, []);
 
   const addMutation = useMutation(
-    (word: { eng?: string; rus?: string }) => {
-      return user.authApi!.post("wordbooks/words/" + props.id, word);
+    async (word: { eng?: string; rus?: string }) => {
+      return await authApi.post("wordbooks/words/" + props.id, word);
     },
     {
-      async onSettled(data, error, variables, context) {
+      onSuccess() {
         handleClose();
-        await queryClient.invalidateQueries(["wordbook", query.data?.data.id]);
+      },
+      async onSettled(data, error, variables, context) {
+        await queryClient.invalidateQueries(["wordbook", props.id]);
+      },
+      onError(err) {
+        console.log("Error ocured");
+
+        console.log(err);
       },
     }
   );
   const exportMutation = useMutation(
-    (file: { file: string | ArrayBuffer | null; id?: string | string[] }) => {
-      return user.authApi!.post("wordbooks/words/export", file);
+    async (file: {
+      file: string | ArrayBuffer | null;
+      id?: string | string[];
+    }) => {
+      return await authApi.post("wordbooks/words/export", file);
     },
     {
-      onSuccess: (data) => {
+      onSuccess: () => {
         handleClose();
         queryClient.invalidateQueries(["wordbook", props.id]);
       },
@@ -235,7 +244,7 @@ const Modal = ({ handleClose, props }: ModalProps) => {
       onClick={() => handleClose()}
     >
       <div
-        className="bg-neutral-700 relative w-2/3 h-2/3 rounded-2xl flex flex-col items-center"
+        className="bg-neutral-700 relative md:w-2/3 md:h-2/3 w-5/6 h-5/6 rounded-2xl flex flex-col items-center"
         onClick={(event) => event.stopPropagation()}
       >
         <FiX
@@ -349,7 +358,7 @@ const Modal = ({ handleClose, props }: ModalProps) => {
             onClick={() => handleAdd()}
             className="py-5 absolute right-10 bottom-10 px-10 flex justify-center items-center bg-green-400 rounded-xl self-end"
           >
-            {addMutation.isLoading ? (
+            {addMutation.isLoading || exportMutation.isLoading ? (
               <>
                 <svg
                   className="animate-spin absolute h-5 w-5 text-white"
@@ -383,40 +392,10 @@ const Modal = ({ handleClose, props }: ModalProps) => {
 };
 const Item = ({ eng, rus, date, index, isLiked, isSelected, props }: Props) => {
   const queryClient = useQueryClient();
-  const user = useContext(UserContext);
-  const deleteMutation = useMutation(
-    (word: { word?: string }) => {
-      return user.authApi!.delete("/wordbooks/words/" + props.id, {
-        data: word,
-      });
-    },
-    {
-      onSettled() {
-        queryClient.invalidateQueries(["wordbook", props.id]);
-      },
-    }
-  );
-  const delikeMutation = useMutation(
-    (word: { eng?: string }) => {
-      return user.authApi!.delete("/wordbooks/words/likes", { data: word });
-    },
-    {
-      async onSettled() {
-        await queryClient.invalidateQueries(["get-likes"]);
-      },
-    }
-  );
-  const likeMutation = useMutation(
-    (word: { eng?: string; rus?: string }) => {
-      return user.authApi!.post("/wordbooks/words/likes", word);
-    },
-    {
-      async onSettled() {
-        await queryClient.invalidateQueries(["get-likes"]);
-      },
-    }
-  );
-  const calculate = (date: string) => {
+  const deleteMutation = removeWordMutation(queryClient, props.id);
+  const delikeMutation = useUnLikeMutation(queryClient);
+  const likeMutation = useLikeMutaton(queryClient);
+  const calculate = (date: number) => {
     const diff = Date.now() - new Date(date).getTime();
     if (Math.floor(diff / 1000) < 60) return Math.floor(diff / 1000) + "s ago";
     if (Math.floor(diff / (1000 * 60)) < 60)
@@ -429,7 +408,7 @@ const Item = ({ eng, rus, date, index, isLiked, isSelected, props }: Props) => {
       return new Date(date).toLocaleDateString();
   };
 
-  const createdAt = useMemo(() => calculate(date), []);
+  const createdAt = useMemo(() => calculate(Number(date)), []);
   const handleLike = () => {
     if (isLiked) {
       delikeMutation.mutate({ eng: eng });
@@ -486,8 +465,8 @@ const Book = (
 ) => {
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
   const queryClient = useQueryClient();
-  const like = useContext(LikedWordsContext);
-  const user = useContext(UserContext);
+  const like = useLikes();
+  const user = useUser();
   const contextAreaRef = useRef<HTMLDivElement>(null);
   const [modal, setModal] = useToggle(false);
   const [selected, setSelected] = useState<number>();
@@ -522,19 +501,7 @@ const Book = (
     };
   }, [modal, editWordbookModal]);
 
-  const query = useQuery<AxiosResponse<Book>, Error>(
-    ["wordbook", props.id],
-    () => user.authApi!.get("/wordbooks/" + props.id),
-    {
-      refetchOnWindowFocus: false,
-      onError(err) {
-        console.log(err);
-      },
-      onSuccess(data) {
-        console.log(data.data);
-      },
-    }
-  );
+  const query = useWordbook(props.id);
 
   const handleMenu = useCallback(
     (e: MouseEvent) => {
@@ -563,18 +530,18 @@ const Book = (
   }, []);
 
   const rowVirtualizer = useVirtualizer({
-    count: query.data?.data.words ? query.data!.data.words!.length : 40,
+    count: query.data?.words ? query.data.words.length : 40,
     getScrollElement: () => contextAreaRef.current,
     estimateSize: () => 70,
     paddingStart: 300,
     overscan: 10,
   });
+  if (query.isError) return <Error />;
+  if (query.isLoading) return <Loading />;
   return (
     <>
       <Head>
-        <title>
-          {query.data?.data?.name ? query.data.data.name : "Loading..."}
-        </title>
+        <title>{query.data?.name ? query.data.name : "Loading..."}</title>
       </Head>
       {modal && <Modal handleClose={() => setModal()} props={props} />}
       {editWordbookModal && (
@@ -584,15 +551,14 @@ const Book = (
         />
       )}
       {contextmenu && <Menu />}
-      {query.isLoading ? (
-        <Loading />
-      ) : (
-        <div
-          className="h-[calc(100vh-133px)] overflow-y-auto"
-          ref={contextAreaRef}
-        >
+
+      <div
+        className="w-full px-5 md:px-20 flex-1 overflow-y-auto"
+        ref={contextAreaRef}
+      >
+        <div className="h-1 w-full">
           <div
-            className="relative w-full"
+            className="relative w-full overflow-y-auto"
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,
             }}
@@ -612,18 +578,18 @@ const Book = (
                 <span className="uppercase text-xs">Wordbook</span>
                 <h1
                   className={`${
-                    query.data!.data.name.length > 35
+                    query.data?.name.length! > 35
                       ? "text-xl md:text-2xl lg:text-3xl"
                       : "text-2xl md:text-4xl lg:text-6xl"
                   } font-semibold cursor-pointer w-full break-words`}
                   onClick={() => setEditWordbookModal()}
                 >
-                  {query.data?.data.name}
+                  {query.data?.name}
                 </h1>
-                {query.data?.data.description ? (
-                  <p>{query.data.data.description}</p>
+                {query.data?.description ? (
+                  <p>{query.data.description}</p>
                 ) : null}
-                <p>{query.data?.data.words?.length + " words"}</p>
+                <p>{query.data?.words?.length + " words"}</p>
               </div>
               <div
                 className="absolute right-0 bottom-0 cursor-pointer rounded-full bg-green-500 p-2"
@@ -667,23 +633,22 @@ const Book = (
                   props={props}
                   isSelected={selected == item.index ? true : false}
                   isLiked={
-                    like.likesQuery.data?.data?.find(
-                      (like) =>
-                        like.eng === query.data!.data.words![item.index].eng
-                    )?.eng === query.data!.data.words![item.index].eng
+                    like.data?.find(
+                      (like) => like.eng === query.data!.words![item.index].eng
+                    )?.eng === query.data?.words![item.index].eng
                       ? true
                       : false
                   }
                   index={item.index + 1}
-                  eng={query.data!.data.words![item.index].eng}
-                  rus={query.data!.data.words![item.index].rus}
-                  date={query.data!.data.words![item.index].date}
+                  eng={query.data!.words![item.index].eng}
+                  rus={query.data!.words![item.index].rus}
+                  date={query.data!.words![item.index].date}
                 />
               </div>
             ))}
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };

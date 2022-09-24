@@ -8,18 +8,12 @@ import axios, { AxiosResponse } from "axios";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, {
-  ReactElement,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { FiHeart } from "react-icons/fi";
-import Layout from "../components/Layout";
-import { LikedWordsContext, Word } from "../context/LikedWordsProvider";
-import { UserContext } from "../context/UserProvider";
+import authApi from "../utils/authApi";
 import useDebounce from "../utils/useDebounce";
+import { useLikeMutaton, useLikes, useUnLikeMutation } from "../utils/useLikes";
+import { Word } from "../utils/useWordbook";
 export const getServerSideProps: GetServerSideProps<{
   text?: string | string[] | null;
 }> = async (context) => {
@@ -29,7 +23,6 @@ export const getServerSideProps: GetServerSideProps<{
 const Translate = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
-  const user = useContext(UserContext);
   const input = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -39,29 +32,9 @@ const Translate = (
     input.current?.focus();
     if (props.text) input.current!.value = props.text.toString();
   }, []);
-  const likesQuery = useQuery<AxiosResponse<Word[]>, Error>(["get-likes"], () =>
-    user.authApi!.get("/wordbooks/words/likes")
-  );
-  const likeMutation = useMutation(
-    (word: { eng?: string; rus?: string }) => {
-      return user.authApi!.post("/wordbooks/words/likes", word);
-    },
-    {
-      async onSettled() {
-        await queryClient.invalidateQueries(["get-likes"]);
-      },
-    }
-  );
-  const delikeMutation = useMutation(
-    (word: { eng?: string }) => {
-      return user.authApi!.delete("/wordbooks/words/likes", { data: word });
-    },
-    {
-      async onSettled() {
-        await queryClient.invalidateQueries(["get-likes"]);
-      },
-    }
-  );
+  const likesQuery = useLikes();
+  const likeMutation = useLikeMutaton(queryClient);
+  const delikeMutation = useUnLikeMutation(queryClient);
   const translateMutation = useMutation(
     (word: { text: string | undefined }) => {
       return axios.post(process.env.NEXT_PUBLIC_API_LINK + "/translate", word);
@@ -101,7 +74,7 @@ const Translate = (
                   <div className="absolute inline right-0 top-0">
                     <FiHeart
                       onClick={() => {
-                        likesQuery.data?.data.find(
+                        likesQuery.data?.find(
                           (item) => item.eng == input.current?.value
                         )
                           ? delikeMutation.mutate({ eng: input.current?.value })
@@ -112,7 +85,7 @@ const Translate = (
                             });
                       }}
                       className={
-                        likesQuery.data?.data.find(
+                        likesQuery.data?.find(
                           (item) => item.eng == input.current?.value
                         )
                           ? "self-center cursor-pointer duration-100 fill-pink-500 hover:fill-pink-400 stroke-pink-500 hover:stroke-pink-400"

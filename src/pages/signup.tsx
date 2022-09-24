@@ -5,13 +5,13 @@ import { useRouter } from "next/router";
 import React, { ReactElement, useContext, useEffect, useRef } from "react";
 import Layout from "../components/Layout";
 import Input from "../components/ui/Input";
-import { UserContext } from "../context/UserProvider";
 import test, { emailEx, passwordEx } from "../utils/TestInput";
+import { useUser } from "../utils/useUser";
 
 const SignUp = () => {
-  const user = useContext(UserContext);
+  const user = useUser;
   useEffect(() => {
-    console.log(user.user);
+    console.log(user);
   }, []);
 
   const router = useRouter();

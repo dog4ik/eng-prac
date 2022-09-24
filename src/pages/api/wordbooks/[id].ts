@@ -58,4 +58,5 @@ export default async function handler(
         res.status(400).send("Failed delete");
       });
   }
+  prisma.$disconnect();
 }

@@ -30,3 +30,9 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #bfc0c4;
 }
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 2px;
+    height: 2px;
+  }
+}

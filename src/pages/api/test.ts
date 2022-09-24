@@ -7,4 +7,5 @@ export default async function handler(
 ) {
   let response = await prisma.user.findMany();
   res.status(200).json(response);
+  prisma.$disconnect();
 }

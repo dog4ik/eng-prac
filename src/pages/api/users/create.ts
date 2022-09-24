@@ -20,7 +20,7 @@ export default async function handler(
             likedWords: [],
             learnedWords: [],
             likedWordbooks: [],
-            likeTests: [],
+            likedTests: [],
           },
         },
         Stats: { create: {} },
@@ -30,4 +30,5 @@ export default async function handler(
     .catch((err) => {
       res.status(409).json({ error: err.message });
     });
+  prisma.$disconnect();
 }

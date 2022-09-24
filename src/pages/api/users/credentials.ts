@@ -41,8 +41,10 @@ export default async function handler(
           })
           .then((user) => {
             res.status(200).json(user);
+            prisma.$disconnect();
             return;
-          });
+          })
+          .catch((err) => res.status(400).send(err));
       }
     }
   );

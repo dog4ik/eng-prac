@@ -4,6 +4,7 @@ type Data = {
 };
 export default function TokenDecode(header?: string) {
   const token = header && header.split(" ")[1];
+
   let user_id: string | null = null;
   jwt.verify(
     token!,
@@ -18,6 +19,7 @@ export default function TokenDecode(header?: string) {
         return;
       } else {
         user_id = token_data!.id;
+        return user_id;
       }
     }
   );
