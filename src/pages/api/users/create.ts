@@ -13,16 +13,7 @@ export default async function handler(
     .create({
       data: {
         email: req.body.email,
-        name: req.body?.name,
         password: passwordHash,
-        Collection: {
-          create: {
-            likedWords: [],
-            learnedWords: [],
-            likedWordbooks: [],
-            likedTests: [],
-          },
-        },
         Stats: { create: {} },
       },
     })

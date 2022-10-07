@@ -27,25 +27,23 @@ export default async function handler(
           .findUnique({
             where: { id: user_id! },
             select: {
-              Collection: true,
-              createdAt: true,
               email: true,
               name: true,
               id: true,
               notifications: true,
               role: true,
-              Stats: true,
-              Tests: true,
-              Wordbook: true,
             },
           })
           .then((user) => {
             res.status(200).json(user);
-            prisma.$disconnect();
             return;
           })
-          .catch((err) => res.status(400).send(err));
+          .catch((err) => {
+            res.status(400).send(err);
+            return;
+          });
       }
     }
   );
+  prisma.$disconnect();
 }

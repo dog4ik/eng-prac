@@ -4,6 +4,8 @@ import Image from "next/image";
 import Papa from "papaparse";
 import {
   ReactElement,
+  Ref,
+  RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -11,22 +13,38 @@ import {
   useState,
 } from "react";
 import Layout from "../components/Layout";
+import { useAllWordbooks } from "../utils/useAllWordbooks";
 import { useUser } from "../utils/useUser";
-
+import { Book } from "../utils/useWordbook";
+const Card = ({ name, words }: Book) => {
+  return (
+    <div className=" w-60 rounded-lg items-center flex bg-neutral-700 flex-col cursor-pointer">
+      <p>{name}</p>
+    </div>
+  );
+};
 const Home = () => {
   const user = useUser();
-
+  const wordbooks = useAllWordbooks();
   return (
     <>
       <Head>
         <title>Home</title>
       </Head>
 
-      <div className="dark:bg-neutral-800 dark:text-white items-center">
-        <h1 className="md:text-5xl">
-          Welcome {user.data?.email ? user.data.email : "Guest"}
-        </h1>
-        <div className="grid grid-cols-4 w-full gap-10"></div>
+      <div className=" h-full w-full overflow-hidden flex-1 dark:text-white relative">
+        <div className=" absolute top-0 animate-blob left-0 w-full h-16 bg-purple-600 blur-3xl"></div>
+        <div className="w-full h-40 grid gap-5 grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid-rows-1 snap-mandatory">
+          {wordbooks.data?.map((book) => (
+            <Card
+              name={book.name}
+              key={book.id}
+              words={book.words}
+              private={book.private}
+              id={book.id}
+            />
+          ))}
+        </div>
       </div>
     </>
   );

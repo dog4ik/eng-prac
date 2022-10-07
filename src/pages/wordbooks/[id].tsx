@@ -1,25 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import Head from "next/head";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-  FiArrowRight,
-  FiHeart,
-  FiImage,
-  FiLock,
-  FiPlus,
-  FiTrash2,
-  FiUnlock,
-  FiX,
-} from "react-icons/fi";
+import { FiArrowRight, FiLock, FiUnlock, FiX } from "react-icons/fi";
 import Input from "../../components/ui/Input";
 import useDebounce from "../../utils/useDebounce";
 import useToggle from "../../utils/useToggle";
@@ -27,20 +11,13 @@ import Loading from "../../components/ui/Loading";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  Word,
-  Book,
-  useWordbook,
-  removeWordMutation,
-} from "../../utils/useWordbook";
-import {
-  useLikeMutaton,
-  useLikes,
-  useUnLikeMutation,
-} from "../../utils/useLikes";
-import { useUser } from "../../utils/useUser";
+import { Word, useWordbook, removeWordMutation } from "../../utils/useWordbook";
+import { useLikes } from "../../utils/useLikes";
 import authApi from "../../utils/authApi";
 import Error from "../../components/ui/Error";
+import WordbookHeader from "../../components/WordbookHeader";
+import { useUser } from "../../utils/useUser";
+import ListItem from "../../components/ListItem";
 interface Props extends Word {
   isLiked: boolean;
   isSelected: boolean;
@@ -92,7 +69,7 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
       className="fixed top-0 left-0 h-screen w-screen backdrop-filter backdrop-blur-sm z-20 flex justify-center items-center animate-fade-in transition-opacity duration-300"
     >
       <div
-        className="md:h-2/3 h-5/6 w-5/6 md:w-1/3 p-5 relative bg-neutral-600 rounded-2xl flex flex-col "
+        className=" py-5 max-w-lg w-full relative bg-neutral-600 rounded-2xl flex flex-col "
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -102,15 +79,20 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
           size={35}
           onClick={() => handleClose()}
         />
-        <p className="text-3xl">Edit wordbook</p>
-        <div className="flex w-full flex-col justify-center gap-10">
-          <div className="w-1/5 bg-white rounded-md">
-            <FiImage className="w-full fill-neutral-600 h-full" />
+        <p className="text-3xl px-5 pb-1">Edit wordbook</p>
+        <div className="flex justify-evenly self-center w-full gap-2">
+          <div className="w-52 h-52  shrink-0 relative">
+            <Image
+              src=" https://www.placecage.com/300/300"
+              alt="placeholder"
+              layout="fill"
+              className="aspect-square drop-shadow-2xl shadow-xl object-cover object-center cursor-pointer"
+            />
           </div>
-          <div>
+          <div className="flex gap-5 flex-col justify-between py-1">
             <Input label="Name" defaultValue={query.data?.name} ref={nameRef} />
-            <div className="flex gap-3 items-center">
-              <p>Is private?</p>
+            <div className="flex gap-3 items-center justify-between">
+              <p>Is private:</p>
               <div
                 onClick={() => setIsPrivate()}
                 className="w-12 h-6 flex bg-white rounded-full cursor-pointer"
@@ -128,26 +110,26 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
                 </div>
               </div>
             </div>
+            <div className="flex justify-end gap-5">
+              <button
+                className="p-2 rounded-xl bg-red-500"
+                onClick={() => deleteMutation.mutate()}
+              >
+                Delete
+              </button>
+              <button
+                className="p-2 rounded-xl bg-green-500"
+                onClick={() =>
+                  editMutation.mutate({
+                    private: isPrivate,
+                    name: nameRef.current!.value,
+                  })
+                }
+              >
+                {"Save"}
+              </button>
+            </div>
           </div>
-        </div>
-        <div className="flex absolute bottom-10 right-10 gap-5">
-          <button
-            className="p-2 rounded-xl bg-red-500"
-            onClick={() => deleteMutation.mutate()}
-          >
-            Delete
-          </button>
-          <button
-            className="p-2 rounded-xl bg-green-500"
-            onClick={() =>
-              editMutation.mutate({
-                private: isPrivate,
-                name: nameRef.current!.value,
-              })
-            }
-          >
-            {"Save"}
-          </button>
         </div>
       </div>
     </div>
@@ -156,7 +138,6 @@ const EditWordbook = ({ handleClose, props }: ModalProps) => {
 const Modal = ({ handleClose, props }: ModalProps) => {
   const [option, setOption] = useState<"Auto" | "Manual" | "Export">("Auto");
   const [transition, setTranslation] = useState("");
-  const user = useUser();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const input = useRef<HTMLInputElement>(null);
@@ -165,7 +146,6 @@ const Modal = ({ handleClose, props }: ModalProps) => {
   const [file, setFile] = useState<File>();
   const fileReader = new FileReader();
   const debouncedSearch = useDebounce(searchTerm, 2000);
-  const query = useQuery<AxiosResponse<Book>, Error>(["wordbook", props.id]);
   useEffect(() => {
     input.current?.focus();
   }, []);
@@ -178,7 +158,7 @@ const Modal = ({ handleClose, props }: ModalProps) => {
       onSuccess() {
         handleClose();
       },
-      async onSettled(data, error, variables, context) {
+      async onSettled() {
         await queryClient.invalidateQueries(["wordbook", props.id]);
       },
       onError(err) {
@@ -255,15 +235,20 @@ const Modal = ({ handleClose, props }: ModalProps) => {
         <div className="w-5/6 h-full flex flex-col">
           <div className="flex flex-col gap-4">
             <h1 className="text-center text-2xl">Add word</h1>
-            <div className="bg-gray-400 w-3/4 self-center flex justify-between rounded-2xl overflow-hidden">
+            <div className="bg-gray-400 relative w-3/4 self-center flex justify-between rounded-2xl overflow-hidden">
+              <div
+                className={`absolute transition-transform duration-300 rounded-2xl bg-green-500 blur-sm w-1/3 h-full z-10 ${
+                  option === "Manual" && "translate-x-full"
+                } ${option === "Export" && "translate-x-[200%]"}
+                 ${option === "Auto" && "translate-x-0"}`}
+              ></div>
+
               <span
                 onClick={() => {
                   setOption("Auto");
                 }}
                 className={
-                  option == "Auto"
-                    ? "rounded-2xl cursor-pointer bg-slate-500 basis-1/3 text-center"
-                    : "rounded-2xl cursor-pointer basis-1/3 text-center"
+                  "rounded-2xl z-10 cursor-pointer basis-1/3 text-center"
                 }
               >
                 Auto
@@ -273,9 +258,7 @@ const Modal = ({ handleClose, props }: ModalProps) => {
                   setOption("Manual");
                 }}
                 className={
-                  option === "Manual"
-                    ? "rounded-2xl cursor-pointer bg-slate-500 basis-1/3 text-center"
-                    : "rounded-2xl cursor-pointer basis-1/3 text-center"
+                  "rounded-2xl z-10 cursor-pointer basis-1/3 text-center"
                 }
               >
                 Manual
@@ -285,9 +268,7 @@ const Modal = ({ handleClose, props }: ModalProps) => {
                   setOption("Export");
                 }}
                 className={
-                  option === "Export"
-                    ? "rounded-2xl cursor-pointer bg-slate-500 basis-1/3 text-center"
-                    : "rounded-2xl cursor-pointer basis-1/3 text-center"
+                  "rounded-2xl z-10 cursor-pointer basis-1/3 text-center"
                 }
               >
                 Export
@@ -390,125 +371,65 @@ const Modal = ({ handleClose, props }: ModalProps) => {
     </div>
   );
 };
-const Item = ({ eng, rus, date, index, isLiked, isSelected, props }: Props) => {
-  const queryClient = useQueryClient();
-  const deleteMutation = removeWordMutation(queryClient, props.id);
-  const delikeMutation = useUnLikeMutation(queryClient);
-  const likeMutation = useLikeMutaton(queryClient);
-  const calculate = (date: number) => {
-    const diff = Date.now() - new Date(date).getTime();
-    if (Math.floor(diff / 1000) < 60) return Math.floor(diff / 1000) + "s ago";
-    if (Math.floor(diff / (1000 * 60)) < 60)
-      return Math.floor(diff / (1000 * 60)) + "m ago";
-    if (Math.floor(diff / (1000 * 60 * 60)) < 24)
-      return Math.floor(diff / (1000 * 60 * 60)) + "h ago";
-    if (Math.floor(diff / (1000 * 60 * 60 * 24)) <= 30)
-      return Math.floor(diff / (1000 * 60 * 60 * 24)) + "d ago";
-    if (Math.floor(diff / (1000 * 60 * 60 * 24)) > 30)
-      return new Date(date).toLocaleDateString();
-  };
 
-  const createdAt = useMemo(() => calculate(Number(date)), []);
-  const handleLike = () => {
-    if (isLiked) {
-      delikeMutation.mutate({ eng: eng });
-    } else {
-      likeMutation.mutate({ eng: eng, rus: rus });
-    }
-  };
+const Menu = ({
+  x,
+  y,
+  words,
+  id,
+}: {
+  x: number;
+  y: number;
+  words: Word[];
+  id?: string | string[];
+}) => {
+  const deleteMutation = removeWordMutation(id);
   return (
     <div
-      onClick={() => (isSelected = true)}
-      className={
-        isSelected
-          ? "w-full h-16 rounded-md bg-neutral-600  hover:bg-neutral-500"
-          : "w-full h-16 rounded-md hover:bg-neutral-700"
-      }
+      className="w-60 z-10 bg-neutral-900 absolute rounded-md overflow-hidden"
+      style={{ top: y, left: x }}
     >
-      <div className="w-full h-16 flex px-2">
-        <div className="flex w-1/12 items-center">
-          <p className="text-2xl">{index}</p>
-        </div>
-        <div className="flex w-4/12 items-center">
-          <p className="text-2xl truncate">{rus}</p>
-        </div>
-        <div className="flex w-4/12 items-center">
-          <p className="text-2xl truncate">{eng}</p>
-        </div>
-        <div className="flex w-2/12 items-center">
-          <p className="text-2xl truncate">{createdAt}</p>
-        </div>
-        <div className="flex w-1/12 gap-5 justify-end items-center">
-          <FiHeart
-            onClick={() => {
-              handleLike();
-            }}
-            size={27}
-            className={
-              isLiked
-                ? "self-center cursor-pointer duration-100 fill-pink-500 hover:fill-pink-400 stroke-pink-500 hover:stroke-pink-400"
-                : "self-center cursor-pointer duration-100 stroke-gray-300 hover:stroke-white"
-            }
-          ></FiHeart>
-          <FiTrash2
-            onClick={() => deleteMutation.mutate({ word: eng })}
-            className="hover:stroke-red-500 cursor-pointer duration-200"
-            size={27}
-          ></FiTrash2>
-        </div>
-      </div>
+      <ul className="w-full">
+        <li
+          className="h-16 flex items-center pl-2 hover:bg-neutral-700 cursor-pointer"
+          onClick={() =>
+            deleteMutation.mutate({
+              word: words.map((item) => item.eng),
+            })
+          }
+        >
+          <span className="pointer-events-none" onClick={() => {}}>
+            {`Delete (${words.length})`}
+          </span>
+        </li>
+      </ul>
     </div>
   );
 };
-const Book = (
+const Wordbook = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
-  const queryClient = useQueryClient();
   const like = useLikes();
   const user = useUser();
-  const contextAreaRef = useRef<HTMLDivElement>(null);
+  const scrollListRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   const [modal, setModal] = useToggle(false);
-  const [selected, setSelected] = useState<number>();
+  const [selected, setSelected] = useState<Word[]>([]);
   const [editWordbookModal, setEditWordbookModal] = useToggle(false);
   const [contextmenu, setContextmenu] = useToggle(false);
-  const Menu = () => {
-    return (
-      <div
-        className="w-60 z-10 bg-neutral-900 absolute rounded-xl overflow-hidden"
-        style={{ top: anchorPoint.y, left: anchorPoint.x }}
-      >
-        <ul className="w-full">
-          <li className="h-16 flex items-center pl-2 hover:bg-neutral-700 cursor-pointer">
-            <span className="pointer-events-none">Delete</span>
-          </li>
-        </ul>
-      </div>
-    );
-  };
-  useEffect(() => {
-    let scroll = window.innerWidth - document.documentElement.clientWidth;
-    if (modal || editWordbookModal == true) {
-      document.body.style.overflow = "hidden";
-      document.body.style.marginRight = `${scroll}px`;
-    } else {
-      document.body.style.overflow = "auto";
-      document.body.style.marginRight = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.marginRight = "unset";
-    };
-  }, [modal, editWordbookModal]);
-
-  const query = useWordbook(props.id);
+  const wordbookQuery = useWordbook(props.id);
 
   const handleMenu = useCallback(
-    (e: MouseEvent) => {
+    (e: React.MouseEvent) => {
       const target = e.target as HTMLDivElement;
-      if (contextAreaRef.current?.contains(target)) {
+      let offsetX = 0;
+      let offsetY = 0;
+      if (itemsRef.current?.contains(target)) {
         e.preventDefault();
-        setAnchorPoint({ x: e.pageX, y: e.pageY });
+        if (window.innerWidth < e.pageX + 240) offsetX = -240;
+        if (window.innerHeight < e.pageY + 64) offsetY = -64;
+        setAnchorPoint({ x: e.pageX + offsetX, y: e.pageY + offsetY });
         setContextmenu(true);
         return;
       }
@@ -517,140 +438,151 @@ const Book = (
     [setAnchorPoint]
   );
   const handleClick = (e: MouseEvent) => {
+    console.log("clicked");
+
+    const target = e.target as HTMLDivElement;
+    if (!itemsRef.current?.contains(target)) {
+      setSelected([]);
+    }
     setContextmenu(false);
   };
-  useEffect(() => {
-    document.addEventListener("contextmenu", handleMenu);
-    document.addEventListener("click", handleClick);
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case "ArrowDown":
+        break;
+      case "a":
+        if (e.ctrlKey) {
+          setSelected(
+            wordbookQuery.data?.words ? wordbookQuery.data.words : []
+          );
+          e.preventDefault();
+        }
+        break;
+    }
+  };
+  useEffect(() => {
+    document.addEventListener("click", handleClick);
     return () => {
-      document.removeEventListener("contextmenu", handleMenu);
       document.removeEventListener("click", handleClick);
     };
   }, []);
 
+  const handleSelect = (event: React.MouseEvent, word: Word) => {
+    if (
+      event.button == 2 &&
+      selected.findIndex((item) => item.eng == word.eng) !== -1
+    )
+      return;
+    event.ctrlKey
+      ? selected.findIndex((item) => item.eng == word.eng) == -1
+        ? setSelected((prev) => [...prev, word])
+        : setSelected((prev) => prev.filter((s) => s.eng != word.eng))
+      : setSelected([word]);
+  };
   const rowVirtualizer = useVirtualizer({
-    count: query.data?.words ? query.data.words.length : 40,
-    getScrollElement: () => contextAreaRef.current,
-    estimateSize: () => 70,
+    count: wordbookQuery.data?.words ? wordbookQuery.data.words.length : 40,
+    getScrollElement: () => scrollListRef.current,
+    estimateSize: () => 64,
     paddingStart: 300,
     overscan: 10,
   });
-  if (query.isError) return <Error />;
-  if (query.isLoading) return <Loading />;
-  return (
-    <>
-      <Head>
-        <title>{query.data?.name ? query.data.name : "Loading..."}</title>
-      </Head>
-      {modal && <Modal handleClose={() => setModal()} props={props} />}
-      {editWordbookModal && (
-        <EditWordbook
-          handleClose={() => setEditWordbookModal()}
-          props={props}
-        />
-      )}
-      {contextmenu && <Menu />}
+  if (wordbookQuery.isLoading) return <Loading />;
+  if (wordbookQuery.isError) return <Error />;
+  if (wordbookQuery.data)
+    return (
+      <>
+        <Head>
+          <title>
+            {wordbookQuery.data?.name ? wordbookQuery.data.name : "Loading..."}
+          </title>
+        </Head>
+        {modal && <Modal handleClose={() => setModal()} props={props} />}
+        {editWordbookModal && (
+          <EditWordbook
+            handleClose={() => setEditWordbookModal()}
+            props={props}
+          />
+        )}
+        {contextmenu && (
+          <Menu
+            x={anchorPoint.x}
+            y={anchorPoint.y}
+            words={selected}
+            id={props.id}
+          />
+        )}
 
-      <div
-        className="w-full px-5 md:px-20 flex-1 overflow-y-auto"
-        ref={contextAreaRef}
-      >
-        <div className="h-1 w-full">
+        <div
+          className={`px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 flex-1 ${
+            contextmenu
+              ? `overflow-hidden mr-0.5 md:mr-2.5`
+              : "overflow-y-auto mr-0"
+          }`}
+          ref={scrollListRef}
+        >
           <div
-            className="relative w-full overflow-y-auto"
+            className="relative"
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,
             }}
           >
-            <div className="flex gap-5 relative">
-              <div className="w-52 h-52 shrink-0 relative">
-                <Image
-                  src="https://www.fillmurray.com/300/300"
-                  alt="placeholder"
-                  layout="fill"
-                  className="aspect-square drop-shadow-2xl shadow-xl object-cover object-center cursor-pointer"
-                  onClick={() => setEditWordbookModal()}
-                />
-              </div>
-
-              <div className="flex flex-col justify-between overflow-hidden py-2">
-                <span className="uppercase text-xs">Wordbook</span>
-                <h1
-                  className={`${
-                    query.data?.name.length! > 35
-                      ? "text-xl md:text-2xl lg:text-3xl"
-                      : "text-2xl md:text-4xl lg:text-6xl"
-                  } font-semibold cursor-pointer w-full break-words`}
-                  onClick={() => setEditWordbookModal()}
+            {/* HEADER */}
+            <WordbookHeader
+              setAddModal={setModal}
+              setEditModal={setEditWordbookModal}
+              data={wordbookQuery.data}
+              isOwner={wordbookQuery.data.userId === user.data?.id}
+            />
+            <div
+              ref={itemsRef}
+              tabIndex={0}
+              onContextMenu={(e) => handleMenu(e)}
+              onKeyDown={(e) => handleKeyPress(e)}
+            >
+              {rowVirtualizer.getVirtualItems().map((item) => (
+                <div
+                  className="absolute top-0 left-0 w-full"
+                  key={item.key}
+                  style={{
+                    height: `${item.size}px`,
+                    transform: `translateY(${item.start}px)`,
+                  }}
                 >
-                  {query.data?.name}
-                </h1>
-                {query.data?.description ? (
-                  <p>{query.data.description}</p>
-                ) : null}
-                <p>{query.data?.words?.length + " words"}</p>
-              </div>
-              <div
-                className="absolute right-0 bottom-0 cursor-pointer rounded-full bg-green-500 p-2"
-                onClick={() => {
-                  setModal();
-                }}
-              >
-                <FiPlus size={40} className="" />
-              </div>
+                  <ListItem
+                    onClick={(event, word) => {
+                      handleSelect(event, word);
+                      console.log("selected items", selected);
+                    }}
+                    isSelected={
+                      selected?.findIndex(
+                        (word) =>
+                          word.eng == wordbookQuery.data!.words![item.index].eng
+                      ) != -1
+                        ? true
+                        : false
+                    }
+                    isLiked={
+                      like.data?.find(
+                        (like) =>
+                          like.eng ===
+                          wordbookQuery.data!.words![item.index].eng
+                      )?.eng === wordbookQuery.data?.words![item.index].eng
+                        ? true
+                        : false
+                    }
+                    index={item.index + 1}
+                    eng={wordbookQuery.data!.words![item.index].eng}
+                    rus={wordbookQuery.data!.words![item.index].rus}
+                    date={wordbookQuery.data!.words![item.index].date}
+                  />
+                </div>
+              ))}
             </div>
-            <div className="">
-              <div className="w-full h-16 flex px-2 sticky top-0 bg-neutral-800/95 border-b border-neutral-600">
-                <div className="flex w-1/12 items-center">
-                  <p className="font-extrabold text-md">#</p>
-                </div>
-                <div className="flex w-4/12 items-center">
-                  <p className="font-extrabold text-md">Russian</p>
-                </div>
-                <div className="flex w-4/12 items-center">
-                  <p className="font-extrabold text-md">English</p>
-                </div>
-                <div className="flex w-2/12 items-center">
-                  <p className="font-extrabold text-md">Addded</p>
-                </div>
-                <div className="flex w-1/12 gap-5 justify-end items-center"></div>
-              </div>
-            </div>
-            {rowVirtualizer.getVirtualItems().map((item) => (
-              <div
-                key={item.key}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: `${item.size}px`,
-                  transform: `translateY(${item.start}px)`,
-                }}
-              >
-                <Item
-                  props={props}
-                  isSelected={selected == item.index ? true : false}
-                  isLiked={
-                    like.data?.find(
-                      (like) => like.eng === query.data!.words![item.index].eng
-                    )?.eng === query.data?.words![item.index].eng
-                      ? true
-                      : false
-                  }
-                  index={item.index + 1}
-                  eng={query.data!.words![item.index].eng}
-                  rus={query.data!.words![item.index].rus}
-                  date={query.data!.words![item.index].date}
-                />
-              </div>
-            ))}
           </div>
         </div>
-      </div>
-    </>
-  );
+      </>
+    );
 };
 
-export default Book;
+export default Wordbook;

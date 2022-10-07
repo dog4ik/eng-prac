@@ -6,16 +6,24 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import authApi from "./authApi";
+import { useUser } from "./useUser";
 import { Word } from "./useWordbook";
-const fetchLikes = async (): Promise<Word[]> =>
-  (await authApi.get("/wordbooks/words/likes")).data;
-
+const fetchLikes = async (): Promise<Word[]> => {
+  return (await authApi.get("/wordbooks/words/likes")).data;
+};
 const useLikes = () => {
+  const queryClient = useQueryClient();
+  const userdata = useUser();
+  if (userdata.isError) queryClient.setQueryData(["get-likes"], null);
+
   return useQuery(["get-likes"], () => fetchLikes(), {
     refetchOnWindowFocus: false,
+    enabled: userdata.isSuccess,
   });
 };
-const useLikeMutaton = (queryClient: QueryClient) => {
+const useLikeMutaton = () => {
+  const queryClient = useQueryClient();
+
   return useMutation(
     async (word: { eng?: string; rus?: string }) => {
       return await authApi.post("/wordbooks/words/likes", word);
@@ -40,7 +48,9 @@ const useLikeMutaton = (queryClient: QueryClient) => {
     }
   );
 };
-const useUnLikeMutation = (queryClient: QueryClient) => {
+const useUnLikeMutation = () => {
+  const queryClient = useQueryClient();
+
   return useMutation(
     (word: { eng?: string }) => {
       return authApi.delete("/wordbooks/words/likes", { data: word });

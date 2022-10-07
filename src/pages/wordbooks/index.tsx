@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Head from "next/head";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { FiHeart, FiPlusCircle } from "react-icons/fi";
+import Error from "../../components/ui/Error";
 import Loading from "../../components/ui/Loading";
 import authApi from "../../utils/authApi";
 import { useAllWordbooks } from "../../utils/useAllWordbooks";
@@ -12,15 +12,15 @@ import { Book } from "../../utils/useWordbook";
 interface Props extends Book {
   likes?: number;
 }
-const WordBook = ({ name, words = [], id, likes = 0 }: Props) => {
-  const lovedPercent = Math.round((100 * likes) / words.length);
+const WordBook = ({ name, words, id, likes }: Props) => {
+  const lovedPercent = Math.round((100 * likes!) / words!.length);
   return (
     <Link href={`/wordbooks/${encodeURIComponent(id)}`}>
       <div className="animate-fade-in h-full w-full px-3 group rounded-2xl dark:bg-neutral-700 aspect-video overflow-hidden hover:dark:bg-neutral-600 cursor-pointer duration-100 relative">
         <div
           className="w-full absolute bottom-0 left-0 right-0 group-hover:bg-pink-600 group-hover:from-pink-400 bg-gradient-to-t bg-pink-700 from-pink-500 duration-100"
           style={{
-            height: `${lovedPercent}%`,
+            height: `${lovedPercent ? lovedPercent : 0}%`,
             borderRadius:
               lovedPercent === 100 ? "" : "50% 50% 0% 0% / 20% 20% 0% 0% ",
           }}
@@ -31,7 +31,9 @@ const WordBook = ({ name, words = [], id, likes = 0 }: Props) => {
         </div>
 
         <div className="self-center relative flex justify-center items-center text-2xl font-semibold text-center truncate">
-          <p className="truncate">{name}</p>
+          <p title={name} className="truncate">
+            {name}
+          </p>
         </div>
         <div className="flex relative justify-between">
           <p className="pr-2 ">Words:</p>
@@ -56,7 +58,16 @@ const Wordbooks = () => {
     }
   );
   const wordbooks = useAllWordbooks();
-  if (wordbooks.isLoading)
+  if (wordbooks.data === null)
+    return (
+      <>
+        <Head>
+          <title>Login to view this page</title>
+        </Head>
+        <div>Not logged in</div>
+      </>
+    );
+  if (wordbooks.isLoading || like.isLoading)
     return (
       <>
         <Head>
@@ -65,6 +76,7 @@ const Wordbooks = () => {
         <Loading />
       </>
     );
+  if (wordbooks.isError) return <Error />;
   return (
     <>
       <Head>

@@ -26,22 +26,22 @@ export default async function handler(
         },
       })
       .catch((err) => console.log(err));
-
-    const filtered = old?.words.filter(
-      (item: any) => item.eng != req.body.word
-    );
-
+    let filtered;
+    if (typeof req.body.word == "string") {
+      filtered = old?.words.filter((item: any) => item.eng != req.body.word);
+    }
+    if (typeof req.body.word == "object") {
+      filtered = old?.words.filter(
+        (item: any) => !req.body.word.includes(item.eng)
+      );
+    }
     await prisma.wordbook
       .updateMany({
         where: {
           id: req.query.id.toString(),
           userId: user_id,
         },
-        data: {
-          words: {
-            set: filtered,
-          },
-        },
+        data: {},
       })
       .catch((err) => {
         console.log(err);
@@ -64,7 +64,7 @@ export default async function handler(
         where: { id: req.query.id.toString(), userId: user_id },
         data: {
           words: {
-            push: { eng: req.body.eng, rus: req.body.rus },
+            push: { eng: req.body.eng, rus: req.body.rus, date: Date.now() },
           },
         },
       })

@@ -12,3 +12,12 @@ export default function useDebounce<T>(value: T, delay: number): T {
   }, [value, delay]);
   return debouncedValue;
 }
+const debounce = (cb: Function, time: number) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: any) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      cb(...args);
+    }, time);
+  };
+};

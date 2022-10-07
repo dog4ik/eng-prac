@@ -1,28 +1,19 @@
-// await axios
-// .post(
-//   "https://api.nlpcloud.io/v1/nllb-200-3-3b/translation",
-//   {
-//     text: req.body.text,
-//     source: req.body.source,
-//     target: req.body.target,
-//   },
-//   {
-//     headers: {
-//       Authorization: "Token ",
-//     },
-//   }
-// )
-
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-
-async function GetIAM() {
-  await axios
+import PrismaClient from "../../../../prisma/PrismaClient";
+const prisma = PrismaClient;
+async function refreshIAM() {
+  return await axios
     .post("https://iam.api.cloud.yandex.net/iam/v1/tokens", {
-      yandexPassportOauthToken: "",
+      yandexPassportOauthToken: process.env.TRANSLATE_TOKEN,
     })
-    .then((res) => {
-      console.log(res.data.iamToken);
+    .then(async (res) => {
+      await prisma.helper.updateMany({
+        data: { ya_token: res.data.iamToken },
+      });
+      console.log("yandex token updated");
+
+      return res.data.iamToken;
     })
     .catch((err) => console.log("yandex error"));
 }
@@ -42,6 +33,9 @@ export default async function handler(
       });
       return;
     }
+    const translate_token = await prisma.helper
+      .findFirst()
+      .catch((err) => console.log("cant find token"));
     await axios
       .post(
         "https://translate.api.cloud.yandex.net/translate/v2/translate",
@@ -53,7 +47,7 @@ export default async function handler(
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.TRANSLATE_TOKEN}`,
+            Authorization: `Bearer ${translate_token?.ya_token}`,
           },
         }
       )
@@ -62,18 +56,17 @@ export default async function handler(
         return;
       })
       .catch(async (err) => {
-        // if (err.response.status === 401 && err.response.data.code === 16) {
-        //   await GetIAM();
-        //   console.log(err);
-        //   err.config.headers["Authorization"] = "Bearer " + Token;
-        //   axios.request(err.config).then((data) => {
-        //     res.status(200).json(data.data);
-        //     return;
-        //   });
-        // } else {
-        //   res.status(500).send("Service is unavailble");
-        //   return;
-        // }
+        if (err.response.status === 401 && err.response.data.code === 16) {
+          const token = await refreshIAM();
+          err.config.headers["Authorization"] = "Bearer " + token;
+          await axios.request(err.config).then((data) => {
+            res.status(200).json(data.data);
+            return;
+          });
+        } else {
+          res.status(500).send("Service is unavailble");
+          return;
+        }
         res.status(500).send("Service is unavaible");
       });
   } else {

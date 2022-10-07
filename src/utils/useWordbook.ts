@@ -1,4 +1,9 @@
-import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import authApi from "./authApi";
 
 export type Word = {
@@ -9,6 +14,7 @@ export type Word = {
 export type Book = {
   private: boolean;
   id: string;
+  userId?: string;
   name: string;
   description?: string;
   words?: Array<Word>;
@@ -18,16 +24,15 @@ const fetchWordbook = async (id?: string | string[]): Promise<Book> =>
   (await authApi.get("/wordbooks/" + id)).data;
 
 const useWordbook = (id?: string | string[]) => {
+  const queryClient = useQueryClient();
   return useQuery(["wordbook", id], () => fetchWordbook(id), {
     refetchOnWindowFocus: false,
   });
 };
-const removeWordMutation = (
-  queryClient: QueryClient,
-  id?: string[] | string
-) => {
+const removeWordMutation = (id?: string[] | string) => {
+  const queryClient = useQueryClient();
   return useMutation(
-    async (word: { word?: string }) => {
+    async (word: { word?: string[] }) => {
       return await authApi.delete("/wordbooks/words/" + id, {
         data: word,
       });
@@ -37,7 +42,10 @@ const removeWordMutation = (
         await queryClient.cancelQueries(["wordbook", id]);
         const snapShot = await queryClient.getQueryData(["wordbook", id]);
         queryClient.setQueryData<Book>(["wordbook", id], (old) => {
-          old!.words = old!.words!.filter((item) => item.eng != variables.word);
+          old!.words = old!.words!.filter(
+            (item) => !variables.word?.includes(item.eng)
+          );
+
           return old;
         });
         return { snapShot };

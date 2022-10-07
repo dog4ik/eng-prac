@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Axios, AxiosError } from "axios";
 const getAccess_token = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("access_token");

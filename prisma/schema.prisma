@@ -69,6 +69,11 @@ model Tests {
   private Boolean  @default(true)
 }
 
+model Helper {
+  id       String @id @default(uuid())
+  ya_token String
+}
+
 enum Role {
   user
   admin
