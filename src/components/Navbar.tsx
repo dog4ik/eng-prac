@@ -133,7 +133,7 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
 const Navbar = () => {
   const user = useUser();
   return (
-    <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-10 w-full md:flex px-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
+    <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-20 w-full md:flex px-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
       <div className="flex gap-10 justify-around dark:text-white select-none text-lg">
         <Link
           href={"/"}

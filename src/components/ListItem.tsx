@@ -11,15 +11,16 @@ interface Props extends Word {
 const ListItem = ({
   eng,
   rus,
-  date,
+  createdAt,
   index,
   isLiked,
+  id,
   isSelected,
   onClick,
 }: Props) => {
   const delikeMutation = useUnLikeMutation();
   const likeMutation = useLikeMutaton();
-  const calculate = (date: number) => {
+  const calculate = (date: Date) => {
     const diff = Date.now() - new Date(date).getTime();
     if (Math.floor(diff / 1000) < 60) return Math.floor(diff / 1000) + "s ago";
     if (Math.floor(diff / (1000 * 60)) < 60)
@@ -32,7 +33,7 @@ const ListItem = ({
       return new Date(date).toLocaleDateString();
   };
 
-  const createdAt = useMemo(() => calculate(Number(date)), []);
+  const date = useMemo(() => calculate(createdAt), []);
   const handleLike = () => {
     if (isLiked) {
       delikeMutation.mutate({ eng });
@@ -43,10 +44,10 @@ const ListItem = ({
   return (
     <div
       onClick={(e) => {
-        onClick(e, { date, eng, rus });
+        onClick(e, { createdAt, eng, rus, id });
       }}
       onContextMenu={(e) => {
-        onClick(e, { date, eng, rus });
+        onClick(e, { createdAt, eng, rus, id });
       }}
       className={`w-full h-16 rounded-md ${
         isSelected ? "bg-neutral-600 " : "hover:bg-neutral-700"
@@ -63,7 +64,7 @@ const ListItem = ({
           <p className="text-2xl truncate">{eng}</p>
         </div>
         <div className="flex w-2/12 items-center">
-          <p className="text-2xl truncate">{createdAt}</p>
+          <p className="text-2xl truncate">{date}</p>
         </div>
         <div className="flex w-1/12 gap-5 justify-end items-center">
           <FiHeart

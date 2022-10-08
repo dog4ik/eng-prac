@@ -9,13 +9,8 @@ import test, { emailEx, passwordEx } from "../utils/TestInput";
 import { useUser } from "../utils/useUser";
 
 const SignUp = () => {
-  const user = useUser;
-  useEffect(() => {
-    console.log(user);
-  }, []);
-
   const router = useRouter();
-  const mutation = useMutation(
+  const signupMutation = useMutation(
     (data: { email?: string; password?: string }) => {
       return axios.post(
         process.env.NEXT_PUBLIC_API_LINK + "/users/create",
@@ -24,10 +19,14 @@ const SignUp = () => {
     },
     {
       onSuccess: (data) => {
+        if (typeof window != "undefined") {
+          localStorage.setItem("access_token", data.data.access_token);
+          localStorage.setItem("refresh_token", data.data.refresh_token);
+        }
         console.log("success");
         router.push("/");
       },
-      onError: async (err: any) => {
+      onError: async (err) => {
         console.log(err);
         email.current!.style.borderColor = "red";
         console.log("error adding user");
@@ -39,7 +38,7 @@ const SignUp = () => {
   const email = useRef<HTMLInputElement>(null);
   const handleSubmit = () => {
     if (passwordTest() && test(emailEx, email) && test(passwordEx, password)) {
-      mutation.mutate({
+      signupMutation.mutate({
         email: email.current?.value,
         password: password.current?.value,
       });
@@ -137,7 +136,7 @@ const SignUp = () => {
               autoComplete="password"
               id="password"
             ></Input>
-            {mutation.isLoading ? (
+            {signupMutation.isLoading ? (
               <Loading />
             ) : (
               <button type="submit" className="p-2 rounded-xl bg-green-600">

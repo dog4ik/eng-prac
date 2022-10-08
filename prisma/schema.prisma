@@ -11,43 +11,35 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(uuid())
-  email         String       @unique
+  id            String          @id @default(cuid())
+  email         String          @unique
   password      String
   name          String?
   notifications Json[]
-  createdAt     DateTime     @default(now())
-  role          Role         @default(user)
+  createdAt     DateTime        @default(now())
+  role          Role            @default(user)
   Wordbook      Wordbook[]
+  learnedWords  Words[]         @relation("learnedBy")
+  likedWords    Words[]         @relation("likedBy")
   Stats         Stats[]
   Tests         Tests[]
-  Collection    Collection[]
-}
-
-model Collection {
-  id             String   @id @default(uuid())
-  user           User     @relation(fields: [userId], references: [id])
-  userId         String
-  learnedWords   Json[]
-  likedWords     Json[]
-  likedWordbooks String[]
-  likedTests     String[]
+  Notifications Notifications[]
 }
 
 model Wordbook {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   user        User     @relation(fields: [userId], references: [id])
   userId      String
   name        String?  @default("My Wordbook")
   description String?
   likes       Int      @default(0)
-  words       Json[]
+  words       Words[]
   private     Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
 
 model Stats {
-  id           String  @id @default(uuid())
+  id           String  @id @default(cuid())
   user         User    @relation(fields: [userId], references: [id])
   userId       String
   translated   Int     @default(0)
@@ -59,19 +51,48 @@ model Stats {
 }
 
 model Tests {
-  id      String   @id @default(uuid())
-  user    User     @relation(fields: [userId], references: [id])
-  userId  String
-  name    String   @default("My Test")
-  data    Json[]
-  likes   Int      @default(0)
-  created DateTime @default(now())
-  private Boolean  @default(true)
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  name      String   @default("My Test")
+  data      Json[]
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  private   Boolean  @default(true)
 }
 
 model Helper {
-  id       String @id @default(uuid())
+  id       String @id
   ya_token String
+}
+
+model Words {
+  id          String    @id @default(cuid())
+  eng         String
+  rus         String
+  createdAt   DateTime  @default(now())
+  Wordbook    Wordbook? @relation(fields: [wordbookId], references: [id])
+  wordbookId  String?
+  LikedBy     User?     @relation("likedBy", fields: [likedById], references: [id])
+  likedById   String?
+  LearnedBy   User?     @relation("learnedBy", fields: [learnedById], references: [id])
+  learnedById String?
+}
+
+model Notifications {
+  id        String           @id @default(cuid())
+  createdAt DateTime         @default(now())
+  type      NotificationType @default(default)
+  title     String
+  text      String
+  User      User?            @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+enum NotificationType {
+  default
+  error
+  succsess
 }
 
 enum Role {

@@ -34,6 +34,7 @@ export default async function handler(
         where: {
           userId: user_id,
         },
+        include: { _count: { select: { words: true } } },
       })
       .catch((err) => {
         console.log(err);

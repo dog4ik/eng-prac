@@ -20,6 +20,17 @@ export default async function handler(
         where: {
           id: req.query.id?.toString(),
         },
+        include: {
+          words: {
+            where: { wordbookId: req.query.id?.toString() },
+            select: {
+              eng: true,
+              rus: true,
+              id: true,
+              createdAt: true,
+            },
+          },
+        },
       })
       .then((data) => {
         if (data?.private && data.userId != user_id) {

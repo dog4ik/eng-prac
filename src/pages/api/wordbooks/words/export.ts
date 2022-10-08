@@ -17,28 +17,42 @@ export default async function handler(
 
   let failed = 0;
 
-  let words: Array<{ eng: string; rus: string; date: number }> = [];
+  let words: Array<{ eng: string; rus: string }> = [];
   for (let i = 0; i < array.length; i++) {
     if (array[i].split(",").length !== 4) {
       failed++;
       continue;
     }
     const [source, target, first, second] = array[i].split(",");
-    words.push({ eng: first, rus: second, date: Date.now() });
+    words.push({ eng: first, rus: second });
   }
-  const old = await prisma.wordbook.findMany({
-    where: { userId: user_id, id: req.body.id },
-  });
-  await prisma.wordbook
-    .updateMany({
-      where: {
-        id: req.body.id,
-      },
+  // const old = await prisma.wordbook.findMany({
+  //   where: { userId: user_id, id: req.body.id },
+  // });
+  // await prisma.wordbook
+  //   .updateMany({
+  //     where: {
+  //       id: req.body.id,
+  //     },
+  //     data: {
+  //       words: {
+  //         set: old[0].words.length == 0 ? words : [...old[0].words, ...words],
+  //       },
+  //     },
+  //   })
+  await prisma.user
+    .update({
       data: {
-        words: {
-          set: old[0].words.length == 0 ? words : [...old[0].words, ...words],
+        Wordbook: {
+          update: {
+            data: {
+              words: { createMany: { data: words, skipDuplicates: true } },
+            },
+            where: { id: req.body.id },
+          },
         },
       },
+      where: { id: user_id },
     })
     .then(() => res.status(200).send("done"))
     .catch((err) => res.status(400).send(err));

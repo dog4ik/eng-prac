@@ -7,7 +7,6 @@ export type User = {
   email: string;
   role: string;
   id: string;
-  notifications: string;
 };
 
 const fetchUser = async (): Promise<User> => {

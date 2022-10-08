@@ -18,17 +18,10 @@ import Error from "../../components/ui/Error";
 import WordbookHeader from "../../components/WordbookHeader";
 import { useUser } from "../../utils/useUser";
 import ListItem from "../../components/ListItem";
-interface Props extends Word {
-  isLiked: boolean;
-  isSelected: boolean;
-  index: number;
-  props: InferGetServerSidePropsType<typeof getServerSideProps>;
-}
 type ModalProps = {
   handleClose: () => void;
   props: InferGetServerSidePropsType<typeof getServerSideProps>;
 };
-
 export const getServerSideProps: GetServerSideProps<{
   id?: string | string[];
 }> = async (context) => {
@@ -514,12 +507,9 @@ const Wordbook = (
         )}
 
         <div
-          className={`px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 flex-1 ${
-            contextmenu
-              ? `overflow-hidden mr-0.5 md:mr-2.5`
-              : "overflow-y-auto mr-0"
-          }`}
+          className={`px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 flex-1 `}
           ref={scrollListRef}
+          onScroll={() => setContextmenu(false)}
         >
           <div
             className="relative"
@@ -574,7 +564,8 @@ const Wordbook = (
                     index={item.index + 1}
                     eng={wordbookQuery.data!.words![item.index].eng}
                     rus={wordbookQuery.data!.words![item.index].rus}
-                    date={wordbookQuery.data!.words![item.index].date}
+                    id={wordbookQuery.data!.words![item.index].id}
+                    createdAt={wordbookQuery.data!.words![item.index].createdAt}
                   />
                 </div>
               ))}

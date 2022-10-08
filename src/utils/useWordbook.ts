@@ -7,9 +7,10 @@ import {
 import authApi from "./authApi";
 
 export type Word = {
+  id: string;
   eng: string;
   rus: string;
-  date: string;
+  createdAt: Date;
 };
 export type Book = {
   private: boolean;
@@ -18,10 +19,14 @@ export type Book = {
   name: string;
   description?: string;
   words?: Array<Word>;
+  _count: { words: number };
 };
 
-const fetchWordbook = async (id?: string | string[]): Promise<Book> =>
-  (await authApi.get("/wordbooks/" + id)).data;
+const fetchWordbook = async (id?: string | string[]): Promise<Book> => {
+  const result = (await authApi.get("/wordbooks/" + id)).data;
+  console.log(result);
+  return result;
+};
 
 const useWordbook = (id?: string | string[]) => {
   const queryClient = useQueryClient();

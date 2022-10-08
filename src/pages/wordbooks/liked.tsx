@@ -74,7 +74,7 @@ const Liked = () => {
                     index={item.index + 1}
                     eng={like.data![item.index].eng}
                     rus={like.data![item.index].rus}
-                    date={like.data![item.index].date}
+                    createdAt={like.data![item.index].createdAt}
                   />
                 </div>
               ))}
