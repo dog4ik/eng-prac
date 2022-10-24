@@ -11,11 +11,11 @@ import { useLikes } from "../../utils/useLikes";
 import { Book } from "../../utils/useWordbook";
 interface Props extends Book {
   likes?: number;
+  count: number;
 }
-const WordBook = ({ name, words, id, likes, _count }: Props) => {
-  const lovedPercent = Math.round(
-    (100 * likes!) / (_count?.words ? _count.words : 0)
-  );
+
+const WordBook = ({ name, words, id, likes, count }: Props) => {
+  const lovedPercent = Math.round((100 * likes!) / count);
   return (
     <Link href={`/wordbooks/${encodeURIComponent(id)}`}>
       <div className="animate-fade-in h-full w-full px-3 group rounded-2xl dark:bg-neutral-700 aspect-video overflow-hidden hover:dark:bg-neutral-600 cursor-pointer duration-100 relative">
@@ -39,7 +39,7 @@ const WordBook = ({ name, words, id, likes, _count }: Props) => {
         </div>
         <div className="flex relative justify-between">
           <p className="pr-2 ">Words:</p>
-          <p className="">{_count.words}</p>
+          <p className="">{count}</p>
         </div>
       </div>
     </Link>
@@ -111,7 +111,8 @@ const Wordbooks = () => {
                   id={item.id}
                   words={item.words}
                   private={item.private}
-                  _count={item._count}
+                  count={item.words.length}
+                  createdAt={item.createdAt}
                 ></WordBook>
               ))}
 

@@ -3,7 +3,7 @@ import { AxiosError } from "axios";
 import authApi from "./authApi";
 
 export type User = {
-  name: string;
+  name?: string;
   email: string;
   role: string;
   id: string;

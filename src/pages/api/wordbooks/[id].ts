@@ -30,11 +30,13 @@ export default async function handler(
               createdAt: true,
             },
           },
+          _count: { select: { words: true } },
         },
       })
       .then((data) => {
         if (data?.private && data.userId != user_id) {
           res.status(403).send("its private :(");
+          return null;
         }
         return data;
       })

@@ -26,7 +26,7 @@ export default async function handler(
   const access_token = jwt.sign(
     { id: user!.id },
     process.env.ACCESS_TOKEN_SECRET!,
-    { expiresIn: "30m" }
+    { expiresIn: "20s" }
   );
   const refresh_token = jwt.sign(
     { id: user!.id },

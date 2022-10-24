@@ -1,9 +1,4 @@
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import authApi from "./authApi";
 
 export type Word = {
@@ -14,12 +9,12 @@ export type Word = {
 };
 export type Book = {
   private: boolean;
+  createdAt: Date;
   id: string;
   userId?: string;
   name: string;
   description?: string;
-  words?: Array<Word>;
-  _count: { words: number };
+  words: Word[];
 };
 
 const fetchWordbook = async (id?: string | string[]): Promise<Book> => {
@@ -29,12 +24,11 @@ const fetchWordbook = async (id?: string | string[]): Promise<Book> => {
 };
 
 const useWordbook = (id?: string | string[]) => {
-  const queryClient = useQueryClient();
   return useQuery(["wordbook", id], () => fetchWordbook(id), {
     refetchOnWindowFocus: false,
   });
 };
-const removeWordMutation = (id?: string[] | string) => {
+const RemoveWordMutation = (id?: string[] | string) => {
   const queryClient = useQueryClient();
   return useMutation(
     async (word: { word?: string[] }) => {
@@ -66,4 +60,4 @@ const removeWordMutation = (id?: string[] | string) => {
   );
 };
 
-export { useWordbook, fetchWordbook, removeWordMutation };
+export { useWordbook, fetchWordbook, RemoveWordMutation };

@@ -20,7 +20,7 @@ export default async function handler(
       new_access_token = jwt.sign(
         { id: token_data?.id },
         process.env.ACCESS_TOKEN_SECRET!,
-        { expiresIn: "30m" }
+        { expiresIn: "20s" }
       );
       console.log("token refreshed");
       res.status(200).json({ access_token: new_access_token! });

@@ -81,7 +81,7 @@ const Translate = (
                 }}
                 ref={input}
                 maxLength={500}
-                className="resize-none text-xl bg-white w-full flex-1 h-full outline-none"
+                className="resize-none scrollbar-thin scrollbar-track-gray-200 scrollbar-thumb-neutral-700 scrollbar-track-rounded-md scrollbar-thumb-rounded-md text-xl bg-white w-full flex-1 h-full outline-none"
               ></textarea>
               <div className="flex-col flex gap-2 pr-3">
                 <FiVolume2

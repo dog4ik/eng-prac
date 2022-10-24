@@ -3,10 +3,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/router";
 import React, { ReactElement, useContext, useEffect, useRef } from "react";
-import Layout from "../components/Layout";
 import Input from "../components/ui/Input";
 import test, { emailEx, passwordEx } from "../utils/TestInput";
-import { useUser } from "../utils/useUser";
 
 const SignUp = () => {
   const router = useRouter();
@@ -23,13 +21,11 @@ const SignUp = () => {
           localStorage.setItem("access_token", data.data.access_token);
           localStorage.setItem("refresh_token", data.data.refresh_token);
         }
-        console.log("success");
         router.push("/");
       },
       onError: async (err) => {
         console.log(err);
         email.current!.style.borderColor = "red";
-        console.log("error adding user");
       },
     }
   );

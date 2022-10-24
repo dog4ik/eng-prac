@@ -19,11 +19,11 @@ export default async function handler(
           return;
         }
         console.log(err.message);
-        res.status(401).send(err.message);
+        res.status(401).send("jwt expired");
         return;
       } else {
         user_id = token_data.id;
-        await prisma.user
+        const user = await prisma.user
           .findUnique({
             where: { id: user_id! },
             select: {
@@ -34,14 +34,14 @@ export default async function handler(
               role: true,
             },
           })
-          .then((user) => {
-            res.status(200).json(user);
-            return;
-          })
           .catch((err) => {
+            console.log(err);
+
             res.status(400).send(err);
             return;
           });
+        res.status(200).json(user);
+        return;
       }
     }
   );

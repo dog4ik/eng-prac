@@ -55,9 +55,8 @@ export default async function handler(
         if (err.response.status == 401) {
           const token = await refreshIAM();
           err.config.headers["Authorization"] = "Bearer " + token;
-          axios.request(err.config).then((data) => {
+          await axios.request(err.config).then((data) => {
             console.log(data);
-
             res.status(200).json(data.data);
             return;
           });

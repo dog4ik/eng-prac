@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["filteredRelationCount"]
 }
 
 datasource db {
@@ -28,7 +29,7 @@ model User {
 
 model Wordbook {
   id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   name        String?  @default("My Wordbook")
   description String?
@@ -40,7 +41,7 @@ model Wordbook {
 
 model Stats {
   id           String  @id @default(cuid())
-  user         User    @relation(fields: [userId], references: [id])
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   translated   Int     @default(0)
   rightanswers Int     @default(0)
@@ -52,7 +53,7 @@ model Stats {
 
 model Tests {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   name      String   @default("My Test")
   data      Json[]
@@ -71,11 +72,11 @@ model Words {
   eng         String
   rus         String
   createdAt   DateTime  @default(now())
-  Wordbook    Wordbook? @relation(fields: [wordbookId], references: [id])
+  Wordbook    Wordbook? @relation(fields: [wordbookId], references: [id], onDelete: Cascade)
   wordbookId  String?
-  LikedBy     User?     @relation("likedBy", fields: [likedById], references: [id])
+  LikedBy     User?     @relation("likedBy", fields: [likedById], references: [id], onDelete: Cascade)
   likedById   String?
-  LearnedBy   User?     @relation("learnedBy", fields: [learnedById], references: [id])
+  LearnedBy   User?     @relation("learnedBy", fields: [learnedById], references: [id], onDelete: Cascade)
   learnedById String?
 }
 
@@ -85,7 +86,7 @@ model Notifications {
   type      NotificationType @default(default)
   title     String
   text      String
-  User      User?            @relation(fields: [userId], references: [id])
+  User      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String?
 }
 

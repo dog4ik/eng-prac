@@ -1,134 +1,116 @@
-import Head from "next/head";
-import React, { useEffect, useState } from "react";
-import Error from "../../components/ui/Error";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { FiPlay, FiPlayCircle, FiX } from "react-icons/fi";
+import TestModal from "../../components/modals/TestModal";
+import Title from "../../components/Title";
 import Loading from "../../components/ui/Loading";
+import { useAllWordbooks } from "../../utils/useAllWordbooks";
 import { useLikes } from "../../utils/useLikes";
-import { Word } from "../../utils/useWordbook";
-type Props = {
-  word: Word;
-  isSelected: boolean;
-  onClick: (word: Word) => void;
-  isError: boolean;
+import useToggle from "../../utils/useToggle";
+import { useWordbook } from "../../utils/useWordbook";
+type CardProps = {
+  name: string;
+  wordsCount: number;
+  liked: number;
+  id: string;
+  setId: (id: string) => void;
 };
-const Option = ({ word, isSelected, isError, onClick }: Props) => {
+
+const generateColor = () =>
+  "#" +
+  Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, "0");
+const Test = ({ name, wordsCount, liked, id, setId }: CardProps) => {
   return (
-    <div
-      className="group cursor-pointer md:w-1/5 h-32 bg-neutral-600 rounded-lg relative flex items-center justify-center"
-      onClick={() => onClick(word)}
-    >
-      <p className="text-2xl truncate">{word?.eng}</p>
+    <div className="w-60 h-60 overflow-hidden flex flex-col bg-neutral-600 rounded-3xl relative">
       <div
-        className={`absolute select-none top-2 right-2 flex items-center justify-center border-white border-2 rounded-full w-6 h-6 ${
-          isSelected && !isError && "bg-green-400"
-        } ${isError && "bg-red-400"}`}
-      ></div>
+        onClick={() => setId(id)}
+        className="absolute bottom-12 right-1 rounded-full cursor-pointer bg-white border-neutral-400 border-4 h-16 w-16 overflow-hidden shadow-lg hover:scale-105 hover:shadow-xl duration-300 justify-center items-center flex"
+      >
+        <FiPlay className="w-2/3 h-2/3 fill-neutral-100 stroke-neutral-600" />
+      </div>
+
       <div
-        className={`w-1/2 group-hover:h-2/3 group-hover:w-2/3 duration-300 rounded-full blur-3xl absolute animate-blob ${
-          isError ? "bg-red-500 h-full" : "bg-sky-500 h-1/4 "
-        }`}
-      />
+        className="p-3 h-2/3 overflow-hidden "
+        style={{
+          backgroundColor: useMemo(() => generateColor(), []),
+        }}
+      >
+        <p className="text-2xl font-semibold">{name}</p>
+      </div>
+      <div className="h-1/3 bg-white flex justify-around text-black">
+        <div className="flex flex-col justify-evenly items-center">
+          <p className="text-xl font-semibold">{wordsCount}</p>
+          <p className="text-black/75 text-sm ">Words</p>
+        </div>
+        <div className="flex flex-col justify-evenly items-center">
+          <p className="text-xl font-semibold">{liked}</p>
+          <p className="text-black/75 text-sm ">Likes</p>
+        </div>
+        <div className="flex flex-col justify-between"></div>
+      </div>
     </div>
   );
 };
-const createQ = (words: Word[] | undefined) => {
-  if (!words) return { options: [], answer: "" };
-  const options: Word[] = [];
-  for (let i = 0; i < 4; i++) {
-    const index = Math.floor(Math.random() * words!.length);
-    options.push(words![index]);
-    words = words?.filter((item, i) => i != index);
+
+const calcCols = (itemWidth: number) => {
+  if (typeof window != "undefined") {
+    return Math.floor(window.innerWidth / itemWidth);
   }
-  const answer =
-    options[Math.floor(Math.random() * options.length)]?.rus.toLowerCase();
-  return { options: options, answer: answer };
 };
 const Learning = () => {
-  const likequery = useLikes();
-  let words = likequery.data;
-
-  const [selected, setSelected] = useState<Word>();
-  const [options, setOptions] = useState<Word[]>([]);
-  const [answer, setAnswer] = useState<string>();
-  const [error, setError] = useState<string | undefined>();
-
-  useEffect(() => {
-    if (likequery.data) {
-      const q = createQ(words);
-      setOptions(q.options);
-      setAnswer(q.answer);
-    }
-  }, [likequery.data]);
-
-  const handleAnswer = () => {
-    if (selected?.rus === answer) {
-      const q = createQ(words);
-      setOptions(q.options);
-      setAnswer(q.answer);
-      setSelected(undefined);
-      setError(undefined);
-    } else {
-      setError(selected?.rus);
-    }
+  const wordbooks = useAllWordbooks();
+  const likes = useLikes();
+  const ITEM_WIDTH = 260;
+  const [cols, setCols] = useState(calcCols(ITEM_WIDTH));
+  const [modalId, setModalId] = useState<string>();
+  const [testModal, setTestModal] = useToggle(false);
+  const handleResize = () => {
+    setCols(calcCols(ITEM_WIDTH));
   };
-  if (likequery.isError) return <Error />;
-  if (likequery.data === null) return <div>Logged out</div>;
-
-  if (likequery.isLoading) return <Loading />;
-
-  if (words && words.length < 4) return <div>need at least 4 words</div>;
-  if (likequery.data)
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+  if (wordbooks.isLoading || likes.isLoading) return <Loading />;
+  if (wordbooks.data && likes.data)
     return (
       <>
-        <Head>
-          <title>Learn</title>
-        </Head>
-
-        <div className="flex px-5 md:px-20 flex-col gap-5 flex-1 items-center">
-          <div className="p-10">
-            <span className="text-4xl" onClick={() => console.log(selected)}>
-              {answer}
-            </span>
-          </div>
-          <div className="w-full h-full md:flex grid grid-cols-2 items-center gap-5 justify-around">
-            <Option
-              key={0}
-              isError={error == options[0]?.rus}
-              word={options[0]}
-              isSelected={selected?.eng == options[0]?.eng}
-              onClick={(s: Word) => setSelected(s)}
-            />
-            <Option
-              key={1}
-              isError={error == options[1]?.rus}
-              word={options[1]}
-              isSelected={selected?.eng == options[1]?.eng}
-              onClick={(s: Word) => setSelected(s)}
-            />
-            <Option
-              key={2}
-              isError={error == options[2]?.rus}
-              word={options[2]}
-              isSelected={selected?.eng == options[2]?.eng}
-              onClick={(s: Word) => setSelected(s)}
-            />
-            <Option
-              key={3}
-              isError={error == options[3]?.rus}
-              word={options[3]}
-              isSelected={selected?.eng == options[3]?.eng}
-              onClick={(s: Word) => setSelected(s)}
-            />
-          </div>
-          <button
-            className={`px-10 py-5 rounded-md  transition duration-200 ${
-              error
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-green-600 hover:bg-green-700"
-            }`}
-            onClick={() => handleAnswer()}
+        <Title title="Learn" />
+        {testModal && <TestModal id={modalId!} handleClose={setTestModal} />}
+        <div className=" flex-1 flex flex-col">
+          <div
+            className="grid gap-5 place-items-center justify-center items-center auto-rows-auto"
+            style={{
+              gridTemplateColumns: `repeat(${cols},minmax(0,1fr))`,
+            }}
           >
-            Submit
-          </button>
+            {wordbooks.data?.map((wordbook) => (
+              <Test
+                key={wordbook.id}
+                setId={(id) => {
+                  setModalId(id);
+                  setTestModal(true);
+                }}
+                id={wordbook.id}
+                name={wordbook.name}
+                wordsCount={wordbook.words.length}
+                liked={wordbook.words?.reduce((sum, word) => {
+                  if (
+                    likes.data!.findIndex((item) => {
+                      return item.eng == word.eng;
+                    }) != -1
+                  )
+                    sum = sum + 1;
+                  return sum;
+                }, 0)}
+              />
+            ))}
+          </div>
         </div>
       </>
     );

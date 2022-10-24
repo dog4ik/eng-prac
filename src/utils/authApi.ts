@@ -33,9 +33,13 @@ authApi.interceptors.response.use(
   },
   async (error) => {
     if (error.response.status == 401 && error.response.data == "jwt expired") {
-      return await refreshToken().then(() => {
+      return await refreshToken().then(async () => {
         error.config.headers = { Authorization: "Bearer " + getAccess_token() };
-        return axios.request(error.config);
+        error.config.data = error.config.data
+          ? JSON.parse(error.config.data)
+          : {};
+        console.log(error);
+        return await axios.request(error.config);
       });
     }
     return Promise.reject(error);

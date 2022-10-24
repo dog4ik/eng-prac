@@ -2,7 +2,6 @@ import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import PrismaClient from "../../../../../prisma/PrismaClient";
 import TokenDecode from "../../../../utils/Tokendecode";
-import { Word } from "../../../../utils/useWordbook";
 export const prisma = PrismaClient;
 
 export default async function handler(
@@ -11,7 +10,7 @@ export default async function handler(
 ) {
   let user_id = TokenDecode(req.headers.authorization);
   if (user_id == null) {
-    res.status(401).send("token expired");
+    res.status(401).send("jwt expired");
     return;
   }
   if (req.query.id === undefined) {
@@ -19,35 +18,8 @@ export default async function handler(
     return;
   }
   if (req.method == "DELETE") {
-    // const old = await prisma.wordbook
-    //   .findFirst({
-    //     where: {
-    //       userId: user_id,
-    //       id: req.query.id.toString(),
-    //     },
-    //   })
-    //   .catch((err) => console.log(err));
-    // let filtered;
-    // if (typeof req.body.word == "string") {
-    //   filtered = old?.words.filter((item: any) => item.eng != req.body.word);
-    // }
-    // if (typeof req.body.word == "object") {
-    //   filtered = old?.words.filter(
-    //     (item: any) => !req.body.word.includes(item.eng)
-    //   );
-    // }
-    // await prisma.wordbook
-    //   .updateMany({
-    //     where: {
-    //       id: req.query.id.toString(),
-    //       userId: user_id,
-    //     },
-    //     data: {
-    //       words: {
-    //         set: filtered,
-    //       },
-    //     },
-    //   })
+    console.log(req.body);
+    if (!req.body.word) res.status(400).send("no words provided");
     await prisma.user
       .update({
         data: {
@@ -77,50 +49,26 @@ export default async function handler(
         .then((data) => {
           req.body.rus = data.data.translations[0].text;
         });
-      res.send("done");
     }
-    // await prisma.wordbook
-    //   .updateMany({
-    //     where: { id: req.query.id.toString(), userId: user_id },
-    //     data: {
-    //       words: {
-    //         push: { eng: req.body.eng, rus: req.body.rus, date: Date.now() },
-    //       },
-    //     },
-    //   })
-    //   .then((data) => res.status(200).send("add"))
-    //   .catch((err) => res.status(400).send(err));
-    await prisma.words.create({
+    await prisma.user.update({
       data: {
-        wordbookId: req.query.id.toString(),
-        eng: req.body.eng,
-        rus: req.body.rus,
-      },
-    });
-  }
-  if (req.method == "PATCH") {
-    await prisma.user
-      .update({
-        where: { id: user_id },
-        data: {
-          Wordbook: {
-            update: {
-              where: { id: req.query.id.toString() },
-              data: {
-                words: {
-                  update: {
-                    data: { rus: req.body.new_rus, eng: req.body.new_eng },
-                    where: { eng: req.body.eng },
-                  },
+        Wordbook: {
+          update: {
+            data: {
+              words: {
+                createMany: {
+                  data: { eng: req.body.eng, rus: req.body.rus },
+                  skipDuplicates: true,
                 },
               },
             },
+            where: { id: req.query.id.toString() },
           },
         },
-      })
-      .then((data) => {
-        res.status(200).send("Deleted");
-      });
+      },
+      where: { id: user_id },
+    });
+    res.send("done");
   }
   prisma.$disconnect();
 }

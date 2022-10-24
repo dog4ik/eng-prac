@@ -44,7 +44,7 @@ export default async function handler(
     const response: void | AxiosResponse<API[]> = await axios
       .get(`https://api.dictionaryapi.dev/api/v2/entries/en/${req.body.text}`)
       .catch((err) => {
-        res.status(200).send([]);
+        res.send([]);
         return;
       });
 

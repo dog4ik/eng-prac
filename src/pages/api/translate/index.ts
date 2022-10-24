@@ -36,6 +36,8 @@ export default async function handler(
     const translate_token = await prisma.helper
       .findFirst()
       .catch((err) => console.log("cant find token"));
+    console.log(translate_token?.ya_token);
+
     await axios
       .post(
         "https://translate.api.cloud.yandex.net/translate/v2/translate",
@@ -58,16 +60,17 @@ export default async function handler(
       .catch(async (err) => {
         if (err.response.status === 401 && err.response.data.code === 16) {
           const token = await refreshIAM();
-          err.config.headers["Authorization"] = "Bearer " + token;
+          console.log(token);
+          err.config.headers = { Authorization: "Bearer " + token };
+          err.config.data = JSON.parse(err.config.data);
           await axios.request(err.config).then((data) => {
             res.status(200).json(data.data);
-            return;
           });
+          return;
         } else {
           res.status(500).send("Service is unavailble");
           return;
         }
-        res.status(500).send("Service is unavaible");
       });
   } else {
     res.status(405).send(req.method + " is not supported");

@@ -7,11 +7,13 @@ import {
   FiLogOut,
   FiChevronDown,
   FiChevronUp,
+  FiMenu,
 } from "react-icons/fi";
 import usePopout from "../utils/usePopout";
 import { User, useUser } from "../utils/useUser";
 import { useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { useRouter } from "next/router";
+import SideBar from "./SideBar";
 const Notifications = () => {
   return (
     <div
@@ -45,10 +47,12 @@ const Popout = () => {
   };
   return (
     <ul className="absolute z-10 right-0 top-6 w-60 animate-fade-in rounded-xl bg-neutral-700 overflow-hidden">
-      <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer ">
-        <FiUser className="pointer-events-none" />
-        <p className="text-center after:border-b after:w-full">Profile</p>
-      </li>
+      <Link href={"/user"}>
+        <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer ">
+          <FiUser className="pointer-events-none" />
+          <p className="text-center after:border-b after:w-full">Profile</p>
+        </li>
+      </Link>
       <li
         onClick={() => handleLogout()}
         className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer"
@@ -102,7 +106,7 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
           <span className="absolute select-none pointer-events-none text-[10px] left-3 font-bold bottom-2 bg-red-500 rounded-full px-1">
             1
           </span>
-          {notification ? <Notifications /> : null}
+          {notification && <Notifications />}
         </div>
       </div>
       <div className="flex gap-2 justify-center items-center cursor-pointer">
@@ -125,7 +129,7 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
         ) : (
           <FiChevronDown size={25} className="pointer-events-none" />
         )}
-        <div className="relative">{profile ? <Popout /> : null}</div>
+        <div className="relative">{profile && <Popout />}</div>
       </div>
     </div>
   );
@@ -133,37 +137,19 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
 const Navbar = () => {
   const user = useUser();
   return (
-    <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-20 w-full md:flex px-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
-      <div className="flex gap-10 justify-around dark:text-white select-none text-lg">
-        <Link
-          href={"/"}
-          className="text-xl hover:scale-125 transition duration-300 p-5"
-        >
-          Home
-        </Link>
-        <Link
-          href={"/learn"}
-          className="text-xl hover:scale-125 transition duration-300 p-5"
-        >
-          Learn
-        </Link>
-        <Link
-          href={"/wordbooks"}
-          className="text-xl hover:scale-125 transition duration-300 p-5"
-        >
-          Wordbooks
-        </Link>
-        <Link
-          href={"/translate"}
-          className="text-xl hover:scale-125 transition duration-300 p-5"
-        >
-          Translate
-        </Link>
+    <>
+      <SideBar />
+      <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-20 w-full md:flex pr-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
+        <div className="flex flex-col rounded-full justify-center py-4 w-16 gap-1 items-center">
+          <div className="rounded-full w-10 h-10 flex justify-center items-center hover:bg-neutral-600">
+            <FiMenu size={25} className="stroke-2" />
+          </div>
+        </div>
+        {user.isLoading && <Loading />}
+        {user.isError && <GuestGreeting />}
+        {user.isSuccess && <UserGreeting user={user} />}
       </div>
-      {user.isLoading && <Loading />}
-      {user.isError && <GuestGreeting />}
-      {user.isSuccess && <UserGreeting user={user} />}
-    </div>
+    </>
   );
 };
 
