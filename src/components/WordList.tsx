@@ -1,22 +1,22 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import React, { useEffect, useRef, useState } from "react";
+import React, { forwardRef, Ref, useEffect, useRef } from "react";
 import { Word } from "../utils/useWordbook";
+import { useWordbookCtx } from "./context/WordbookCtx";
 import ListItem from "./ListItem";
 type ListProps = {
   words?: Word[];
   likes?: Word[];
   scrollListRef: React.RefObject<HTMLDivElement>;
-  onMenu: (event: React.MouseEvent, selected: Word[]) => void;
   totalSize: (total: number) => void;
 };
-const WordList = ({
-  words,
-  likes,
-  scrollListRef,
-  onMenu,
-  totalSize,
-}: ListProps) => {
-  const [selected, setSelected] = useState<Word[]>([]);
+const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
+  const {
+    selectedWords,
+    setSelectedWords,
+    setIsMenuOpen,
+    isMenuOpen,
+    handleMenu,
+  } = useWordbookCtx();
   const itemsRef = useRef<HTMLDivElement>(null);
   const rowVirtualizer = useVirtualizer({
     count: words?.length ?? 0,
@@ -31,7 +31,7 @@ const WordList = ({
         break;
       case "a":
         if (e.ctrlKey) {
-          setSelected(words ?? []);
+          setSelectedWords([...words!] ?? []);
           e.preventDefault();
         }
         break;
@@ -39,26 +39,46 @@ const WordList = ({
   };
   useEffect(() => {
     totalSize(rowVirtualizer.getTotalSize());
-  }, [words]);
-  useEffect(() => {
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [words]);
+
+  const handleClick = (e: MouseEvent) => {
+    const target = e.target as HTMLDivElement;
+    if (!itemsRef.current?.contains(target)) {
+      setSelectedWords([]);
+    }
+    setIsMenuOpen(false);
+  };
+  const handleScroll = (e: Event) => {
+    const target = e.target as HTMLDivElement;
+    if (scrollListRef.current?.contains(target) && isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  };
+  useEffect(() => {
+    document.addEventListener("click", handleClick);
+    scrollListRef.current?.addEventListener("scroll", handleScroll);
+    return () => {
+      document.removeEventListener("click", handleClick);
+      scrollListRef.current?.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const handleSelect = (event: React.MouseEvent, word: Word) => {
     if (
       event.button == 2 &&
-      selected.findIndex((item) => item.eng == word.eng) !== -1
+      selectedWords.findIndex((item) => item.eng == word.eng) !== -1
     )
       return;
     event.ctrlKey
-      ? selected.findIndex((item) => item.eng == word.eng) == -1
-        ? setSelected((prev) => [...prev, word])
-        : setSelected((prev) => prev.filter((s) => s.eng != word.eng))
-      : setSelected([word]);
+      ? selectedWords.findIndex((item) => item.eng == word.eng) == -1
+        ? setSelectedWords((prev) => [...prev, word])
+        : setSelectedWords((prev) => prev.filter((s) => s.eng != word.eng))
+      : setSelectedWords([word]);
   };
   return (
-    <div ref={itemsRef} tabIndex={0} onContextMenu={(e) => onMenu(e, selected)}>
+    <div ref={itemsRef} tabIndex={0} onContextMenu={(e) => handleMenu(e)}>
       {rowVirtualizer.getVirtualItems().map((item) => (
         <ListItem
           postion={item.start}
@@ -67,8 +87,9 @@ const WordList = ({
             handleSelect(event, word);
           }}
           isSelected={
-            selected.findIndex((word) => word.eng == words![item.index].eng) !=
-            -1
+            selectedWords.findIndex(
+              (word) => word.eng == words![item.index].eng
+            ) != -1
               ? true
               : false
           }

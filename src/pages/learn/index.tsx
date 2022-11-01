@@ -6,6 +6,7 @@ import TestModal from "../../components/modals/TestModal";
 import Title from "../../components/Title";
 import Loading from "../../components/ui/Loading";
 import { useAllWordbooks } from "../../utils/useAllWordbooks";
+import useGridCols from "../../utils/useGrid";
 import { useLikes } from "../../utils/useLikes";
 import useToggle from "../../utils/useToggle";
 import { useWordbook } from "../../utils/useWordbook";
@@ -55,27 +56,14 @@ const Test = ({ name, wordsCount, liked, id, setId }: CardProps) => {
   );
 };
 
-const calcCols = (itemWidth: number) => {
-  if (typeof window != "undefined") {
-    return Math.floor(window.innerWidth / itemWidth);
-  }
-};
 const Learning = () => {
   const wordbooks = useAllWordbooks();
   const likes = useLikes();
   const ITEM_WIDTH = 260;
-  const [cols, setCols] = useState(calcCols(ITEM_WIDTH));
+  const cols = useGridCols(ITEM_WIDTH);
   const [modalId, setModalId] = useState<string>();
   const [testModal, setTestModal] = useToggle(false);
-  const handleResize = () => {
-    setCols(calcCols(ITEM_WIDTH));
-  };
-  useEffect(() => {
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+
   if (wordbooks.isLoading || likes.isLoading) return <Loading />;
   if (wordbooks.data && likes.data)
     return (
@@ -85,9 +73,7 @@ const Learning = () => {
         <div className=" flex-1 flex flex-col">
           <div
             className="grid gap-5 place-items-center justify-center items-center auto-rows-auto"
-            style={{
-              gridTemplateColumns: `repeat(${cols},minmax(0,1fr))`,
-            }}
+            style={cols}
           >
             {wordbooks.data?.map((wordbook) => (
               <Test

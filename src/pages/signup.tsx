@@ -106,7 +106,6 @@ const SignUp = () => {
               required
               type="email"
               autoComplete="email"
-              id="email"
             ></Input>
             <Input
               ref={password}
@@ -117,8 +116,7 @@ const SignUp = () => {
               label="Password"
               required
               type="password"
-              autoComplete="password"
-              id="password"
+              autoComplete="new-password"
             ></Input>
             <Input
               ref={r_password}
@@ -129,8 +127,7 @@ const SignUp = () => {
               label="Repeat Password"
               required
               type="password"
-              autoComplete="password"
-              id="password"
+              autoComplete="new-password"
             ></Input>
             {signupMutation.isLoading ? (
               <Loading />

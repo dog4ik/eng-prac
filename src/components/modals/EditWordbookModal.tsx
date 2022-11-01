@@ -63,9 +63,10 @@ const EditWordbookModal = ({ handleClose, id }: ModalProps) => {
         <div className="flex justify-evenly self-center w-full gap-2">
           <div className="w-52 h-52  shrink-0 relative">
             <Image
-              src=" https://www.placecage.com/300/300"
+              src="https://images.unsplash.com/photo-1667163589961-5d1f2a74b410?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80"
               alt="placeholder"
-              layout="fill"
+              height={300}
+              width={300}
               className="aspect-square drop-shadow-2xl shadow-xl object-cover object-center cursor-pointer"
               priority
             />

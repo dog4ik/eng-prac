@@ -10,22 +10,20 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "POST") {
-    if (req.body.text.trim() == "" || req.body.text.split(" ").length > 1) {
+    if (req.body.text.trim() == "") {
       res.send([]);
       return;
     }
     const response = await axios
       .get<ApiWord[]>(
-        `https://api.datamuse.com/words?rel_syn=${encodeURIComponent(
-          req.body.text
-        )}`
+        `https://api.datamuse.com/sug?s=${encodeURIComponent(req.body.text)}`
       )
       .then((data) => data.data)
       .catch((err) => {
         res.send([]);
         return;
       });
-    console.log(encodeURIComponent("try to kill"));
+    console.log(response);
 
     res.status(200).send(response);
     return;

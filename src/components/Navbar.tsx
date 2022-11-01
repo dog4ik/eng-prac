@@ -14,6 +14,7 @@ import { User, useUser } from "../utils/useUser";
 import { useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import SideBar from "./SideBar";
+import useToggle from "../utils/useToggle";
 const Notifications = () => {
   return (
     <div
@@ -136,11 +137,15 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
 };
 const Navbar = () => {
   const user = useUser();
+  const [isExpanded, setIsExpanded] = useToggle(false);
   return (
     <>
-      <SideBar />
+      <SideBar isExpanded={isExpanded} />
       <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-20 w-full md:flex pr-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
-        <div className="flex flex-col rounded-full justify-center py-4 w-16 gap-1 items-center">
+        <div
+          onClick={() => setIsExpanded()}
+          className="flex flex-col rounded-full justify-center py-4 w-16 gap-1 items-center"
+        >
           <div className="rounded-full w-10 h-10 flex justify-center items-center hover:bg-neutral-600">
             <FiMenu size={25} className="stroke-2" />
           </div>

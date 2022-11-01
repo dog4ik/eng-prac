@@ -91,7 +91,11 @@ const User = () => {
         <div className="w-full px-5 md:px-20 flex flex-col flex-1">
           <Header
             type="Profile"
-            data={{ name: user.data?.name ? user.data.name : user.data.email }}
+            data={{
+              name: user.data?.name ? user.data.name : user.data.email,
+              picture:
+                "https://images.unsplash.com/photo-1666844550308-9b47df48af49?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+            }}
             isOwner={true}
             setEditModal={setToggleUser}
           />

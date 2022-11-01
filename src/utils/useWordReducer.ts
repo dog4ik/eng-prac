@@ -1,6 +1,42 @@
 import { useReducer } from "react";
 import { Word } from "./useWordbook";
+const sortWords = (
+  words: Word[],
+  direction: "asc" | "desc" | "default",
+  column: keyof Word
+) => {
+  if (direction == "desc")
+    return words?.sort((a, b) => {
+      if (
+        a[column].toString().toLocaleLowerCase() >
+        b[column].toString().toLocaleLowerCase()
+      )
+        return -1;
+      if (
+        a[column].toString().toLocaleLowerCase() <
+        b[column].toString().toLocaleLowerCase()
+      )
+        return 1;
+      return 0;
+    });
 
+  if (direction == "default") return words;
+
+  if (direction == "asc")
+    return words?.sort((a, b) => {
+      if (
+        a[column].toString().toLocaleLowerCase() <
+        b[column].toString().toLocaleLowerCase()
+      )
+        return -1;
+      if (
+        a[column].toString().toLocaleLowerCase() >
+        b[column].toString().toLocaleLowerCase()
+      )
+        return 1;
+      return 0;
+    });
+};
 const wordReducer = (
   state: {
     words: Word[] | undefined;
@@ -15,43 +51,6 @@ const wordReducer = (
     sortTitle?: keyof Word;
   }
 ) => {
-  const sortWords = (
-    words: Word[],
-    direction: "asc" | "desc" | "default",
-    column: keyof Word
-  ) => {
-    if (direction == "desc")
-      return words?.sort((a, b) => {
-        if (
-          a[column].toString().toLocaleLowerCase() >
-          b[column].toString().toLocaleLowerCase()
-        )
-          return -1;
-        if (
-          a[column].toString().toLocaleLowerCase() <
-          b[column].toString().toLocaleLowerCase()
-        )
-          return 1;
-        return 0;
-      });
-
-    if (direction == "default") return words;
-
-    if (direction == "asc")
-      return words?.sort((a, b) => {
-        if (
-          a[column].toString().toLocaleLowerCase() <
-          b[column].toString().toLocaleLowerCase()
-        )
-          return -1;
-        if (
-          a[column].toString().toLocaleLowerCase() >
-          b[column].toString().toLocaleLowerCase()
-        )
-          return 1;
-        return 0;
-      });
-  };
   let words = { ...state };
   switch (action.type) {
     case "sort": {
