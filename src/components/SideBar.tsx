@@ -1,6 +1,13 @@
 import Link from "next/link";
 import React, { ReactNode } from "react";
-import { FiBook, FiCheck, FiGlobe, FiHeart, FiHome } from "react-icons/fi";
+import {
+  FiBold,
+  FiBook,
+  FiCheck,
+  FiGlobe,
+  FiHeart,
+  FiHome,
+} from "react-icons/fi";
 
 const MenuIcon = ({
   children,
@@ -55,6 +62,9 @@ const SideBar = ({ isExpanded }: { isExpanded: boolean }) => {
 
         <MenuIcon href={"/translate"} title="Translate" isExpanded={isExpanded}>
           <FiGlobe size={25} className="stroke-2 group-hover:fill-white" />
+        </MenuIcon>
+        <MenuIcon href={"/wordle"} title="Wordle" isExpanded={isExpanded}>
+          <FiBold size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
       </div>
     </div>
