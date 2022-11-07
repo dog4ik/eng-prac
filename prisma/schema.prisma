@@ -25,6 +25,7 @@ model User {
   Stats         Stats[]
   Tests         Tests[]
   Notifications Notifications[]
+  Wordle        Wordle[]
 }
 
 model Wordbook {
@@ -88,6 +89,17 @@ model Notifications {
   text      String
   User      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String?
+}
+
+model Wordle {
+  id         String    @id @default(cuid())
+  word       String
+  maxTries   Int       @default(6)
+  tries      String[]  @default([])
+  User       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?
+  createdAt  DateTime  @default(now())
+  finishDate DateTime?
 }
 
 enum NotificationType {
