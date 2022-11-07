@@ -14,6 +14,7 @@ const ContextMenu = ({
   const deleteMutation = RemoveWordMutation(id);
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
   const [contextmenu, setContextmenu] = useToggle(false);
+  const [selected, setSelected] = useState<Word[]>([]);
 
   const handleMenu = useCallback(
     (e: React.MouseEvent, selected: Word[]) => {

@@ -106,17 +106,14 @@ const Login = () => {
               label="Email"
               required
               type="email"
-              autoComplete="email"
-              id="email"
-              name="email"
+              autoComplete="username"
             ></Input>
             <Input
               ref={password}
               label="Password"
               required
               type="password"
-              autoComplete="password"
-              id="password"
+              autoComplete="current-password"
               name="password"
             ></Input>
             {mutation.isLoading ? (
@@ -126,10 +123,11 @@ const Login = () => {
                 Login
               </button>
             )}
-            <Link href={"/signup"}>
-              <a className="text-center font-semibold text-blue-600">
-                Register
-              </a>
+            <Link
+              href={"/signup"}
+              className="text-center font-semibold text-blue-600"
+            >
+              Register
             </Link>
           </form>
         </div>

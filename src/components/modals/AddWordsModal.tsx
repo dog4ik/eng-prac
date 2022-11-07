@@ -53,6 +53,8 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
     {
       onSuccess: () => {
         setOpen();
+      },
+      onSettled: () => {
         queryClient.invalidateQueries(["wordbook", id]);
       },
     }

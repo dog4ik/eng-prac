@@ -1,4 +1,3 @@
-import { useVirtualizer } from "@tanstack/react-virtual";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import Loading from "../../components/ui/Loading";
@@ -8,13 +7,55 @@ import { useLikes } from "../../utils/useLikes";
 import ListBar from "../../components/ListBar";
 import useWordReducer from "../../utils/useWordReducer";
 import WordList from "../../components/WordList";
-
+import {
+  ExpandedRow,
+  MenuRow,
+  MenuWrapper,
+} from "../../components/MenuWrapper";
+import WordbookCtxProvider, {
+  useWordbookCtx,
+} from "../../components/context/WordbookCtx";
+type ContextMenuProps = {};
+const ConextMenu = ({}: ContextMenuProps) => {
+  const {
+    selectedWords,
+    setSelectedWords,
+    anchorPoint,
+    setIsMenuOpen,
+    isMenuOpen,
+  } = useWordbookCtx();
+  const { x, y } = anchorPoint;
+  if (!isMenuOpen) return null;
+  else
+    return (
+      <MenuWrapper x={x} y={y}>
+        <MenuRow
+          title="Remove From Likes"
+          onClick={() => setIsMenuOpen(false)}
+        />
+        <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+        <ExpandedRow title="Add" x={x} y={y}>
+          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+        </ExpandedRow>
+        <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+        <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+        <ExpandedRow title="Add" x={x} y={y + 384}>
+          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
+        </ExpandedRow>
+      </MenuWrapper>
+    );
+};
 const Liked = () => {
   const like = useLikes();
   const [virtualListSize, setVirtualListSize] = useState<null | number>(null);
   const [words, dispatch] = useWordReducer(like.data);
   const scrollListRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    console.log("fire");
     if (like.data) {
       dispatch({
         type: "setWords",
@@ -41,60 +82,61 @@ const Liked = () => {
         <Head>
           <title>{like.isSuccess ? "Liked words" : "Loading..."}</title>
         </Head>
-
-        <div
-          className="w-full px-5 md:px-20 flex-1 overflow-y-auto"
-          ref={scrollListRef}
-        >
+        <WordbookCtxProvider>
+          <ConextMenu />
           <div
-            className="relative"
-            style={{
-              height: `${virtualListSize}px`,
-            }}
+            className="w-full px-5 md:px-20 flex-1 overflow-y-auto"
+            ref={scrollListRef}
           >
-            <PageHeader
-              data={{
-                picture:
-                  "https://images.unsplash.com/photo-1571172964276-91faaa704e1f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
-                name: "Liked Words",
-                count: like.data.length,
+            <div
+              className="relative"
+              style={{
+                height: `${virtualListSize}px`,
               }}
-              isOwner={false}
-              type="Wordbook"
-            />
-            <ListBar
-              onSort={(title) => {
-                dispatch({
-                  type: "sort",
-                  words: [...like.data],
-                  sortTitle: title,
-                });
-              }}
-              onClearSearch={() => {
-                dispatch({
-                  type: "search",
-                  searchQuery: "",
-                  words: [...like.data],
-                });
-              }}
-              onSearch={(event) =>
-                dispatch({
-                  type: "search",
-                  searchQuery: event.target.value,
-                  words: [...like.data],
-                })
-              }
-              words={words}
-            />
-            <WordList
-              likes={like.data}
-              words={words.words}
-              scrollListRef={scrollListRef}
-              onMenu={() => null}
-              totalSize={(total) => setVirtualListSize(total)}
-            />
+            >
+              <PageHeader
+                data={{
+                  picture:
+                    "https://images.unsplash.com/photo-1571172964276-91faaa704e1f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+                  name: "Liked Words",
+                  count: like.data.length,
+                }}
+                isOwner={false}
+                type="Wordbook"
+              />
+              <ListBar
+                onSort={(title) => {
+                  dispatch({
+                    type: "sort",
+                    words: [...like.data],
+                    sortTitle: title,
+                  });
+                }}
+                onClearSearch={() => {
+                  dispatch({
+                    type: "search",
+                    searchQuery: "",
+                    words: [...like.data],
+                  });
+                }}
+                onSearch={(event) =>
+                  dispatch({
+                    type: "search",
+                    searchQuery: event.target.value,
+                    words: [...like.data],
+                  })
+                }
+                words={words}
+              />
+              <WordList
+                likes={like.data}
+                words={words.words}
+                scrollListRef={scrollListRef}
+                totalSize={(total) => setVirtualListSize(total)}
+              />
+            </div>
           </div>
-        </div>
+        </WordbookCtxProvider>
       </>
     );
 };
