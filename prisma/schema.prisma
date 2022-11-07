@@ -92,13 +92,15 @@ model Notifications {
 }
 
 model Wordle {
-  id       String   @id @default(cuid())
-  word     String
-  maxTries Int      @default(7)
-  tries    String[]
-  User     User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   String?
-}
+  id         String    @id @default(cuid())
+  word       String
+  maxTries   Int       @default(6)
+  tries      String[]  @default([])
+  User       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String?
+  createdAt  DateTime  @default(now())
+  finishDate DateTime?
+
 
 enum NotificationType {
   default
