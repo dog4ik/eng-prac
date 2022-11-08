@@ -160,11 +160,15 @@ const Wordle = (
   };
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.charCodeAt(0) >= 97 && e.key.charCodeAt(0) <= 122)
-        addToAnswer(e.key);
-      if (e.key === "Backspace")
+      if (
+        e.key.toLocaleLowerCase().charCodeAt(0) >= 97 &&
+        e.key.toLowerCase().charCodeAt(0) <= 122 &&
+        e.key.length === 1
+      )
+        addToAnswer(e.key.toLocaleLowerCase());
+      if (e.code === "Backspace")
         setAnswer((prev) => prev.slice(length, length - 1));
-      if (e.key === "Enter") submitAnswer();
+      if (e.code === "Enter") submitAnswer();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
