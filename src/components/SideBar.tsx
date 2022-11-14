@@ -7,6 +7,7 @@ import {
   FiGlobe,
   FiHeart,
   FiHome,
+  FiTv,
 } from "react-icons/fi";
 
 const MenuIcon = ({
@@ -65,6 +66,9 @@ const SideBar = ({ isExpanded }: { isExpanded: boolean }) => {
         </MenuIcon>
         <MenuIcon href={"/wordle"} title="Wordle" isExpanded={isExpanded}>
           <FiBold size={25} className="stroke-2 group-hover:fill-white" />
+        </MenuIcon>
+        <MenuIcon href={"/theater"} title="Theater" isExpanded={isExpanded}>
+          <FiTv size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
       </div>
     </div>
