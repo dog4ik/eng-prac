@@ -8,8 +8,15 @@ async function refreshIAM() {
       yandexPassportOauthToken: process.env.TRANSLATE_TOKEN,
     })
     .then(async (res) => {
-      await prisma.helper.updateMany({
-        data: { ya_token: res.data.iamToken },
+      await prisma.helper.upsert({
+        create: {
+          id: "token",
+          ya_token: res.data.iamToken,
+        },
+        update: {
+          ya_token: res.data.iamToken,
+        },
+        where: { id: "token" },
       });
       console.log("yandex token updated");
 
@@ -36,7 +43,7 @@ export default async function handler(
     const translate_token = await prisma.helper
       .findFirst()
       .catch((err) => console.log("cant find token"));
-    console.log(translate_token?.ya_token);
+    console.log(req.body.text);
 
     await axios
       .post(

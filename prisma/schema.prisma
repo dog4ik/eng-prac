@@ -100,7 +100,40 @@ model Wordle {
   userId     String?
   createdAt  DateTime  @default(now())
   finishDate DateTime?
+}
 
+model Episode {
+  id           String   @id @default(cuid())
+  title        String
+  src          String
+  externalSubs String[]
+  releaseYear  DateTime
+  poster       String?
+  Season       Season?  @relation(fields: [seasonId], references: [id])
+  seasonId     String?
+  imdbId       String?
+}
+
+model Season {
+  id          String    @id @default(cuid())
+  Episodes    Episode[]
+  number      Int
+  releaseYear DateTime
+  poster      String?
+  Series      Series?   @relation(fields: [seriesId], references: [id])
+  seriesId    String?
+  imdbId      String?
+}
+
+model Series {
+  Season        Season[]
+  id            String   @id @default(cuid())
+  totalEpisodes Int
+  title         String
+  releaseYear   DateTime
+  poster        String?
+  imdbId        String?
+}
 
 enum NotificationType {
   default
