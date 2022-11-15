@@ -8,6 +8,7 @@ import { FiBook, FiHeart, FiVolume2 } from "react-icons/fi";
 import useAudioMutation from "../utils/useAudioMutation";
 import useDebounce from "../utils/useDebounce";
 import { useLikeMutaton, useLikes, useUnLikeMutation } from "../utils/useLikes";
+import useToggle from "../utils/useToggle";
 type ApiWord = {
   word: string;
   score: number;
@@ -15,6 +16,7 @@ type ApiWord = {
 type AutoCompleteProps = {
   word: string;
   onClick: (word: string) => void;
+  handleClose: () => void;
 };
 export const getServerSideProps: GetServerSideProps<{
   text?: string | string[] | null;
@@ -22,7 +24,7 @@ export const getServerSideProps: GetServerSideProps<{
   const text = context.query.text ? context.query.text : null;
   return { props: { text } };
 };
-const AutoComplete = ({ word, onClick }: AutoCompleteProps) => {
+const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
   const autoCompleteMutation = useMutation(
     async (word: { text: string | undefined }) =>
       await axios
@@ -32,15 +34,32 @@ const AutoComplete = ({ word, onClick }: AutoCompleteProps) => {
         )
         .then((data) => data.data)
   );
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     autoCompleteMutation.mutate({ text: word });
   }, [word]);
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLDivElement;
+      if (containerRef.current && !containerRef.current.contains(target)) {
+        handleClose();
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
   if (autoCompleteMutation.data?.length == 0) return null;
   if (autoCompleteMutation.isLoading)
     return (
-      <div className="absolute bg-white rounded-lg divide-y left-0 right-0 top-20 w-full border border-black/50 ">
-        {[...Array(10)].map((_, index) => (
-          <div key={index} className="px-5 cursor-pointer py-2 w-full">
+      <div
+        ref={containerRef}
+        className="absolute bg-white rounded-lg divide-y left-0 right-0 top-20 w-full border border-black/50 "
+      >
+        {[...Array(9)].map((_, index) => (
+          <div
+            key={index}
+            className="px-5 flex justify-between items-center cursor-pointer py-2 w-full"
+          >
             <div className="h-6">
               <div className="w-16 h-2/3 rounded-full bg-neutral-300 animate-pulse"></div>
             </div>
@@ -49,22 +68,54 @@ const AutoComplete = ({ word, onClick }: AutoCompleteProps) => {
       </div>
     );
   return (
-    <div className="absolute bg-white rounded-lg divide-y left-0 right-0 top-20 w-full border border-black/50">
-      {autoCompleteMutation.data?.map((syn) => (
-        <div
-          key={syn.word}
-          className="px-5 cursor-pointer py-2 w-full"
-          onClick={(e) => {
-            onClick(syn.word);
-          }}
-        >
-          <div className="">
-            <span>{syn.word}</span>
+    <div
+      ref={containerRef}
+      className="absolute bg-white rounded-lg divide-y left-0 right-0 top-20 w-full border border-black/50"
+    >
+      {autoCompleteMutation.data
+        ?.filter((item) => item.word != word)
+        .map((syn) => (
+          <div
+            key={syn.word}
+            className="px-5 flex justify-between items-center cursor-pointer py-2 w-full"
+            onClick={(e) => {
+              onClick(syn.word);
+            }}
+          >
+            <div className="">
+              <span>{syn.word}</span>
+            </div>
+            <div className="flex gap-0.5 h-3 w-20 items-center">
+              <div
+                className={`w-1/4 h-full rounded-l-full ${
+                  syn.score < 300
+                    ? "bg-red-500"
+                    : syn.score < 500
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
+                }`}
+              ></div>
+              <div
+                className={`w-1/4 h-full ${
+                  syn.score < 300
+                    ? "bg-neutral-300"
+                    : syn.score < 500
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
+                }`}
+              ></div>
+              <div
+                className={`w-1/4 h-full rounded-r-full ${
+                  syn.score < 500 ? "bg-neutral-300" : "bg-green-500"
+                }`}
+              ></div>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
     </div>
   );
+
+  return null;
 };
 
 const Translate = (
@@ -73,6 +124,7 @@ const Translate = (
   const input = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useToggle(false);
   const debouncedSearch = useDebounce(searchTerm, 500);
   const likesQuery = useLikes();
   const likeMutation = useLikeMutaton();
@@ -100,7 +152,10 @@ const Translate = (
   }, [debouncedSearch]);
   useEffect(() => {
     input.current?.focus();
-    if (props.text) input.current!.value = props.text.toString();
+    if (props.text) {
+      input.current!.value = props.text.toString();
+      setSearchTerm(props.text.toString());
+    }
   }, []);
 
   return (
@@ -117,6 +172,7 @@ const Translate = (
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
+                    setIsAutocompleteOpen(true);
                   }}
                   ref={input}
                   maxLength={500}
@@ -130,12 +186,16 @@ const Translate = (
                   />
                 </div>
               </div>
-              <AutoComplete
-                word={debouncedSearch}
-                onClick={(word) => {
-                  setSearchTerm(word);
-                }}
-              />
+              {isAutocompleteOpen && (
+                <AutoComplete
+                  word={debouncedSearch}
+                  onClick={(word) => {
+                    setSearchTerm(word);
+                    setIsAutocompleteOpen(false);
+                  }}
+                  handleClose={() => setIsAutocompleteOpen(false)}
+                />
+              )}
             </div>
             <div className="w-1/2">
               <div className="w-full h-full flex outline-none bg-white ">
