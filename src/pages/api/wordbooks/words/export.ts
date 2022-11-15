@@ -1,8 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import PrismaClient from "../../../../../prisma/PrismaClient";
 import TokenDecode from "../../../../utils/Tokendecode";
-export const prisma = PrismaClient;
-
+const prisma = PrismaClient;
+type BodyProps = {
+  file: string;
+  id: string;
+};
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -12,8 +15,8 @@ export default async function handler(
     res.status(401).send("jwt expired");
     return;
   }
-
-  let array: Array<string> = req.body.file.replaceAll(`\r`, "").split("\n");
+  const body = req.body as BodyProps;
+  let array: Array<string> = body.file.replaceAll(/\r/g, "").split(/\n+/g);
 
   let failed = 0;
 
@@ -23,23 +26,20 @@ export default async function handler(
       failed++;
       continue;
     }
-    const [source, target, first, second] = array[i].split(",");
-    words.push({ eng: first, rus: second });
+    const [firstLang, secondLang, first, second] = array[i].split(",");
+    if (firstLang === "English" && secondLang === "Russian") {
+      if (first.search(/[a-z]/i) == -1) continue;
+      if (second.search(/[а-я]/i) == -1) continue;
+      words.push({ eng: first, rus: second });
+    }
+    if (firstLang === "Russian" && secondLang === "English") {
+      if (first.search(/[а-я]/i) == -1) continue;
+      if (second.search(/[a-z]/i) == -1) continue;
+      words.push({ eng: second, rus: first });
+    }
   }
-  // const old = await prisma.wordbook.findMany({
-  //   where: { userId: user_id, id: req.body.id },
-  // });
-  // await prisma.wordbook
-  //   .updateMany({
-  //     where: {
-  //       id: req.body.id,
-  //     },
-  //     data: {
-  //       words: {
-  //         set: old[0].words.length == 0 ? words : [...old[0].words, ...words],
-  //       },
-  //     },
-  //   })
+  console.log(failed);
+
   await prisma.user
     .update({
       data: {
@@ -48,7 +48,7 @@ export default async function handler(
             data: {
               words: { createMany: { data: words, skipDuplicates: true } },
             },
-            where: { id: req.body.id },
+            where: { id: body.id },
           },
         },
       },

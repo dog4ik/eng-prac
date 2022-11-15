@@ -72,7 +72,7 @@ const Wordbook = (
       if (virtualListSize === null)
         setVirtualListSize(wordbookQuery.data.words.length * 64 + 300);
     }
-  }, [wordbookQuery.isSuccess, wordbookQuery.data?.words]);
+  }, [wordbookQuery.isSuccess, wordbookQuery.dataUpdatedAt]);
 
   if (wordbookQuery.isLoading) return <Loading />;
   if (wordbookQuery.isError) return <Error />;

@@ -29,6 +29,7 @@ export default async function handler(
               id: true,
               createdAt: true,
             },
+            orderBy: { createdAt: "desc" },
           },
           _count: { select: { words: true } },
         },

@@ -33,7 +33,7 @@ export default async function handler(
       .findFirst({
         where: { id: user_id },
         select: {
-          likedWords: true,
+          likedWords: { orderBy: { createdAt: "desc" } },
         },
       })
       .catch((err) => res.status(400).send("words are unavailble"));

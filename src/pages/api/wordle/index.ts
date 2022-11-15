@@ -52,7 +52,7 @@ export default async function handler(
         data: {
           userId: user_id,
           maxTries: body.maxTries,
-          word: words[Math.floor(Math.random() * words.length)],
+          word: words[Math.floor(Math.random() * words.length)].toLowerCase(),
         },
       })
       .then((data) => res.status(201).send(data))

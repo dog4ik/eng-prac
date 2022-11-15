@@ -43,13 +43,6 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [words]);
 
-  const handleClick = (e: MouseEvent) => {
-    const target = e.target as HTMLDivElement;
-    if (!itemsRef.current?.contains(target)) {
-      setSelectedWords([]);
-    }
-    setIsMenuOpen(false);
-  };
   const handleScroll = (e: Event) => {
     const target = e.target as HTMLDivElement;
     if (scrollListRef.current?.contains(target) && isMenuOpen) {
@@ -57,6 +50,13 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
     }
   };
   useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLDivElement;
+      if (!itemsRef.current?.contains(target)) {
+        setSelectedWords([]);
+      }
+      setIsMenuOpen(false);
+    };
     document.addEventListener("click", handleClick);
     scrollListRef.current?.addEventListener("scroll", handleScroll);
     return () => {

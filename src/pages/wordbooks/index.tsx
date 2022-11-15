@@ -74,7 +74,7 @@ const Wordbooks = () => {
   >("All");
   useEffect(() => {
     if (wordbooks.data) setFilteredWordbooks([...wordbooks.data]);
-  }, [wordbooks.isSuccess]);
+  }, [wordbooks.data]);
 
   const handleFilter = (filter: typeof selectedFilter) => {
     if (filter === "All") {

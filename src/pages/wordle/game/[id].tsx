@@ -121,17 +121,24 @@ const Wordle = (
 ) => {
   const queryClient = useQueryClient();
   const [answer, setAnswer] = useState("");
+  const [currentRow, setCurrentRow] = useState<number>(0);
+  const [tries, setTries] = useState<string[]>([]);
   const [wordleModal, setWordleModal] = useToggle(false);
   const wordleQuery = useQuery<WordleType, AxiosError>(
     ["wordle", props.id],
     () => authApi.get("wordle/" + props.id).then((data) => data.data),
-    { retry: false }
+    {
+      retry: false,
+      onSuccess(data) {
+        setCurrentRow(data.tries.length);
+        setTries(data.tries);
+      },
+    }
   );
   const submitMutation = useMutation(
     (word: { word: string }) => authApi.post("wordle/" + props.id, word),
     {
       onSuccess(data, variables, context) {
-        setAnswer("");
         queryClient.invalidateQueries(["wordle", props.id]);
       },
     }
@@ -143,9 +150,15 @@ const Wordle = (
     )
       return;
     submitMutation.mutate({ word: answer });
-    (wordleQuery.data.word === answer ||
-      wordleQuery.data.tries.length + 1 == wordleQuery.data.maxTries) &&
+    setCurrentRow((prev) => prev + 1);
+    setTries([...tries, answer]);
+    setAnswer("");
+    if (
+      wordleQuery.data.word === answer ||
+      (currentRow ?? 0) + 1 == wordleQuery.data.maxTries
+    ) {
       setWordleModal(true);
+    }
   };
 
   const addToAnswer = (str: string) => {
@@ -168,7 +181,7 @@ const Wordle = (
         addToAnswer(e.key.toLocaleLowerCase());
       if (e.code === "Backspace")
         setAnswer((prev) => prev.slice(length, length - 1));
-      if (e.code === "Enter") submitAnswer();
+      if (e.code === "Enter") !submitMutation.isLoading && submitAnswer();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
@@ -177,12 +190,12 @@ const Wordle = (
   if (wordleQuery.isSuccess)
     return (
       <>
-        {(wordleQuery.data.tries.includes(wordleQuery.data.word) ||
-          wordleQuery.data.tries.length == wordleQuery.data.maxTries) &&
+        {(tries.includes(wordleQuery.data.word) ||
+          tries.length == wordleQuery.data.maxTries) &&
           wordleModal && (
             <WordleModal
               handleClose={() => setWordleModal(false)}
-              isWin={wordleQuery.data.tries.includes(wordleQuery.data.word)}
+              isWin={tries.includes(wordleQuery.data.word)}
               word={wordleQuery.data.word}
             />
           )}
@@ -192,12 +205,8 @@ const Wordle = (
               <Row
                 key={index}
                 maxLetters={wordleQuery.data.word.length}
-                word={
-                  wordleQuery.data.tries.length == index
-                    ? answer
-                    : wordleQuery.data.tries[index] ?? ""
-                }
-                evaluation={wordleQuery.data.tries[index]
+                word={currentRow == index ? answer : tries[index] ?? ""}
+                evaluation={tries[index]
                   ?.split("")
                   .map((letter, index) =>
                     letter == wordleQuery.data.word[index]
@@ -212,7 +221,7 @@ const Wordle = (
           <Keyboard
             onClick={(key) => addToAnswer(key)}
             onDelete={() => setAnswer((prev) => prev.slice(length, length - 1))}
-            onEnter={() => submitAnswer()}
+            onEnter={() => !submitMutation.isLoading && submitAnswer()}
           />
         </div>
       </>
