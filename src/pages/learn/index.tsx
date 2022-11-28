@@ -17,7 +17,8 @@ type CardProps = {
   id: string;
   setId: (id: string) => void;
 };
-
+const percentToDegs = (percentValue: number) => (percentValue * 360) / 100;
+const [degree, setDegree] = useState(145);
 const generateColor = () =>
   "#" +
   Math.floor(Math.random() * 0xffffff)
@@ -28,9 +29,14 @@ const Test = ({ name, wordsCount, liked, id, setId }: CardProps) => {
     <div className="w-60 h-60 overflow-hidden flex flex-col bg-neutral-600 rounded-3xl relative">
       <div
         onClick={() => setId(id)}
-        className="absolute bottom-12 right-1 rounded-full cursor-pointer bg-white border-neutral-400 border-4 h-16 w-16 overflow-hidden shadow-lg hover:scale-105 hover:shadow-xl duration-300 justify-center items-center flex"
+        style={{
+          background: `conic-gradient(rgb(34 197 94) ${degree}deg, #fff 0deg)`,
+        }}
+        className="absolute bottom-12 right-1 rounded-full cursor-pointer h-16 w-16 overflow-hidden shadow-lg hover:scale-105 hover:shadow-xl duration-300 justify-center items-center flex"
       >
-        <FiPlay className="w-2/3 h-2/3 fill-neutral-100 stroke-neutral-600" />
+        <div className="w-5/6 h-5/6 bg-white rounded-full flex justify-center items-center">
+          <FiPlay className="w-2/3 h-2/3 fill-neutral-100 stroke-neutral-600" />
+        </div>
       </div>
 
       <div
@@ -75,6 +81,13 @@ const Learning = () => {
             className="grid gap-5 place-items-center justify-center items-center auto-rows-auto"
             style={cols}
           >
+            <Test
+              id="like"
+              liked={likes.data.length}
+              name="Liked"
+              setId={() => null}
+              wordsCount={likes.data.length}
+            />
             {wordbooks.data?.map((wordbook) => (
               <Test
                 key={wordbook.id}
