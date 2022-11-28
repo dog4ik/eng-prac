@@ -8,10 +8,36 @@ type ModalProps = {
   handleClose: () => void;
   id?: string;
 };
+type ModeType = "Normal" | "Last50" | undefined;
+type CardProps = {
+  handleClick: (mode: ModeType) => void;
+  mode: ModeType;
+  title: string;
+  recRange: number;
+  isSelected: boolean;
+};
+const ModeCard = ({
+  handleClick,
+  recRange,
+  title,
+  isSelected,
+  mode,
+}: CardProps) => {
+  return (
+    <div
+      className={`w-52 flex flex-col justify-center items-center h-32 rounded-lg ${
+        recRange < 20 ? "bg-yellow-500" : "bg-neutral-700"
+      } border-4 ${isSelected ? "border-white" : "border-neutral-600"}`}
+      onClick={() => handleClick(mode)}
+    >
+      <span className="text-xl pointer-events-none select-none">{title}</span>
+    </div>
+  );
+};
 const TestModal = ({ id, handleClose }: ModalProps) => {
   const wordbook = useWordbook(id);
   const length = wordbook.data?.words ? wordbook.data.words.length : 0;
-  const [mode, setMode] = useState<"Normal" | "Last50" | undefined>();
+  const [mode, setMode] = useState<ModeType>();
   const [range, setRange] = useState<number>(0);
   const [open, setOpen] = useClose(handleClose, 200);
   const router = useRouter();
@@ -20,7 +46,6 @@ const TestModal = ({ id, handleClose }: ModalProps) => {
       case "Normal":
         await router.push(`learn/test/${id}`);
         break;
-
       default:
         break;
     }
@@ -48,18 +73,20 @@ const TestModal = ({ id, handleClose }: ModalProps) => {
           </div>
           <div className="flex-1 w-full ">
             <div className="flex gap-3 justify-center">
-              <div
-                className={`w-52 flex flex-col justify-center items-center h-32 rounded-lg ${
-                  range < 20 ? "bg-yellow-500" : "bg-neutral-700"
-                } border-4 ${
-                  mode == "Normal" ? "border-white" : "border-neutral-600"
-                }`}
-                onClick={() => setMode("Normal")}
-              >
-                <span className="text-xl pointer-events-none select-none">
-                  Normal
-                </span>
-              </div>
+              <ModeCard
+                mode="Normal"
+                handleClick={(mode) => setMode(mode)}
+                isSelected={mode === "Normal"}
+                recRange={20}
+                title="Normal"
+              />
+              <ModeCard
+                mode="Last50"
+                handleClick={(mode) => setMode(mode)}
+                isSelected={mode === "Last50"}
+                recRange={20}
+                title="Last 50"
+              />
             </div>
             <div className="w-full px-10 py-5 relative">
               <div className="absolute right-0">

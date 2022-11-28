@@ -26,10 +26,10 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
     overscan: 10,
   });
   const handleKeyPress = (e: KeyboardEvent) => {
-    switch (e.key) {
+    switch (e.code) {
       case "ArrowDown":
         break;
-      case "a":
+      case "KeyA":
         if (e.ctrlKey) {
           setSelectedWords([...words!] ?? []);
           e.preventDefault();

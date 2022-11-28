@@ -107,32 +107,37 @@ model Episode {
   title        String
   src          String
   externalSubs String[]
-  releaseYear  DateTime
-  poster       String?
+  releaseDate  String
+  rating       Int?
+  img          String?
+  plot         String?
   Season       Season?  @relation(fields: [seasonId], references: [id])
   seasonId     String?
-  imdbId       String?
+  imdbId       String?  @unique
 }
 
 model Season {
   id          String    @id @default(cuid())
   Episodes    Episode[]
   number      Int
-  releaseYear DateTime
-  poster      String?
-  Series      Series?   @relation(fields: [seriesId], references: [id])
-  seriesId    String?
-  imdbId      String?
+  releaseYear Int
+  plot        String?
+  img         String?
+  Shows       Shows     @relation(fields: [showsId], references: [id])
+  rating      Int?
+  imdbId      String?   @unique
+  showsId     String
 }
 
-model Series {
-  Season        Season[]
-  id            String   @id @default(cuid())
-  totalEpisodes Int
-  title         String
-  releaseYear   DateTime
-  poster        String?
-  imdbId        String?
+model Shows {
+  Season      Season[]
+  id          String   @id @default(cuid())
+  title       String
+  releaseYear Int
+  img         String?
+  rating      Int?
+  plot        String?
+  imdbId      String?  @unique
 }
 
 enum NotificationType {
