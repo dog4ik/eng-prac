@@ -18,13 +18,13 @@ type CardProps = {
   setId: (id: string) => void;
 };
 const percentToDegs = (percentValue: number) => (percentValue * 360) / 100;
-const [degree, setDegree] = useState(145);
 const generateColor = () =>
   "#" +
   Math.floor(Math.random() * 0xffffff)
     .toString(16)
     .padStart(6, "0");
 const Test = ({ name, wordsCount, liked, id, setId }: CardProps) => {
+  const [degree, setDegree] = useState(145);
   return (
     <div className="w-60 h-60 overflow-hidden flex flex-col bg-neutral-600 rounded-3xl relative">
       <div
