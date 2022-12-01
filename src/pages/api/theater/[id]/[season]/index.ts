@@ -6,15 +6,21 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  let user_id: string | null;
-  if (req.headers.authorization && req.headers.authorization != "Bearer null") {
-    user_id = TokenDecode(req.headers.authorization);
-    if (user_id == null) {
-      res.status(401).send("jwt expired");
-      return;
-    }
-  }
   if (req.method == "GET") {
+    const episodes = await prisma.season.findFirst({
+      where: {
+        showsId: req.query.id?.toString(),
+        number: parseInt(req.query.season!.toString()),
+      },
+      include: { Episodes: { orderBy: { number: "asc" } } },
+    });
+    res.send({
+      parentSeason: {
+        ...episodes,
+        Episodes: undefined,
+      },
+      episodes: episodes?.Episodes,
+    });
   }
   prisma.$disconnect();
 }

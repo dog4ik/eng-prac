@@ -6,15 +6,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  let user_id: string | null;
-  if (req.headers.authorization && req.headers.authorization != "Bearer null") {
-    user_id = TokenDecode(req.headers.authorization);
-    if (user_id == null) {
-      res.status(401).send("jwt expired");
-      return;
-    }
-  }
   if (req.method == "GET") {
+    const shows = await prisma.shows.findMany({
+      include: { _count: { select: { Season: {} } } },
+    });
+
+    res.send(
+      shows.map((show) => {
+        return { ...show, _count: undefined, seasonsCount: show._count.Season };
+      })
+    );
   }
-  prisma.$disconnect();
 }

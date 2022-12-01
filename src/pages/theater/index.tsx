@@ -1,12 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import Error from "../../components/ui/Error";
 import useGridCols from "../../utils/useGrid";
 type ShowCardProps = {
-  img: string;
+  img?: string;
   title: string;
   seasons: number;
   id: string;
+};
+type ShowType = {
+  backdrop?: string;
+  plot?: string;
+  id: string;
+  poster?: string;
+  title: string;
+  rating?: string;
+  tmdbId: string;
+  releaseDate: string;
+  seasonsCount: number;
 };
 
 const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
@@ -19,7 +33,10 @@ const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
             fill
             className="object-cover"
             alt="cover"
-            src={img}
+            src={
+              img ??
+              "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+            }
           ></Image>
         </Link>
       </div>
@@ -34,26 +51,42 @@ const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
             href={`theater/${id}`}
             className="text-sm text-neutral-300 hover:underline cursor-pointer"
           >
-            {`${seasons} seasons`}
+            {`${seasons} season${seasons === 1 ? "" : "s"}`}
           </Link>
         </div>
       </div>
     </div>
   );
 };
+const LoadingCard = () => {
+  return (
+    <div className="w-52 h-72 rounded-xl bg-neutral-400 animate-pulse"></div>
+  );
+};
 const Shows = () => {
   const cols = useGridCols(270);
+  const showsQuery = useQuery(["all-shows"], () =>
+    axios.get<ShowType[]>("/api/theater")
+  );
+  if (showsQuery.isError) {
+    return <Error />;
+  }
   return (
     <div
       className="w-full py-4 md:px-10 px-1 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
       style={cols}
     >
-      <ShowCard
-        img="https://images.unsplash.com/photo-1607748851687-ba9a10438621?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80"
-        title="Friends"
-        seasons={10}
-        id={"ASda"}
-      />
+      {showsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
+      {showsQuery.isSuccess &&
+        showsQuery.data.data.map((show) => (
+          <ShowCard
+            id={show.id}
+            img={show.poster}
+            seasons={show.seasonsCount}
+            title={show.title}
+            key={show.id}
+          />
+        ))}
     </div>
   );
 };

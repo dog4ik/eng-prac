@@ -4,98 +4,105 @@ import PrismaClient from "../../../../prisma/PrismaClient";
 export const prisma = PrismaClient;
 type ReqestBody = {
   password: string;
+  language?: string;
 };
 type LibItem = {
   title: string;
   episodes: { number: number; src: string }[];
   season: number;
 };
-type ImdbEpisodeType = {
-  episode: number;
-  id: string;
-  season: number;
-  title: string;
-  titleType: string;
-  year: number;
-};
-type ImdbSeason = { episodes: ImdbEpisodeType[]; season: number };
-type ImdbImage = { height: number; imageUrl: string; width: number };
-type ImdbPlot = { id: string; text: string };
-type ImdbAC = {
-  d: {
-    i: ImdbImage;
-    id: string;
-    l: string;
-    q: string;
-    qid: string;
-    rank: number;
-    s: string;
-    y: number;
-    yr: string;
+type TmdbSeasonEpisode = {
+  air_date: string;
+  episode_number: number;
+  crew: {
+    id: number;
+    credit_id: string;
+    name: string;
+    adult: boolean | null;
+    gender: number;
+    known_for_department: string;
+    department: string;
+    original_name: string;
+    popularity: number;
+    job: string;
+    profile_path: string | null;
   }[];
-  q: string;
-};
-type ImdbEpisodeDetails = {
-  id: string;
-  title: {
-    episode: number;
-    id: string;
-    image: { height: number; url: string; width: number };
-    season: number;
-    title: string;
-    titleType: string;
-    year: number;
+  guest_stars: {
+    adult: boolean;
+    gender: number | null;
+    known_for_department: string;
+    original_name: string;
+    popularity: number;
+    id: number;
+    name: string;
+    credit_id: string;
+    character: string;
+    order: number;
+    profile_path: string | null;
   };
-  ratings: { rating: number; ratingCount: number; canRate: boolean };
-  genres: string[];
-  releaseDate: string;
-  plotOutline: ImdbPlot;
-  plotSummary: ImdbPlot;
+  name: string;
+  overview: string;
+  id: number;
+  production_code: string | null;
+  season_number: number;
+  still_path: string | null;
+  vote_average: number;
+  vote_count: number;
 };
-type ImdbShowDetails = {
-  id: string;
-  title: {
-    id: string;
-    image: { height: number; url: string; width: number };
-    numberOfEpisodes: number;
-    seriesEndYear: number;
-    seriesStartYear: number;
-    title: string;
-    titleType: string;
-    year: number;
-  };
-  ratings: { rating: number; ratingCount: number; canRate: boolean };
-  genres: string[];
-  releaseDate: string;
-  plotOutline: ImdbPlot;
-  plotSummary: ImdbPlot;
+
+type TmdbShowSeason = {
+  _id: string;
+  air_date: string;
+  episodes: TmdbSeasonEpisode[];
+  name: string;
+  overview: string;
+  id: number;
+  poster_path: string | null;
+  season_number: number;
 };
-interface MyLibrary extends ImdbEpisodeType {
+type TmdbSearchShow = {
+  page: number;
+  results: {
+    poster_path: string | null;
+    popularity: number;
+    id: number;
+    backdrop_path: string | null;
+    vote_average: number;
+    overview: string;
+    first_air_date: string;
+    origin_country: string[];
+    genre_ids: number[];
+    original_language: string;
+    vote_count: number;
+    name: string;
+    original_name: string;
+  }[];
+  total_results: number;
+  total_pages: number;
+};
+
+interface MyLibrary extends TmdbSeasonEpisode {
   src: string;
 }
-
-const rapidApiOptions = {
-  headers: {
-    "X-RapidAPI-Key": "d3ce4c5cb9mshb9b2a76198d2d97p1e7aaejsn38dbaffa1a9b",
-    "X-RapidAPI-Host": "imdb8.p.rapidapi.com",
-  },
-};
 
 const filterEpisodes = (
   local: {
     number: number;
     src: string;
   }[],
-  imdb: ImdbEpisodeType[]
+  tmdb: TmdbSeasonEpisode[]
 ) => {
-  return imdb
-    .filter((ie) => local.map((le) => le.number).includes(ie.episode))
+  return tmdb
+    .filter((ie) => local.map((le) => le.number).includes(ie.episode_number))
     .map((item) => {
-      const src = local.find((i) => i.number == item.episode)!.src;
-      return { ...item, src: src };
+      const src = local.find((i) => i.number == item.episode_number)!.src;
+      return {
+        ...item,
+        src: src,
+      };
     });
 };
-
+const IMG_BASE_URL = "https://image.tmdb.org/t/p/original";
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -106,102 +113,144 @@ export default async function handler(
       res.status(403).send("Failed");
       return;
     }
-
+    const tmdbApi = axios.create({
+      proxy: {
+        protocol: "http",
+        host: "31.172.72.42",
+        port: 3128,
+      },
+      baseURL: "http://api.themoviedb.org/3",
+      params: {
+        api_key: process.env.TMDB_TOKEN,
+        language: body.language ?? "en-US",
+      },
+      headers: {
+        "Accept-Encoding": "compress",
+      },
+    });
     const library = (await axios.get<LibItem[]>("http://127.0.0.1:3001/show"))
       .data;
     if (library.length == 0 || !library) {
       res.status(400).send("empty library");
       return;
     }
-    let myEpisodes: MyLibrary[] = [];
+
     for (let i = 0; i < library.length; i++) {
-      const imdbAC = await axios.get<ImdbAC>(
-        "https://imdb8.p.rapidapi.com/auto-complete",
-        {
-          params: { q: library[i].title },
-          ...rapidApiOptions,
-        }
-      );
-      const seasons = await axios.get<ImdbSeason[]>(
-        "https://imdb8.p.rapidapi.com/title/get-seasons",
-        {
-          params: { tconst: imdbAC.data.d[0].id },
-          ...rapidApiOptions,
-        }
-      );
-
-      seasons.data.forEach((s) => {
-        if (s.season != library[i].season) return;
-        myEpisodes = [
-          ...myEpisodes,
-          ...filterEpisodes(library[i].episodes, s.episodes),
-        ];
+      const tmdbSearch = await tmdbApi.get<TmdbSearchShow>("/search/tv", {
+        params: { query: library[i].title },
       });
-      const details = await axios.get<ImdbShowDetails>(
-        "https://imdb8.p.rapidapi.com/title/get-overview-details",
-        {
-          params: { tconst: imdbAC.data.d[0].id },
-          ...rapidApiOptions,
-        }
-      );
-      console.log("AC", imdbAC.data.d[0].id);
 
+      const season = await tmdbApi.get<TmdbShowSeason>(
+        `/tv/${tmdbSearch.data.results[0].id}/season/${library[i].season}`
+      );
+      const myEpisodes: MyLibrary[] = filterEpisodes(
+        library[i].episodes,
+        season.data.episodes
+      );
       await prisma.shows.upsert({
         create: {
-          releaseYear: imdbAC.data.d[0].y,
-          title: imdbAC.data.d[0].l,
-          imdbId: imdbAC.data.d[0].id,
-          rating: details.data.ratings.rating,
-          img: imdbAC.data.d[0].i.imageUrl,
-          plot: details.data.plotOutline.text,
+          releaseDate: tmdbSearch.data.results[0].first_air_date,
+          title: tmdbSearch.data.results[0].name,
+          rating: tmdbSearch.data.results[0].vote_average.toString(),
+          poster: IMG_BASE_URL + tmdbSearch.data.results[0].poster_path,
+          backdrop: IMG_BASE_URL + tmdbSearch.data.results[0].backdrop_path,
+          plot: tmdbSearch.data.results[0].overview,
+          tmdbId: tmdbSearch.data.results[0].id,
+          Season: {
+            create: {
+              number: season.data.season_number,
+              releaseDate: season.data.air_date,
+              poster: IMG_BASE_URL + season.data.poster_path,
+              plot: season.data.overview,
+              tmdbId: season.data.id,
+              Episodes: {
+                createMany: {
+                  data: myEpisodes.map((item) => {
+                    return {
+                      number: item.episode_number,
+                      src: item.src,
+                      title: item.name,
+                      externalSubs: [],
+                      releaseDate: item.air_date,
+                      rating: item.vote_average.toString(),
+                      poster: IMG_BASE_URL + item.still_path,
+                      plot: item.overview,
+                      tmdbId: item.id,
+                    };
+                  }),
+                  skipDuplicates: true,
+                },
+              },
+            },
+          },
         },
         update: {
-          releaseYear: imdbAC.data.d[0].y,
-          title: imdbAC.data.d[0].l,
-          rating: details.data.ratings.rating,
-          imdbId: imdbAC.data.d[0].id,
-          img: imdbAC.data.d[0].i.imageUrl,
-          plot: details.data.plotOutline.text,
+          releaseDate: tmdbSearch.data.results[0].first_air_date,
+          title: tmdbSearch.data.results[0].name,
+          rating: tmdbSearch.data.results[0].vote_average.toString(),
+          poster: IMG_BASE_URL + tmdbSearch.data.results[0].poster_path,
+          backdrop: IMG_BASE_URL + tmdbSearch.data.results[0].backdrop_path,
+          plot: tmdbSearch.data.results[0].overview,
+          Season: {
+            upsert: {
+              create: {
+                number: season.data.season_number,
+                releaseDate: season.data.air_date,
+                poster: IMG_BASE_URL + season.data.poster_path,
+                plot: season.data.overview,
+                tmdbId: season.data.id,
+                Episodes: {
+                  createMany: {
+                    data: myEpisodes.map((item) => {
+                      return {
+                        number: item.episode_number,
+                        src: item.src,
+                        title: item.name,
+                        externalSubs: [],
+                        releaseDate: item.air_date,
+                        rating: item.vote_average.toString(),
+                        poster: IMG_BASE_URL + item.still_path,
+                        plot: item.overview,
+                        tmdbId: item.id,
+                      };
+                    }),
+                    skipDuplicates: true,
+                  },
+                },
+              },
+              update: {
+                number: season.data.season_number,
+                releaseDate: season.data.air_date,
+                poster: IMG_BASE_URL + season.data.poster_path,
+                plot: season.data.overview,
+                Episodes: {
+                  createMany: {
+                    data: myEpisodes.map((item) => {
+                      return {
+                        number: item.episode_number,
+                        src: item.src,
+                        title: item.name,
+                        externalSubs: [],
+                        releaseDate: item.air_date,
+                        rating: item.vote_average.toString(),
+                        poster: IMG_BASE_URL + item.still_path,
+                        plot: item.overview,
+                        tmdbId: item.id,
+                      };
+                    }),
+                    skipDuplicates: true,
+                  },
+                },
+              },
+              where: { tmdbId: season.data.id },
+            },
+          },
         },
-        where: { imdbId: imdbAC.data.d[0].id },
+        where: { tmdbId: tmdbSearch.data.results[0].id },
       });
     }
-    let episodes: {
-      releaseDate: string;
-      src: string;
-      title: string;
-      externalSubs?: string;
-      imdbId: string;
-      img: string;
-      plot: string;
-      rating: number;
-    }[] = [];
-    for (let i = 0; i < myEpisodes.length; i++) {
-      const episode = myEpisodes[i];
-      episode.id = episode.id.split("/")[2];
-      const details = await axios.get<ImdbEpisodeDetails>(
-        "https://imdb8.p.rapidapi.com/title/get-overview-details",
-        { params: { tconst: episode.id }, ...rapidApiOptions }
-      );
-      console.log(episode.id);
-      episodes = [
-        ...episodes,
-        {
-          imdbId: episode.id,
-          img: details.data.title.image.url,
-          plot: details.data.plotOutline.text,
-          releaseDate: details.data.releaseDate,
-          title: details.data.title.title,
-          src: episode.src,
-          rating: details.data.ratings.rating,
-        },
-      ];
-    }
-    await prisma.episode.createMany({
-      data: [...episodes],
-      skipDuplicates: true,
-    });
-    res.status(200).send(myEpisodes);
+
+    res.status(200).send("done");
   }
   prisma.$disconnect();
 }

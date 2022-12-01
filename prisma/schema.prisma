@@ -105,39 +105,43 @@ model Wordle {
 model Episode {
   id           String   @id @default(cuid())
   title        String
+  number       Int
   src          String
   externalSubs String[]
   releaseDate  String
-  rating       Int?
-  img          String?
+  rating       String?
+  poster       String?
   plot         String?
   Season       Season?  @relation(fields: [seasonId], references: [id])
   seasonId     String?
-  imdbId       String?  @unique
+  tmdbId       Int?     @unique
+  scannedDate  DateTime @default(now())
 }
 
 model Season {
   id          String    @id @default(cuid())
   Episodes    Episode[]
   number      Int
-  releaseYear Int
+  releaseDate String
   plot        String?
-  img         String?
+  poster      String?
   Shows       Shows     @relation(fields: [showsId], references: [id])
-  rating      Int?
-  imdbId      String?   @unique
+  tmdbId      Int?      @unique
   showsId     String
+  scannedDate DateTime  @default(now())
 }
 
 model Shows {
   Season      Season[]
   id          String   @id @default(cuid())
   title       String
-  releaseYear Int
-  img         String?
-  rating      Int?
+  releaseDate String
+  poster      String?
+  backdrop    String?
+  rating      String?
   plot        String?
-  imdbId      String?  @unique
+  tmdbId      Int?     @unique
+  scannedDate DateTime @default(now())
 }
 
 enum NotificationType {
