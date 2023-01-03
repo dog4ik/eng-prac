@@ -188,9 +188,8 @@ const Video = ({ src, title }: Props) => {
       <div
         onMouseLeave={() => setShowControls(false)}
         ref={videoContainerRef}
-        className={`relative ${
-          isFullScreen && "overflow-hidden h-screen w-screen"
-        }`}
+        className={`relative ${isFullScreen && "overflow-hidden h-screen w-screen"
+          }`}
       >
         <video
           onClick={handleClick}
@@ -295,16 +294,14 @@ const Video = ({ src, title }: Props) => {
                     onClick={() => setShowCaptions()}
                   >
                     <div
-                      className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${
-                        showCaptions
-                          ? "bg-white border-black"
-                          : "bg-black border-white"
-                      }`}
+                      className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${showCaptions
+                        ? "bg-white border-black"
+                        : "bg-black border-white"
+                        }`}
                     >
                       <span
-                        className={`text-xs font-semibold ${
-                          showCaptions ? "text-black" : "text-white"
-                        }`}
+                        className={`text-xs font-semibold ${showCaptions ? "text-black" : "text-white"
+                          }`}
                       >
                         cc
                       </span>
