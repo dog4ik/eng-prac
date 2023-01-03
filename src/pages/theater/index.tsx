@@ -3,6 +3,10 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+<<<<<<< HEAD
+=======
+import Title from "../../components/Title";
+>>>>>>> b000d47 (api improvements and deps updates)
 import Error from "../../components/ui/Error";
 import useGridCols from "../../utils/useGrid";
 type ShowCardProps = {
@@ -26,6 +30,7 @@ type ShowType = {
 const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
   return (
     <div>
+<<<<<<< HEAD
       <div className="relative cursor-pointer hover:scale-105 duration-200 overflow-hidden rounded-xl bg-neutral-500 w-52 h-72 flex justify-center items-end">
         <Link href={`theater/${id}`}>
           <Image
@@ -40,6 +45,27 @@ const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
           ></Image>
         </Link>
       </div>
+=======
+      <Link
+        href={`theater/${id}`}
+        className="relative cursor-pointer hover:scale-105 duration-200 overflow-hidden rounded-xl bg-neutral-500 w-52 h-72 flex justify-center items-end"
+      >
+        <Image
+          draggable={false}
+          priority
+          fill
+          sizes="(max-width: 768px) 90vw,
+              (max-width: 1200px) 33vw,
+              10vw"
+          className="object-cover"
+          alt="Show poster"
+          src={
+            img ??
+            "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+          }
+        ></Image>
+      </Link>
+>>>>>>> b000d47 (api improvements and deps updates)
       <div className="py-3 flex flex-col gap-1 w-full">
         <div>
           <Link href={`theater/${id}`} className="text-lg cursor-pointer">
@@ -72,6 +98,7 @@ const Shows = () => {
     return <Error />;
   }
   return (
+<<<<<<< HEAD
     <div
       className="w-full py-4 md:px-10 px-1 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
       style={cols}
@@ -88,6 +115,27 @@ const Shows = () => {
           />
         ))}
     </div>
+=======
+    <>
+      <Title title="Shows" />
+      <div
+        className="w-full py-4 md:px-10 px-1 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
+        style={cols}
+      >
+        {showsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
+        {showsQuery.isSuccess &&
+          showsQuery.data.data.map((show) => (
+            <ShowCard
+              id={show.id}
+              img={show.poster}
+              seasons={show.seasonsCount}
+              title={show.title}
+              key={show.id}
+            />
+          ))}
+      </div>
+    </>
+>>>>>>> b000d47 (api improvements and deps updates)
   );
 };
 

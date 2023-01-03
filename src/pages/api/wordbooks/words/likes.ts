@@ -1,3 +1,4 @@
+import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import PrismaClient from "../../../../../prisma/PrismaClient";
 import TokenDecode from "../../../../utils/Tokendecode";
@@ -13,6 +14,24 @@ export default async function handler(
     return;
   }
   if (req.method === "POST") {
+    if (!req.body.eng || req.body.eng.length > 50) {
+      res.status(400).send("word did not pass checks");
+      return;
+    }
+    if (!req.body.rus) {
+      req.body.rus = await axios
+        .post<{ translations: { text: string }[] }>(
+          "http://localhost:3000/api/translate",
+          {
+            text: req.body.eng,
+          }
+        )
+        .then((data) => {
+          console.log(data.data);
+
+          return data.data.translations[0].text;
+        });
+    }
     await prisma.user
       .update({
         data: {

@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import PrismaClient from "../../../../../../prisma/PrismaClient";
-import TokenDecode from "../../../../../utils/Tokendecode";
 export const prisma = PrismaClient;
 export default async function handler(
   req: NextApiRequest,
@@ -12,6 +11,7 @@ export default async function handler(
         showsId: req.query.id?.toString(),
         number: parseInt(req.query.season!.toString()),
       },
+<<<<<<< HEAD
       include: { Episodes: { orderBy: { number: "asc" } } },
     });
     res.send({
@@ -21,6 +21,35 @@ export default async function handler(
       },
       episodes: episodes?.Episodes,
     });
+=======
+      select: {
+        poster: true,
+        number: true,
+        plot: true,
+        releaseDate: true,
+        Episodes: {
+          select: {
+            poster: true,
+            id: true,
+            number: true,
+            releaseDate: true,
+            subSrc: true,
+            title: true,
+            rating: true,
+          },
+          orderBy: { number: "asc" },
+        },
+      },
+    });
+    const response = {
+      poster: episodes?.poster,
+      number: episodes?.number,
+      plot: episodes?.plot,
+      releaseDate: episodes?.releaseDate,
+      episodesCount: episodes?.Episodes.length,
+      episodes: episodes?.Episodes,
+    };
+    res.send(response);
+>>>>>>> b000d47 (api improvements and deps updates)
   }
-  prisma.$disconnect();
 }
