@@ -6,27 +6,6 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method == "GET") {
-<<<<<<< HEAD
-    const seasons = await prisma.season.findMany({
-      where: { showsId: req.query.id!.toString() },
-      include: { _count: { select: { Episodes: {} } } },
-    });
-    const parentShow = await prisma.shows.findFirst({
-      where: { id: req.query.id!.toString() },
-    });
-
-    res.send({
-      parentShow: parentShow,
-      seasons: seasons.map((season) => {
-        return {
-          ...season,
-          _count: undefined,
-          Shows: undefined,
-          episodesCount: season._count.Episodes,
-        };
-      }),
-    });
-=======
     if (!req.query.id) {
       res.status(400).send("no ID specified");
       return;
@@ -62,6 +41,5 @@ export default async function handler(
       }),
     };
     res.send(response);
->>>>>>> b000d47 (api improvements and deps updates)
   }
 }

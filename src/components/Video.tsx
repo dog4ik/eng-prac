@@ -14,6 +14,7 @@ type Props = {
   src: string;
   title: string;
   externalSubs?: string;
+  subSrc: string | null;
 };
 const VolumeIcon = ({
   volume,
@@ -43,7 +44,7 @@ const formatDuration = (time: number) => {
     )}:${leadingZeroFormatter.format(seconds)}`;
   }
 };
-const Video = ({ src, title }: Props) => {
+const Video = ({ src, title, subSrc }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -100,6 +101,10 @@ const Video = ({ src, title }: Props) => {
     } else {
       document.exitFullscreen();
     }
+  };
+  const toggleCaptions = () => {
+    if (subSrc === null) return;
+    setShowCaptions();
   };
   const toggleMute = () => {
     if (videoRef.current!.volume == 0) {
@@ -188,8 +193,9 @@ const Video = ({ src, title }: Props) => {
       <div
         onMouseLeave={() => setShowControls(false)}
         ref={videoContainerRef}
-        className={`relative ${isFullScreen && "overflow-hidden h-screen w-screen"
-          }`}
+        className={`relative ${
+          isFullScreen && "overflow-hidden h-screen w-screen"
+        }`}
       >
         <video
           onClick={handleClick}
@@ -216,6 +222,7 @@ const Video = ({ src, title }: Props) => {
         {showCaptions && (
           <div className="absolute bottom-20 flex justify-center items-center left-1/2 -translate-x-1/2">
             <Subtitles
+              subSrc={subSrc}
               videoRef={videoRef}
               isPaused={isPaused}
               time={Math.floor(time * 1000)}
@@ -239,19 +246,14 @@ const Video = ({ src, title }: Props) => {
               <div
                 ref={timelineRef}
                 onClick={handleTimeStrap}
-                className="absolute group -top-2 cursor-pointer bg-neutral-900 left-0 right-0 w-full h-2.5 flex"
+                className="absolute group cursor-pointer bg-neutral-900 left-0 right-0 w-full h-1.5 flex"
               >
                 <div
-                  className="h-full flex justify-end rounded-md items-center bg-white"
+                  className="h-full flex justify-end rounded-md items-center bg-white after:content-[' '] after:bg-white after:p-2 after:translate-x-2 after:rounded-full after:opacity-0 after:group-hover:opacity-100 after:transition-opacity after:duration-150"
                   style={{
                     width: `${(time / duration) * 100}%`,
                   }}
-                >
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-white hidden group-hover:block rounded-full p-2 translate-x-2"
-                  ></div>
-                </div>
+                ></div>
               </div>
               <div className="flex justify-between items-center bg-black/70">
                 <div className="flex gap-4">
@@ -290,18 +292,22 @@ const Video = ({ src, title }: Props) => {
 
                 <div className="flex items-center select-none gap-5">
                   <div
-                    className="cursor-pointer"
-                    onClick={() => setShowCaptions()}
+                    className={`${
+                      subSrc ? "cursor-pointer" : "cursor-not-allowed"
+                    }`}
+                    onClick={() => toggleCaptions()}
                   >
                     <div
-                      className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${showCaptions
-                        ? "bg-white border-black"
-                        : "bg-black border-white"
-                        }`}
+                      className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${
+                        showCaptions
+                          ? "bg-white border-black"
+                          : "bg-black border-white"
+                      }`}
                     >
                       <span
-                        className={`text-xs font-semibold ${showCaptions ? "text-black" : "text-white"
-                          }`}
+                        className={`text-xs font-semibold ${
+                          showCaptions ? "text-black" : "text-white"
+                        }`}
                       >
                         cc
                       </span>

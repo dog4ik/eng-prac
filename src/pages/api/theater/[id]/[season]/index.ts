@@ -11,17 +11,6 @@ export default async function handler(
         showsId: req.query.id?.toString(),
         number: parseInt(req.query.season!.toString()),
       },
-<<<<<<< HEAD
-      include: { Episodes: { orderBy: { number: "asc" } } },
-    });
-    res.send({
-      parentSeason: {
-        ...episodes,
-        Episodes: undefined,
-      },
-      episodes: episodes?.Episodes,
-    });
-=======
       select: {
         poster: true,
         number: true,
@@ -50,6 +39,5 @@ export default async function handler(
       episodes: episodes?.Episodes,
     };
     res.send(response);
->>>>>>> b000d47 (api improvements and deps updates)
   }
 }

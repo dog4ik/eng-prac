@@ -49,44 +49,6 @@ type TmdbSeasonEpisode = {
   vote_average: number;
   vote_count: number;
 };
-<<<<<<< HEAD
-
-type TmdbShowSeason = {
-  _id: string;
-  air_date: string;
-  episodes: TmdbSeasonEpisode[];
-  name: string;
-  overview: string;
-  id: number;
-  poster_path: string | null;
-  season_number: number;
-};
-type TmdbSearchShow = {
-  page: number;
-  results: {
-    poster_path: string | null;
-    popularity: number;
-    id: number;
-    backdrop_path: string | null;
-    vote_average: number;
-    overview: string;
-    first_air_date: string;
-    origin_country: string[];
-    genre_ids: number[];
-    original_language: string;
-    vote_count: number;
-    name: string;
-    original_name: string;
-  }[];
-  total_results: number;
-  total_pages: number;
-};
-
-interface MyLibrary extends TmdbSeasonEpisode {
-  src: string;
-}
-
-=======
 
 type TmdbShowSeason = {
   _id: string;
@@ -124,7 +86,6 @@ interface MyLibrary extends TmdbSeasonEpisode {
   subSrc: string | null;
 }
 
->>>>>>> b000d47 (api improvements and deps updates)
 const filterEpisodes = (
   local: {
     number: number;
@@ -134,14 +95,6 @@ const filterEpisodes = (
   tmdb: TmdbSeasonEpisode[]
 ) => {
   return tmdb
-<<<<<<< HEAD
-    .filter((ie) => local.map((le) => le.number).includes(ie.episode_number))
-    .map((item) => {
-      const src = local.find((i) => i.number == item.episode_number)!.src;
-      return {
-        ...item,
-        src: src,
-=======
     .filter((te) => local.map((le) => le.number).includes(te.episode_number))
     .map((item) => {
       const e = local.find((i) => i.number == item.episode_number);
@@ -149,7 +102,6 @@ const filterEpisodes = (
         ...item,
         src: e!.src,
         subSrc: e!.subSrc,
->>>>>>> b000d47 (api improvements and deps updates)
       };
     });
 };
@@ -167,11 +119,7 @@ export default async function handler(
     const tmdbApi = axios.create({
       proxy: {
         protocol: "http",
-<<<<<<< HEAD
-        host: "31.172.72.42",
-=======
         host: "94.228.122.168",
->>>>>>> b000d47 (api improvements and deps updates)
         port: 3128,
       },
       baseURL: "http://api.themoviedb.org/3",
@@ -191,20 +139,12 @@ export default async function handler(
     }
 
     for (let i = 0; i < library.length; i++) {
-<<<<<<< HEAD
-      const tmdbSearch = await tmdbApi.get<TmdbSearchShow>("/search/tv", {
-=======
       const tmdbSearchResult = await tmdbApi.get<TmdbSearchShow>("/search/tv", {
->>>>>>> b000d47 (api improvements and deps updates)
         params: { query: library[i].title },
       });
 
       const season = await tmdbApi.get<TmdbShowSeason>(
-<<<<<<< HEAD
-        `/tv/${tmdbSearch.data.results[0].id}/season/${library[i].season}`
-=======
         `/tv/${tmdbSearchResult.data.results[0].id}/season/${library[i].season}`
->>>>>>> b000d47 (api improvements and deps updates)
       );
       const myEpisodes: MyLibrary[] = filterEpisodes(
         library[i].episodes,
@@ -212,15 +152,6 @@ export default async function handler(
       );
       await prisma.shows.upsert({
         create: {
-<<<<<<< HEAD
-          releaseDate: tmdbSearch.data.results[0].first_air_date,
-          title: tmdbSearch.data.results[0].name,
-          rating: tmdbSearch.data.results[0].vote_average.toString(),
-          poster: IMG_BASE_URL + tmdbSearch.data.results[0].poster_path,
-          backdrop: IMG_BASE_URL + tmdbSearch.data.results[0].backdrop_path,
-          plot: tmdbSearch.data.results[0].overview,
-          tmdbId: tmdbSearch.data.results[0].id,
-=======
           releaseDate: tmdbSearchResult.data.results[0].first_air_date,
           title: tmdbSearchResult.data.results[0].name,
           rating: tmdbSearchResult.data.results[0].vote_average.toString(),
@@ -229,7 +160,6 @@ export default async function handler(
             IMG_BASE_URL + tmdbSearchResult.data.results[0].backdrop_path,
           plot: tmdbSearchResult.data.results[0].overview,
           tmdbId: tmdbSearchResult.data.results[0].id,
->>>>>>> b000d47 (api improvements and deps updates)
           Season: {
             create: {
               number: season.data.season_number,
@@ -243,10 +173,7 @@ export default async function handler(
                     return {
                       number: item.episode_number,
                       src: item.src,
-<<<<<<< HEAD
-=======
                       subSrc: item.subSrc,
->>>>>>> b000d47 (api improvements and deps updates)
                       title: item.name,
                       externalSubs: [],
                       releaseDate: item.air_date,
@@ -263,14 +190,6 @@ export default async function handler(
           },
         },
         update: {
-<<<<<<< HEAD
-          releaseDate: tmdbSearch.data.results[0].first_air_date,
-          title: tmdbSearch.data.results[0].name,
-          rating: tmdbSearch.data.results[0].vote_average.toString(),
-          poster: IMG_BASE_URL + tmdbSearch.data.results[0].poster_path,
-          backdrop: IMG_BASE_URL + tmdbSearch.data.results[0].backdrop_path,
-          plot: tmdbSearch.data.results[0].overview,
-=======
           releaseDate: tmdbSearchResult.data.results[0].first_air_date,
           title: tmdbSearchResult.data.results[0].name,
           rating: tmdbSearchResult.data.results[0].vote_average.toString(),
@@ -278,7 +197,6 @@ export default async function handler(
           backdrop:
             IMG_BASE_URL + tmdbSearchResult.data.results[0].backdrop_path,
           plot: tmdbSearchResult.data.results[0].overview,
->>>>>>> b000d47 (api improvements and deps updates)
           Season: {
             upsert: {
               create: {
@@ -293,10 +211,7 @@ export default async function handler(
                       return {
                         number: item.episode_number,
                         src: item.src,
-<<<<<<< HEAD
-=======
                         subSrc: item.subSrc,
->>>>>>> b000d47 (api improvements and deps updates)
                         title: item.name,
                         externalSubs: [],
                         releaseDate: item.air_date,
@@ -321,10 +236,7 @@ export default async function handler(
                       return {
                         number: item.episode_number,
                         src: item.src,
-<<<<<<< HEAD
-=======
                         subSrc: item.subSrc,
->>>>>>> b000d47 (api improvements and deps updates)
                         title: item.name,
                         externalSubs: [],
                         releaseDate: item.air_date,
@@ -342,11 +254,7 @@ export default async function handler(
             },
           },
         },
-<<<<<<< HEAD
-        where: { tmdbId: tmdbSearch.data.results[0].id },
-=======
         where: { tmdbId: tmdbSearchResult.data.results[0].id },
->>>>>>> b000d47 (api improvements and deps updates)
       });
     }
 

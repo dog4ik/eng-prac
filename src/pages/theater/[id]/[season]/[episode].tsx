@@ -1,14 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-<<<<<<< HEAD
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import React, { useEffect } from "react";
-=======
 import Image from "next/image";
 import Link from "next/link";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import React from "react";
->>>>>>> b000d47 (api improvements and deps updates)
 import Error from "../../../../components/ui/Error";
 import Loading from "../../../../components/ui/Loading";
 import Video from "../../../../components/Video";
@@ -17,21 +12,12 @@ type EpisodeType = {
   title: string;
   number: number;
   src: string;
-<<<<<<< HEAD
-=======
   subSrc: string | null;
->>>>>>> b000d47 (api improvements and deps updates)
   externalSubs?: string[];
   releaseDate: string;
   rating?: string;
   poster?: string;
   plot?: string;
-<<<<<<< HEAD
-  seasonId: string;
-  tmdbId: number;
-  scannedDate: string;
-};
-=======
   showId: string;
   seasonNumber: number;
   siblings: {
@@ -43,7 +29,6 @@ type EpisodeType = {
   }[];
 };
 
->>>>>>> b000d47 (api improvements and deps updates)
 export const getServerSideProps: GetServerSideProps<{
   id?: string | string[];
   season?: string | string[];
@@ -52,33 +37,6 @@ export const getServerSideProps: GetServerSideProps<{
   const { id, season, episode } = context.query;
   return { props: { id, season, episode } };
 };
-<<<<<<< HEAD
-const Theater = (
-  props: InferGetServerSidePropsType<typeof getServerSideProps>
-) => {
-  const episodeQuery = useQuery(
-    ["get-episode", props.season, props.id, props.episode],
-    () =>
-      axios.get<EpisodeType>(
-        `/api/theater/${props.id}/${props.season}/${props.episode}`
-      )
-  );
-  if (episodeQuery.isError) return <Error />;
-  if (episodeQuery.isLoading) return <Loading />;
-  return (
-    <div className="flex w-full lg:w-2/3 flex-col gap-2 p-4">
-      <div>
-        <Video
-          title={episodeQuery.data.data.title}
-          src={`http://localhost:3001/static${episodeQuery.data.data.src}`}
-        />
-      </div>
-      <div className="flex flex-col">
-        <div>
-          <span className="text-xl font-semibold cursor-pointer">
-            {episodeQuery.data.data.title}
-          </span>
-=======
 
 const SideBarEpisodes = ({
   episode,
@@ -145,7 +103,6 @@ const Theater = (
                   episodeQuery.data.data.subSrc
             }
           />
->>>>>>> b000d47 (api improvements and deps updates)
         </div>
         <div className="flex flex-col">
           <div>
@@ -164,10 +121,6 @@ const Theater = (
             </div>
           )}
         </div>
-<<<<<<< HEAD
-        <div className="w-full p-2 mt-4 max-h-20 bg-neutral-700 rounded-lg">
-          <p className="break-words">{episodeQuery.data.data.plot}</p>
-=======
       </div>
       <div className="">
         <div className="h-[800px] flex flex-col gap-5 xl:overflow-y-auto xl:mr-10">
@@ -186,7 +139,6 @@ const Theater = (
               isCurrent={episode.id === episodeQuery.data.data.id}
             />
           ))}
->>>>>>> b000d47 (api improvements and deps updates)
         </div>
       </div>
     </div>

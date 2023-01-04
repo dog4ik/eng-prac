@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import React, { useEffect, useRef, useState } from "react";
+import srtParser from "../utils/srtParser";
 import useClose from "../utils/useClose";
 import { useLikeMutaton, useLikes } from "../utils/useLikes";
 import useToggle from "../utils/useToggle";
@@ -8,6 +9,7 @@ type Props = {
   time: number;
   videoRef: React.RefObject<HTMLVideoElement>;
   isPaused: boolean;
+  subSrc: string | null;
 };
 type SubsType = {
   id: number;
@@ -40,15 +42,23 @@ const TranslateModal = ({
     </div>
   );
 };
-const Subtitles = ({ time, videoRef, isPaused }: Props) => {
+const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
   const [chunk, setChunk] = useState<string[]>();
   const [selectedWord, setSelectedWord] = useState<string>();
   const [isTranslateOpen, setIsTranslateOpen] = useToggle(false);
   const likeMutation = useLikeMutaton();
   const likes = useLikes();
-  const subsQuery = useQuery<AxiosResponse<SubsType[]>, AxiosError>(
-    ["subs"],
-    () => axios.get("/api/theater/srt")
+  const subsQuery = useQuery<
+    {
+      id: number;
+      startTime: string | number;
+      endTime: string | number;
+      text: string;
+    }[]
+  >(
+    ["subs", subSrc],
+    () => axios.get(subSrc ?? "").then((data) => srtParser(data.data)),
+    { enabled: subSrc != null }
   );
   const translateMutation = useMutation<
     AxiosResponse<{ translations: { text: string }[] }>,
@@ -57,8 +67,8 @@ const Subtitles = ({ time, videoRef, isPaused }: Props) => {
   >(["translate", selectedWord], (data) => axios.post("api/translate", data));
   useEffect(() => {
     setChunk(
-      subsQuery.data?.data
-        .find((c) => c.endTime > time && c.startTime < time)
+      subsQuery.data
+        ?.find((c) => c.endTime > time && c.startTime < time)
         ?.text.split(/\n+/g)
     );
   }, [time, subsQuery.isSuccess]);
@@ -68,15 +78,7 @@ const Subtitles = ({ time, videoRef, isPaused }: Props) => {
     };
   }, []);
   return (
-    <div
-      onMouseOver={() => {
-        videoRef.current?.pause();
-      }}
-      onMouseLeave={() => {
-        !isPaused && videoRef.current?.play();
-      }}
-      className="flex flex-col gap-2 relative bg-black/80"
-    >
+    <div className="flex flex-col gap-2 relative bg-black/80">
       {isTranslateOpen && translateMutation.isSuccess && (
         <TranslateModal
           word={translateMutation.data?.data.translations[0].text ?? ""}
@@ -99,6 +101,10 @@ const Subtitles = ({ time, videoRef, isPaused }: Props) => {
                   text: word.replace(/\W+\B/g, "").trim(),
                 });
                 setIsTranslateOpen(true);
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                likeMutation.mutate({ eng: word.replace(/\W+\B/g, "").trim() });
               }}
             >
               {word}

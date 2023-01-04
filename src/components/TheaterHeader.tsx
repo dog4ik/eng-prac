@@ -15,7 +15,7 @@ const TheaterHeader = ({
   description,
 }: HeaderProps) => {
   return (
-    <div className="w-full h-96 flex gap-10">
+    <div className="w-full h-fit flex gap-10">
       <div className="w-1/6 relative overflow-hidden rounded-xl">
         <Image
           draggable={false}

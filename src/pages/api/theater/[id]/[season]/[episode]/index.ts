@@ -12,19 +12,11 @@ export default async function handler(
 ) {
   if (req.method == "GET") {
     const query = req.query as queryType;
-<<<<<<< HEAD
-    console.log(req.query);
-=======
->>>>>>> b000d47 (api improvements and deps updates)
     const episode = await prisma.episode.findFirst({
       where: {
         Season: { showsId: query.id, number: parseInt(query.season) },
         number: parseInt(query.episode),
       },
-<<<<<<< HEAD
-    });
-    res.send(episode);
-=======
       select: {
         releaseDate: true,
         plot: true,
@@ -66,6 +58,5 @@ export default async function handler(
     };
 
     res.send(response);
->>>>>>> b000d47 (api improvements and deps updates)
   }
 }
