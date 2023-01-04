@@ -170,9 +170,9 @@ const Navbar = () => {
                   y2="40.76"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop offset="0" stop-color="#90cea1" />
-                  <stop offset="0.56" stop-color="#3cbec9" />
-                  <stop offset="1" stop-color="#00b3e5" />
+                  <stop offset="0" stopColor="#90cea1" />
+                  <stop offset="0.56" stopColor="#3cbec9" />
+                  <stop offset="1" stopColor="#00b3e5" />
                 </linearGradient>
               </defs>
               <title>Asset 2</title>
