@@ -26,6 +26,7 @@ export default async function handler(
         subSrc: true,
         rating: true,
         id: true,
+        tmdbId: true,
         Season: {
           select: {
             number: true,
@@ -52,6 +53,7 @@ export default async function handler(
       subSrc: episode?.subSrc,
       rating: episode?.rating,
       id: episode?.id,
+      tmdbId: episode?.tmdbId,
       seasonNumber: episode?.Season?.number,
       showId: episode?.Season?.showsId,
       siblings: episode?.Season?.Episodes,

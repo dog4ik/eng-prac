@@ -64,7 +64,7 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
     AxiosResponse<{ translations: { text: string }[] }>,
     AxiosError,
     { text: string }
-  >(["translate", selectedWord], (data) => axios.post("api/translate", data));
+  >(["translate", selectedWord], (data) => axios.post("/api/translate", data));
   useEffect(() => {
     setChunk(
       subsQuery.data
