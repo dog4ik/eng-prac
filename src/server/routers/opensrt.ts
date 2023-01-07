@@ -61,7 +61,7 @@ type opensrtDownloadResponse = {
 const opensrtApi = axios.create({
   baseURL: "https://api.opensubtitles.com/api/v1/",
   headers: {
-    "Api-Key": "IjG8Uz1vdVKMk6XN3oMNJRer2zYTC6QQ",
+    "Api-Key": process.env.OPENSRT_TOKEN,
   },
 });
 const parseSubs = async (tmdbId: number, lang?: string) => {
