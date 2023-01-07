@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { FiX } from "react-icons/fi";
+import { trpc } from "../utils/trpc";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
@@ -25,15 +27,7 @@ export const getServerSideProps: GetServerSideProps<{
   return { props: { text } };
 };
 const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
-  const autoCompleteMutation = useMutation(
-    async (word: { text: string | undefined }) =>
-      await axios
-        .post<ApiWord[]>(
-          process.env.NEXT_PUBLIC_API_LINK + "/translate/autocomplete",
-          word
-        )
-        .then((data) => data.data)
-  );
+  const autoCompleteMutation = trpc.translate.autocomplete.useMutation();
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     autoCompleteMutation.mutate({ text: word });
@@ -114,8 +108,6 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
         ))}
     </div>
   );
-
-  return null;
 };
 
 const Translate = (
@@ -129,22 +121,23 @@ const Translate = (
   const likesQuery = useLikes();
   const likeMutation = useLikeMutaton();
   const delikeMutation = useUnLikeMutation();
-  const audioMutation = useAudioMutation(0.3);
-  const translateMutation = useMutation(
-    (word: { text: string | undefined }) => {
-      return axios.post(process.env.NEXT_PUBLIC_API_LINK + "/translate", word);
-    }
-  );
-
-  const dictionaryMutation = useMutation(async (word: { text?: string }) => {
-    return await axios
-      .post<ApiWord[]>(
-        process.env.NEXT_PUBLIC_API_LINK + "/translate/dictionary",
-        word
-      )
-      .then((data) => data.data);
+  const audioMutation = trpc.translate.textToSpeech.useMutation({
+    async onSuccess(data) {
+      const byteArray = data.data;
+      if (byteArray.byteLength == 0) return;
+      const context = new AudioContext();
+      const audioBuffer = await context.decodeAudioData(byteArray);
+      const source = context.createBufferSource();
+      const gainNode = context.createGain();
+      gainNode.gain.value = 0.3;
+      gainNode.connect(context.destination);
+      source.buffer = audioBuffer;
+      source.connect(gainNode);
+      source.start();
+    },
   });
-
+  const translateMutation = trpc.translate.translate.useMutation();
+  const dictionaryMutation = trpc.translate.dictionary.useMutation();
   useEffect(() => {
     translateMutation.mutate({ text: searchTerm });
     dictionaryMutation.mutate({ text: searchTerm });
