@@ -106,7 +106,7 @@ export const translateRouter = router({
       }
       const translate_token = await prisma.helper
         .findFirst()
-        .catch(() => console.log("cant find token"));
+        .catch((e) => console.log(e));
 
       const response = await axios
         .post<TranslateApi>(
@@ -126,7 +126,7 @@ export const translateRouter = router({
         .then((res) => res.data)
         .catch(async (err) => {
           if (err.response.status === 401 && err.response.data.code === 16) {
-            return await handleYandexToken(err);
+            return (await handleYandexToken(err)) as TranslateApi;
           } else {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",
@@ -150,7 +150,7 @@ export const translateRouter = router({
       });
       const yandex_token = await prisma.helper.findFirst();
       const voice = await axios
-        .post(
+        .post<ArrayBuffer>(
           "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize",
           params.toString(),
           {
@@ -161,10 +161,14 @@ export const translateRouter = router({
             responseType: "arraybuffer",
           }
         )
-        .then((data) => data.data)
+        .then((data) => {
+          console.log(data.data);
+
+          return data.data;
+        })
         .catch(async (err) => {
           if (err.response.status === 401 && err.response.data.code === 16) {
-            return await handleYandexToken(err);
+            return (await handleYandexToken(err)) as ArrayBuffer;
           } else {
             throw new TRPCError({
               code: "INTERNAL_SERVER_ERROR",

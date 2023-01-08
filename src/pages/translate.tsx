@@ -5,6 +5,7 @@ import { trpc } from "../utils/trpc";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import superjson from "superjson";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBook, FiHeart, FiVolume2 } from "react-icons/fi";
 import useAudioMutation from "../utils/useAudioMutation";
@@ -123,7 +124,9 @@ const Translate = (
   const delikeMutation = useUnLikeMutation();
   const audioMutation = trpc.translate.textToSpeech.useMutation({
     async onSuccess(data) {
-      const byteArray = data.data;
+      const array = data as unknown as { type: string; data: number[] };
+      const byteArray = Uint8Array.from(array.data).buffer;
+      console.log(data);
       if (byteArray.byteLength == 0) return;
       const context = new AudioContext();
       const audioBuffer = await context.decodeAudioData(byteArray);
@@ -194,7 +197,7 @@ const Translate = (
               <div className="w-full h-full flex outline-none bg-white ">
                 <div className="flex-1">
                   <span className="break-all">
-                    {translateMutation.data?.data.translations[0].text}
+                    {translateMutation.data?.translations[0].text}
                   </span>
                 </div>
                 <div className="flex-col flex gap-2">
@@ -204,8 +207,7 @@ const Translate = (
                         ? delikeMutation.mutate({ eng: searchTerm })
                         : likeMutation.mutate({
                             eng: searchTerm,
-                            rus: translateMutation.data?.data.translations[0]
-                              .text,
+                            rus: translateMutation.data?.translations[0].text,
                           });
                     }}
                     className={
