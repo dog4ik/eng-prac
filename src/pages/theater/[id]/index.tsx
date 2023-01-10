@@ -1,32 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import TheaterHeader from "../../../components/TheaterHeader";
 import Error from "../../../components/ui/Error";
+import NotFoundError from "../../../components/ui/NotFoundError";
+import { trpc } from "../../../utils/trpc";
 import useGridCols from "../../../utils/useGrid";
 type SeasonCardProps = {
-  img?: string;
+  img: string | null;
   title: string;
   episodes: number;
   href: string;
-};
-type ShowType = {
-  backdrop?: string;
-  plot?: string;
-  poster?: string;
-  title: string;
-  rating?: string;
-  releaseDate: string;
-  seasons: SeasonsType[];
-};
-type SeasonsType = {
-  id: string;
-  number: number;
-  poster?: string;
-  episodesCount: number;
 };
 export const getServerSideProps: GetServerSideProps<{
   id?: string | string[];
@@ -81,20 +66,24 @@ const LoadingCard = () => {
 const Seasons = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
-  const seasonsQuery = useQuery(["get-seasons", props.id], () =>
-    axios.get<ShowType>(`/api/theater/${props.id}`)
-  );
+  const seasonsQuery = trpc.theater.getSeasons.useQuery({
+    showId: props.id!.toString(),
+  });
   const cols = useGridCols(270);
-  if (seasonsQuery.isError) return <Error />;
+  if (seasonsQuery.isError) {
+    if (seasonsQuery.error.data?.code === "NOT_FOUND")
+      return <NotFoundError text="Show" />;
+    return <Error />;
+  }
   return (
     <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
       {seasonsQuery.isSuccess && (
         <TheaterHeader
-          description={seasonsQuery.data.data.plot}
-          img={seasonsQuery.data.data.poster}
-          title={seasonsQuery.data.data.title}
-          subtitle={seasonsQuery.data.data.releaseDate}
-          ratings={Number(seasonsQuery.data.data.rating)}
+          description={seasonsQuery.data.plot}
+          img={seasonsQuery.data.poster}
+          title={seasonsQuery.data.title}
+          subtitle={seasonsQuery.data.releaseDate}
+          ratings={Number(seasonsQuery.data.rating)}
         />
       )}
       <div
@@ -103,7 +92,7 @@ const Seasons = (
       >
         {seasonsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
         {seasonsQuery.isSuccess &&
-          seasonsQuery.data.data.seasons.map((season) => (
+          seasonsQuery.data.seasons.map((season) => (
             <SeasonCard
               key={season.id}
               img={season.poster}

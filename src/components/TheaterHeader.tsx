@@ -2,10 +2,10 @@ import React from "react";
 import Image from "next/image";
 type HeaderProps = {
   title: string;
-  subtitle?: string;
-  ratings?: number;
-  description?: string;
-  img?: string;
+  subtitle: string | null;
+  ratings?: number | null;
+  description: string | null;
+  img: string | null;
 };
 const TheaterHeader = ({
   title,

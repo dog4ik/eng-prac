@@ -1,27 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import Title from "../../components/Title";
 import Error from "../../components/ui/Error";
+import { trpc } from "../../utils/trpc";
 import useGridCols from "../../utils/useGrid";
 type ShowCardProps = {
-  img?: string;
+  img: string | null;
   title: string;
   seasons: number;
   id: string;
-};
-type ShowType = {
-  backdrop?: string;
-  plot?: string;
-  id: string;
-  poster?: string;
-  title: string;
-  rating?: string;
-  tmdbId: string;
-  releaseDate: string;
-  seasonsCount: number;
 };
 
 const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
@@ -71,9 +59,7 @@ const LoadingCard = () => {
 };
 const Shows = () => {
   const cols = useGridCols(270);
-  const showsQuery = useQuery(["all-shows"], () =>
-    axios.get<ShowType[]>("/api/theater")
-  );
+  const showsQuery = trpc.theater.getShows.useQuery();
   if (showsQuery.isError) {
     return <Error />;
   }
@@ -86,7 +72,7 @@ const Shows = () => {
       >
         {showsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
         {showsQuery.isSuccess &&
-          showsQuery.data.data.map((show) => (
+          showsQuery.data.map((show) => (
             <ShowCard
               id={show.id}
               img={show.poster}

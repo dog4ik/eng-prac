@@ -1,33 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React from "react";
 import TheaterHeader from "../../../../components/TheaterHeader";
 import useGridCols from "../../../../utils/useGrid";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Error from "../../../../components/ui/Error";
+import { trpc } from "../../../../utils/trpc";
+import NotFoundError from "../../../../components/ui/NotFoundError";
 type EpisodeCardProps = {
-  img?: string;
+  img: string | null;
   title: string;
   episode: number;
   href: string;
-};
-type SeasonType = {
-  number: number;
-  releaseDate: string;
-  plot?: string;
-  poster?: string;
-  episodesCount: number;
-  episodes: EpisodeType[];
-};
-type EpisodeType = {
-  id: string;
-  title: string;
-  number: number;
-  releaseDate?: string;
-  rating?: string;
-  poster?: string;
 };
 
 export const getServerSideProps: GetServerSideProps<{
@@ -87,18 +71,23 @@ const Season = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
   const cols = useGridCols(440);
-  const episodesQuery = useQuery(["get-season", props.id, props.season], () =>
-    axios.get<SeasonType>(`/api/theater/${props.id}/${props.season}`)
-  );
-  if (episodesQuery.isError) return <Error />;
+  const episodesQuery = trpc.theater.getEpisodes.useQuery({
+    showId: props.id!.toString(),
+    number: parseInt(props.season!.toString()),
+  });
+  if (episodesQuery.isError) {
+    if (episodesQuery.error.data?.code === "NOT_FOUND")
+      return <NotFoundError text="Season" />;
+    return <Error />;
+  }
   return (
     <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
       {episodesQuery.isSuccess && (
         <TheaterHeader
-          description={episodesQuery.data.data.plot}
-          img={episodesQuery.data.data.poster}
-          title={"Season " + episodesQuery.data.data.number}
-          subtitle={`${episodesQuery.data.data.releaseDate}`}
+          description={episodesQuery.data.plot}
+          img={episodesQuery.data.poster}
+          title={"Season " + episodesQuery.data.number}
+          subtitle={`${episodesQuery.data.releaseDate}`}
         />
       )}
       <div
@@ -108,7 +97,7 @@ const Season = (
         {episodesQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
 
         {episodesQuery.isSuccess &&
-          episodesQuery.data.data.episodes.map((episode) => (
+          episodesQuery.data.episodes.map((episode) => (
             <EpisodeCard
               key={episode.id}
               img={episode.poster}
