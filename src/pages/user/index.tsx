@@ -1,28 +1,20 @@
-import { useMutation } from "@tanstack/react-query";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRef } from "react";
 import { FiX } from "react-icons/fi";
 import Header from "../../components/PageHeader";
+import Error from "../../components/ui/Error";
 import Input from "../../components/ui/Input";
 import Loading from "../../components/ui/Loading";
-import authApi from "../../utils/authApi";
+import UnauthorizedError from "../../components/ui/UnauthorizedError";
+import { trpc } from "../../utils/trpc";
 import useToggle from "../../utils/useToggle";
-import { useUser } from "../../utils/useUser";
 type Props = {
   handleClose: () => void;
-  name?: string;
-  email?: string;
+  name: string | null;
+  email: string;
 };
-// export const getServerSideProps: GetServerSideProps<{
-//   id?: string | string[];
-// }> = async (context) => {
-//   const { id } = context.query;
-//   return { props: { id } };
-// };
 const UserModal = ({ handleClose, name, email }: Props) => {
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
-  const updateMutation = useMutation(() => authApi.post("/"));
   return (
     <div
       className="fixed flex z-20 top-0 left-0 h-screen w-screen overflow-hidden bg-neutral-900/75 animate-fade-in"
@@ -46,7 +38,7 @@ const UserModal = ({ handleClose, name, email }: Props) => {
               ref={nameRef}
               id="name"
               type="text"
-              defaultValue={name}
+              defaultValue={name ?? ""}
             />
             <Input
               label="Email"
@@ -74,35 +66,41 @@ const UserModal = ({ handleClose, name, email }: Props) => {
   );
 };
 const User = () => {
-  const user = useUser();
+  const userQuery = trpc.user.credentials.useQuery();
   const [toggleUser, setToggleUser] = useToggle(false);
-  if (user.isLoading) return <Loading />;
-  if (user.data)
-    return (
-      <>
-        {toggleUser && (
-          <UserModal
-            email={user.data?.email}
-            name={user.data?.name}
-            handleClose={() => setToggleUser()}
-          />
-        )}
+  if (userQuery.isLoading) return <Loading />;
+  if (userQuery.isError) {
+    if (userQuery.error.data?.code === "UNAUTHORIZED")
+      return <UnauthorizedError />;
+    return <Error />;
+  }
+  return (
+    <>
+      {toggleUser && (
+        <UserModal
+          email={userQuery.data?.email}
+          name={userQuery.data?.name}
+          handleClose={() => setToggleUser()}
+        />
+      )}
 
-        <div className="w-full px-5 md:px-20 flex flex-col flex-1">
-          <Header
-            type="Profile"
-            data={{
-              name: user.data?.name ? user.data.name : user.data.email,
-              picture:
-                "https://images.unsplash.com/photo-1666844550308-9b47df48af49?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
-            }}
-            isOwner={true}
-            setEditModal={setToggleUser}
-          />
-          <div></div>
-        </div>
-      </>
-    );
+      <div className="w-full px-5 md:px-20 flex flex-col flex-1">
+        <Header
+          type="Profile"
+          data={{
+            name: userQuery.data?.name
+              ? userQuery.data.name
+              : userQuery.data.email,
+            picture:
+              "https://images.unsplash.com/photo-1666844550308-9b47df48af49?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+          }}
+          isOwner={true}
+          setEditModal={setToggleUser}
+        />
+        <div></div>
+      </div>
+    </>
+  );
 };
 
 export default User;

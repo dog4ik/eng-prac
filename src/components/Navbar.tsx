@@ -1,50 +1,30 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
 import {
   FiUser,
-  FiBell,
-  FiStar,
   FiLogOut,
   FiChevronDown,
   FiChevronUp,
   FiMenu,
 } from "react-icons/fi";
 import usePopout from "../utils/usePopout";
-import { User, useUser } from "../utils/useUser";
-import { useQueryClient, UseQueryResult } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import SideBar from "./SideBar";
 import useToggle from "../utils/useToggle";
-const Notifications = () => {
-  return (
-    <div
-      onClick={(event) => {
-        event.stopPropagation();
-      }}
-      className="absolute cursor-default top-6 -translate-x-1/2 animate-fade-in rounded-xl bg-neutral-700 w-96"
-    >
-      <div className="py-2 max-h-80 overflow-y-auto">
-        <div className="h-16 dark:hover:bg-neutral-500 rounded-xl flex gap-5 items-center px-3">
-          <FiBell></FiBell>
-          <span>You got this! +5 Coins</span>
-          <span className="text-gray-300/50 ">2 days ago</span>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { trpc } from "../utils/trpc";
 const Popout = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const handleLogout = async () => {
-    queryClient.removeQueries(["userdata", "get-likes"]);
+    const keys = trpc.user.credentials.getQueryKey();
+    queryClient.removeQueries(keys);
     queryClient.invalidateQueries(["userdata", "get-likes"]);
     if (typeof window != "undefined") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
     }
     await router.push("/");
-    router.reload();
   };
   return (
     <ul className="absolute z-10 right-0 top-6 w-60 animate-fade-in rounded-xl bg-neutral-700 overflow-hidden">
@@ -85,35 +65,11 @@ const Loading = () => {
     <div className="w-3/12 bg-gray-300 h-9 animate-pulse rounded-full"></div>
   );
 };
-const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
-  const notificationRef = useRef<HTMLDivElement>(null);
+const UserGreeting = ({ email }: { email: string }) => {
   const userRef = useRef<HTMLDivElement>(null);
-  const [notification, setNotification] = usePopout(notificationRef);
   const [profile, setProfile] = usePopout(userRef);
   return (
     <div className="flex gap-7 justify-center items-center">
-      <div
-        ref={notificationRef}
-        className="cursor-pointer"
-        onClick={() => {
-          setNotification();
-        }}
-      >
-        <div className="relative">
-          <FiBell
-            size={20}
-            className="dark:fill-white cursor-pointer pointer-events-none"
-          ></FiBell>
-          <span className="absolute select-none pointer-events-none text-[10px] left-3 font-bold bottom-2 bg-red-500 rounded-full px-1">
-            1
-          </span>
-          {notification && <Notifications />}
-        </div>
-      </div>
-      <div className="flex gap-2 justify-center items-center cursor-pointer">
-        <FiStar size={20} className="dark:fill-white" />0
-      </div>
-
       <div
         onClick={() => {
           setProfile();
@@ -124,7 +80,7 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
         <div className=" bg-neutral-800 rounded-full p-1">
           <FiUser size={20} className="dark:fill-white cursor-pointer" />
         </div>
-        <span className="hidden lg:block">{user.data?.email}</span>
+        <span className="hidden lg:block">{email}</span>
         {profile ? (
           <FiChevronUp size={25} className="pointer-events-none" />
         ) : (
@@ -136,7 +92,7 @@ const UserGreeting = ({ user }: { user: UseQueryResult<User> }) => {
   );
 };
 const Navbar = () => {
-  const user = useUser();
+  const user = trpc.user.credentials.useQuery();
   const [isExpanded, setIsExpanded] = useToggle(false);
   return (
     <>
@@ -186,7 +142,7 @@ const Navbar = () => {
         </div>
         {user.isLoading && <Loading />}
         {user.isError && <GuestGreeting />}
-        {user.isSuccess && <UserGreeting user={user} />}
+        {user.isSuccess && <UserGreeting email={user.data.email} />}
       </div>
     </>
   );

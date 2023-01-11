@@ -1,13 +1,12 @@
 import Head from "next/head";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useToggle from "../../utils/useToggle";
 import Loading from "../../components/ui/Loading";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { Word, useWordbook, RemoveWordMutation } from "../../utils/useWordbook";
+import { useWordbook, RemoveWordMutation } from "../../utils/useWordbook";
 import { useLikes } from "../../utils/useLikes";
 import Error from "../../components/ui/Error";
 import PageHeader from "../../components/PageHeader";
-import { useUser } from "../../utils/useUser";
 import ListBar from "../../components/ListBar";
 import WordList from "../../components/WordList";
 import EditWordbookModal from "../../components/modals/EditWordbookModal";
@@ -17,6 +16,7 @@ import { MenuWrapper, MenuRow } from "../../components/MenuWrapper";
 import WordbookCtxProvider, {
   useWordbookCtx,
 } from "../../components/context/WordbookCtx";
+import { trpc } from "../../utils/trpc";
 export const getServerSideProps: GetServerSideProps<{
   id?: string;
 }> = async (context) => {
@@ -56,7 +56,7 @@ const Wordbook = (
 ) => {
   const wordbookQuery = useWordbook(props.id);
   const like = useLikes();
-  const user = useUser();
+  const user = trpc.user.credentials.useQuery();
   const scrollListRef = useRef<HTMLDivElement>(null);
   const [modal, setModal] = useToggle(false);
   const [editWordbookModal, setEditWordbookModal] = useToggle(false);

@@ -1,84 +1,73 @@
-import { User } from "@prisma/client";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useRouter } from "next/router";
-import React, { ReactElement, useContext, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Input from "../components/ui/Input";
-import test, { emailEx, passwordEx } from "../utils/TestInput";
+import { trpc } from "../utils/trpc";
+import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
+
+const LoadingBtn = () => {
+  return (
+    <button className="p-2 flex justify-center items-center rounded-xl bg-green-600 transition ease-in-out duration-150 cursor-not-allowed">
+      <svg
+        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+        ></path>
+      </svg>
+      Loading...
+    </button>
+  );
+};
 
 const SignUp = () => {
   const router = useRouter();
-  const signupMutation = useMutation(
-    (data: { email?: string; password?: string }) => {
-      return axios.post(
-        process.env.NEXT_PUBLIC_API_LINK + "/users/create",
-        data
-      );
+  const queryClient = useQueryClient();
+  const keys = trpc.user.credentials.getQueryKey();
+  const signupMutation = trpc.user.create.useMutation({
+    onSuccess: (data) => {
+      if (typeof window != "undefined") {
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("refresh_token", data.refresh_token);
+      }
+      queryClient.invalidateQueries(keys);
+      router.push("/");
     },
-    {
-      onSuccess: (data) => {
-        if (typeof window != "undefined") {
-          localStorage.setItem("access_token", data.data.access_token);
-          localStorage.setItem("refresh_token", data.data.refresh_token);
-        }
-        router.push("/");
-      },
-      onError: async (err) => {
-        console.log(err);
-        email.current!.style.borderColor = "red";
-      },
-    }
-  );
-  const password = useRef<HTMLInputElement>(null);
-  const r_password = useRef<HTMLInputElement>(null);
-  const email = useRef<HTMLInputElement>(null);
+    onError: async (err) => {
+      console.log(err);
+    },
+  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const validatedEmail = z.string().email().max(40).safeParse(email);
+  const validatedPassword = z.string().min(8).max(40).safeParse(password);
+  const validatedRepeatPassword = z
+    .string()
+    .min(8)
+    .max(40)
+    .safeParse(repeatPassword);
   const handleSubmit = () => {
-    if (passwordTest() && test(emailEx, email) && test(passwordEx, password)) {
-      signupMutation.mutate({
-        email: email.current?.value,
-        password: password.current?.value,
-      });
-    } else {
-      passwordTest();
-      test(emailEx, email);
-      test(passwordEx, password);
-    }
-  };
-
-  function passwordTest() {
-    if (password.current?.value != r_password.current?.value) {
-      r_password.current!.style.borderColor = "red";
-      return false;
-    } else {
-      return true;
-    }
-  }
-  const Loading = () => {
-    return (
-      <button className="p-2 flex justify-center items-center rounded-xl bg-green-600 transition ease-in-out duration-150 cursor-not-allowed">
-        <svg
-          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
-        Loading...
-      </button>
-    );
+    if (
+      !validatedEmail.success ||
+      !validatedPassword.success ||
+      !validatedRepeatPassword.success
+    )
+      return;
+    signupMutation.mutate({ password, email });
   };
 
   return (
@@ -97,10 +86,16 @@ const SignUp = () => {
             }}
           >
             <Input
-              ref={email}
-              onChange={() => {
-                email.current!.style.borderColor = "";
-                test(emailEx, email);
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+              value={email}
+              style={{
+                borderColor: `${
+                  (!validatedEmail.success && email) || signupMutation.isError
+                    ? "red"
+                    : ""
+                }`,
               }}
               label="Email"
               required
@@ -108,10 +103,13 @@ const SignUp = () => {
               autoComplete="email"
             ></Input>
             <Input
-              ref={password}
-              onChange={() => {
-                password.current!.style.borderColor = "";
-                test(passwordEx, password);
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
+              value={password}
+              style={{
+                borderColor:
+                  !validatedPassword.success && password ? "red" : "",
               }}
               label="Password"
               required
@@ -119,10 +117,17 @@ const SignUp = () => {
               autoComplete="new-password"
             ></Input>
             <Input
-              ref={r_password}
-              onChange={() => {
-                r_password.current!.style.borderColor = "";
-                passwordTest();
+              onChange={(e) => {
+                setRepeatPassword(e.target.value);
+              }}
+              value={repeatPassword}
+              style={{
+                borderColor:
+                  !validatedRepeatPassword.success &&
+                  password &&
+                  password !== repeatPassword
+                    ? "red"
+                    : "",
               }}
               label="Repeat Password"
               required
@@ -130,7 +135,7 @@ const SignUp = () => {
               autoComplete="new-password"
             ></Input>
             {signupMutation.isLoading ? (
-              <Loading />
+              <LoadingBtn />
             ) : (
               <button type="submit" className="p-2 rounded-xl bg-green-600">
                 Create
