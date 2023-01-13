@@ -1,19 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import WordleModal from "../../../components/modals/WordleModal";
+import Error from "../../../components/ui/Error";
 import Loading from "../../../components/ui/Loading";
-import authApi from "../../../utils/authApi";
+import NotFoundError from "../../../components/ui/NotFoundError";
+import UnauthorizedError from "../../../components/ui/UnauthorizedError";
+import { trpc } from "../../../utils/trpc";
 import useToggle from "../../../utils/useToggle";
-type WordleType = {
-  word: string;
-  tries: string[];
-  maxTries: number;
-  id: string;
-  userId: string;
-  finishDate: Date;
-};
 export const getServerSideProps: GetServerSideProps<{
   id?: string | string[];
 }> = async (context) => {
@@ -24,16 +17,45 @@ const Keyboard = ({
   onClick,
   onEnter,
   onDelete,
+  tries,
+  solution,
 }: {
   onClick: (key: string) => void;
   onEnter: () => void;
   onDelete: () => void;
+  solution: string;
+  tries: string[];
 }) => {
   const keys = [
     ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
     ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
     ["z", "x", "c", "v", "b", "n", "m"],
   ];
+  const createCharMap = () => {
+    const charMap = new Map<string, "absent" | "correct" | "present">();
+    tries.forEach((item) => {
+      for (let i = 0; i < item.length; i++) {
+        const char = item[i];
+        if (char === solution[i]) {
+          charMap.set(char, "correct");
+          continue;
+        }
+        if (solution.includes(char)) {
+          charMap.set(char, "present");
+          continue;
+        }
+        charMap.set(char, "absent");
+      }
+    });
+    return charMap;
+  };
+  const [charMap, setCharMap] = useState<
+    Map<string, "absent" | "correct" | "present">
+  >(createCharMap());
+  useEffect(() => {
+    setCharMap(createCharMap());
+    console.log("fire", tries);
+  }, [tries]);
   return (
     <div className="flex flex-col justify-center items-center gap-2">
       {keys.map((row, index) => (
@@ -48,17 +70,29 @@ const Keyboard = ({
               <span className="text-xl uppercase">del</span>
             </div>
           )}
-          {row.map((key) => (
-            <div
-              key={key}
-              onClick={() => {
-                onClick(key);
-              }}
-              className="flex justify-center select-none items-center rounded-lg bg-white text-black py-2 px-4 cursor-pointer"
-            >
-              <span className="text-xl uppercase">{key}</span>
-            </div>
-          ))}
+          {row.map((key) => {
+            const evaluation = charMap.get(key);
+            return (
+              <div
+                key={key}
+                onClick={() => {
+                  onClick(key);
+                }}
+                className={` ${
+                  evaluation === "correct"
+                    ? "bg-green-400"
+                    : evaluation === "absent"
+                    ? "bg-gray-400"
+                    : evaluation === "present"
+                    ? "bg-yellow-400"
+                    : "bg-white"
+                } flex justify-center select-none items-center rounded-lg text-black py-2 px-4 cursor-pointer`}
+              >
+                <span className="text-xl uppercase">{key}</span>
+              </div>
+            );
+          })}
+
           {index == 2 && (
             <div
               onClick={() => {
@@ -91,7 +125,7 @@ const Letter = ({
       } ${evaluation === null && "bg-gray-700"}
       `}
     >
-      {letter && <span className="text-3xl">{letter}</span>}
+      {letter && <span className="text-3xl">{letter.toUpperCase()}</span>}
     </div>
   );
 };
@@ -116,116 +150,117 @@ const Row = ({
     </div>
   );
 };
+
 const Wordle = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
-  const queryClient = useQueryClient();
   const [answer, setAnswer] = useState("");
+  const [isFinished, setIsFinished] = useState(false);
   const [currentRow, setCurrentRow] = useState<number>(0);
   const [tries, setTries] = useState<string[]>([]);
   const [wordleModal, setWordleModal] = useToggle(false);
-  const wordleQuery = useQuery<WordleType, AxiosError>(
-    ["wordle", props.id],
-    () => authApi.get("wordle/" + props.id).then((data) => data.data),
+  const wordleQuery = trpc.wordle.getGame.useQuery(
+    { id: props.id!.toString() },
     {
       retry: false,
       onSuccess(data) {
         setCurrentRow(data.tries.length);
         setTries(data.tries);
+        if (
+          data.tries.includes(data.word) ||
+          data.tries.length >= data.maxTries
+        ) {
+          setIsFinished(true);
+        }
       },
     }
   );
-  const submitMutation = useMutation(
-    (word: { word: string }) => authApi.post("wordle/" + props.id, word),
-    {
-      onSuccess(data, variables, context) {
-        queryClient.invalidateQueries(["wordle", props.id]);
-      },
-    }
-  );
+  const submitMutation = trpc.wordle.submitAnswer.useMutation();
   const submitAnswer = () => {
-    if (
-      answer.length !== wordleQuery.data?.word.length ||
-      wordleQuery.data?.tries.length === wordleQuery.data?.maxTries
-    )
-      return;
-    submitMutation.mutate({ word: answer });
+    if (isFinished || wordleQuery.data?.word.length !== answer.length) return;
+    submitMutation.mutate({ word: answer, id: props.id!.toString() });
     setCurrentRow((prev) => prev + 1);
     setTries([...tries, answer]);
     setAnswer("");
     if (
       wordleQuery.data.word === answer ||
-      (currentRow ?? 0) + 1 == wordleQuery.data.maxTries
+      tries.length + 1 === wordleQuery.data.maxTries
     ) {
+      setIsFinished(true);
       setWordleModal(true);
     }
   };
 
-  const addToAnswer = (str: string) => {
-    if (wordleQuery.data) {
-      if (wordleQuery.data.tries.includes(wordleQuery.data.word)) return;
-      wordleQuery.data.word !== str &&
-        wordleQuery.data.tries.length <= wordleQuery.data.maxTries &&
-        setAnswer((prev) =>
-          prev.length < wordleQuery.data.word.length ? prev + str : prev
-        );
-    }
+  const addToAnswer = (char: string) => {
+    if (answer.length >= wordleQuery.data!.word.length || isFinished) return;
+    setAnswer(answer + char);
   };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (!wordleQuery.isSuccess) return;
       if (
         e.key.toLocaleLowerCase().charCodeAt(0) >= 97 &&
         e.key.toLowerCase().charCodeAt(0) <= 122 &&
         e.key.length === 1
       )
         addToAnswer(e.key.toLocaleLowerCase());
-      if (e.code === "Backspace")
-        setAnswer((prev) => prev.slice(length, length - 1));
-      if (e.code === "Enter") !submitMutation.isLoading && submitAnswer();
+      if (e.code === "Backspace") setAnswer((prev) => prev.slice(0, -1));
+      if (e.code === "Enter") submitAnswer();
     };
+
     document.addEventListener("keydown", handleKeyDown);
+
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [answer, wordleQuery.isSuccess, wordleQuery.data?.tries]);
-  if (wordleQuery.isLoading) return <Loading />;
-  if (wordleQuery.isSuccess)
-    return (
-      <>
-        {(tries.includes(wordleQuery.data.word) ||
-          tries.length == wordleQuery.data.maxTries) &&
-          wordleModal && (
-            <WordleModal
-              handleClose={() => setWordleModal(false)}
-              isWin={tries.includes(wordleQuery.data.word)}
-              word={wordleQuery.data.word}
+  }, [answer, isFinished, wordleQuery.data?.tries]);
+
+  if (wordleQuery.isFetching || wordleQuery.isLoading) return <Loading />;
+  if (wordleQuery.isError) {
+    if (wordleQuery.error.data?.code === "NOT_FOUND")
+      return <NotFoundError text="Wordle" />;
+    if (wordleQuery.error.data?.code === "UNAUTHORIZED")
+      return <UnauthorizedError />;
+    return <Error />;
+  }
+  return (
+    <>
+      {isFinished && wordleModal && (
+        <WordleModal
+          handleClose={() => setWordleModal(false)}
+          isWin={tries.includes(wordleQuery.data.word)}
+          word={wordleQuery.data.word}
+        />
+      )}
+
+      <div className="flex flex-col flex-1 justify-center items-center">
+        <div>
+          {[...Array(wordleQuery.data.maxTries)].map((_, index) => (
+            <Row
+              key={index}
+              maxLetters={wordleQuery.data.word.length}
+              word={currentRow == index ? answer : tries[index]}
+              evaluation={tries[index]
+                ?.split("")
+                .map((letter, index) =>
+                  letter === wordleQuery.data.word[index]
+                    ? "correct"
+                    : wordleQuery.data.word.includes(letter)
+                    ? "present"
+                    : "absent"
+                )}
             />
-          )}
-        <div className="flex flex-col flex-1 justify-center items-center">
-          <div>
-            {[...Array(wordleQuery.data.maxTries)].map((_, index) => (
-              <Row
-                key={index}
-                maxLetters={wordleQuery.data.word.length}
-                word={currentRow == index ? answer : tries[index] ?? ""}
-                evaluation={tries[index]
-                  ?.split("")
-                  .map((letter, index) =>
-                    letter == wordleQuery.data.word[index]
-                      ? "correct"
-                      : wordleQuery.data.word.includes(letter)
-                      ? "present"
-                      : "absent"
-                  )}
-              />
-            ))}
-          </div>
-          <Keyboard
-            onClick={(key) => addToAnswer(key)}
-            onDelete={() => setAnswer((prev) => prev.slice(length, length - 1))}
-            onEnter={() => !submitMutation.isLoading && submitAnswer()}
-          />
+          ))}
         </div>
-      </>
-    );
+        <Keyboard
+          onClick={(key) => addToAnswer(key)}
+          onDelete={() => setAnswer((prev) => prev.slice(0, -1))}
+          onEnter={() => !submitMutation.isLoading && submitAnswer()}
+          tries={tries}
+          solution={wordleQuery.data.word}
+        />
+      </div>
+    </>
+  );
 };
 
 export default Wordle;

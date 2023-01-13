@@ -4,6 +4,7 @@ import { translateRouter } from "./routers/translate";
 import { theaterRouter } from "./routers/theater";
 import { router } from "./trpc";
 import { usersRouter } from "./routers/users";
+import { wordleRouter } from "./routers/wordle";
 
 export const appRouter = router({
   test: testRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   translate: translateRouter,
   theater: theaterRouter,
   user: usersRouter,
+  wordle: wordleRouter,
 });
 
 export type AppRouter = typeof appRouter;

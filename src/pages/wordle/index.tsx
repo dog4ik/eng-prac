@@ -1,14 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Loading from "../../components/ui/Loading";
-import authApi from "../../utils/authApi";
+import { trpc } from "../../utils/trpc";
+import { z } from "zod";
 import { useAllWordbooks } from "../../utils/useAllWordbooks";
 type GameRowProps = {
   word: string;
-  date: Date | null;
+  date: string | null;
   id: string;
   isWin: boolean;
 };
@@ -18,15 +18,6 @@ type WordbookRowProps = {
   id: string;
   isSelected: boolean;
   onClick: (id: string) => void;
-};
-type WordleType = {
-  word: string;
-  tries: string[];
-  maxTries: number;
-  id: string;
-  userId: string;
-  finishDate: Date | null;
-  createdAt: Date;
 };
 const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
   const Status = () => {
@@ -38,7 +29,7 @@ const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
       return <span className="text-red-500 w-1/3 text-end">Lose</span>;
     return null;
   };
-  const calculate = (date: Date) => {
+  const calculate = (date: string) => {
     const diff = Date.now() - new Date(date).getTime();
     if (Math.floor(diff / 1000) < 60) return Math.floor(diff / 1000) + "s ago";
     if (Math.floor(diff / (1000 * 60)) < 60)
@@ -51,6 +42,7 @@ const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
       return new Date(date).toLocaleDateString();
   };
   const dateFrom = date ? calculate(date) : Date();
+
   return (
     <Link href={"/wordle/game/" + id}>
       <div className="w-80 bg-neutral-600 hover:bg-neutral-500 transition duration-150 rounded-xl flex items-center px-5 py-4 cursor-pointer">
@@ -87,35 +79,33 @@ const WordbookRow = ({
 const Index = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const createWordleMutation = useMutation(
-    (data: {
-      maxTries: number;
-      sourceList: string[];
-    }): Promise<{
-      word: string;
-      tries: string[];
-      maxTries: number;
-      id: string;
-    }> => authApi.post("wordle", data).then((data) => data.data),
-    {
-      onSettled(data, error, variables, context) {
-        queryClient.invalidateQueries(["all-wordles"]);
-      },
-      onSuccess(data, variables, context) {
-        router.push("/wordle/game/" + data.id);
-      },
-    }
-  );
-  const getAllWordlesQuery = useQuery<AxiosResponse<WordleType[]>, AxiosError>(
-    ["all-wordles"],
-    () => authApi.get("wordle"),
-    {}
-  );
+  const createWordleMutation = trpc.wordle.createGame.useMutation({
+    onSettled() {
+      queryClient.invalidateQueries(trpc.wordle.getGames.getQueryKey());
+    },
+    onSuccess(data) {
+      router.push("/wordle/game/" + data.id);
+    },
+  });
+  const getAllWordlesQuery = trpc.wordle.getGames.useQuery();
   const [maxTries, setMaxTries] = useState(6);
   const [selectedSource, setSelectedSource] = useState<string[]>([]);
   const wordbooksQuery = useAllWordbooks();
+
+  const createGame = () => {
+    if (createWordleMutation.isLoading || createWordleMutation.isSuccess)
+      return;
+    const validatedTries = z.number().min(1).max(10).safeParse(maxTries);
+    if (!validatedTries.success) return;
+    createWordleMutation.mutate({
+      sourceList: selectedSource,
+      maxTries: validatedTries.data,
+    });
+  };
+
   if (getAllWordlesQuery.isLoading || wordbooksQuery.isLoading)
     return <Loading />;
+
   if (getAllWordlesQuery.isSuccess && wordbooksQuery.isSuccess)
     return (
       <div className="mt-10 flex gap-10 flex-col mx-5 md:mx-20 justify-center items-center">
@@ -145,10 +135,7 @@ const Index = () => {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            createWordleMutation.mutate({
-              maxTries,
-              sourceList: selectedSource,
-            });
+            createGame();
           }}
         >
           <div className="flex flex-col gap-5 items-center">
@@ -157,6 +144,8 @@ const Index = () => {
               required
               className="text-black rounded-full p-2 outline-none"
               type="number"
+              min={1}
+              max={10}
               name="tries amount"
               id="tries"
               value={maxTries}
@@ -176,7 +165,7 @@ const Index = () => {
           </div>
         </form>
         <div className="flex flex-col gap-5">
-          {getAllWordlesQuery.data.data.map((wordle) => (
+          {getAllWordlesQuery.data.map((wordle) => (
             <GameRow
               key={wordle.id}
               word={wordle.word}
