@@ -16,6 +16,7 @@ type Props = {
   externalSubs?: string;
   subSrc: string | null;
 };
+
 const VolumeIcon = ({
   volume,
   isMuted,
@@ -148,10 +149,13 @@ const Video = ({ src, title, subSrc }: Props) => {
           togglePlay();
           break;
         case "KeyC":
-          setShowCaptions();
+          toggleCaptions();
           break;
         case "KeyJ":
           videoRef.current!.currentTime -= 10;
+          break;
+        case "KeyK":
+          togglePlay();
           break;
         case "KeyL":
           videoRef.current!.currentTime += 10;
@@ -193,7 +197,7 @@ const Video = ({ src, title, subSrc }: Props) => {
       <div
         onMouseLeave={() => setShowControls(false)}
         ref={videoContainerRef}
-        className={`relative ${
+        className={`relative ${!showControls && "cursor-none"} ${
           isFullScreen && "overflow-hidden h-screen w-screen"
         }`}
       >
@@ -218,7 +222,10 @@ const Video = ({ src, title, subSrc }: Props) => {
           ref={videoRef}
           className={isFullScreen ? "w-screen h-screen" : ""}
           src={src}
-        />
+          autoPlay
+        >
+          Your browser cant play videos
+        </video>
         {showCaptions && (
           <div className="absolute bottom-20 flex justify-center items-center left-1/2 -translate-x-1/2">
             <Subtitles
@@ -229,7 +236,7 @@ const Video = ({ src, title, subSrc }: Props) => {
             />
           </div>
         )}
-        {showControls && (
+        {showControls && videoRef.current && (
           <>
             {isFullScreen && (
               <div className="absolute top-5 left-5">
@@ -251,7 +258,9 @@ const Video = ({ src, title, subSrc }: Props) => {
                 <div
                   className="h-full flex justify-end rounded-md items-center bg-white after:content-[' '] after:bg-white after:p-2 after:translate-x-2 after:rounded-full after:opacity-0 after:group-hover:opacity-100 after:transition-opacity after:duration-150"
                   style={{
-                    width: `${(time / duration) * 100}%`,
+                    width: `${
+                      (videoRef.current.currentTime / duration) * 100
+                    }%`,
                   }}
                 ></div>
               </div>
