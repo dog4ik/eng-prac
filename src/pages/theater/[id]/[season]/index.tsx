@@ -94,6 +94,7 @@ const Season = (
       {episodesQuery.isSuccess && (
         <TheaterHeader
           description={episodesQuery.data.plot}
+          blurData={episodesQuery.data.blurData}
           img={episodesQuery.data.poster}
           title={"Season " + episodesQuery.data.number}
           subtitle={`${episodesQuery.data.releaseDate}`}

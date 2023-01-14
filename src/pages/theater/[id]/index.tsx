@@ -89,6 +89,7 @@ const Seasons = (
       {seasonsQuery.isSuccess && (
         <TheaterHeader
           description={seasonsQuery.data.plot}
+          blurData={seasonsQuery.data.blurData}
           img={seasonsQuery.data.poster}
           title={seasonsQuery.data.title}
           subtitle={seasonsQuery.data.releaseDate}

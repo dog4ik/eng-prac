@@ -6,6 +6,7 @@ type HeaderProps = {
   ratings?: number | null;
   description: string | null;
   img: string | null;
+  blurData: string | null;
 };
 const TheaterHeader = ({
   title,
@@ -13,15 +14,21 @@ const TheaterHeader = ({
   ratings,
   img,
   description,
+  blurData,
 }: HeaderProps) => {
   return (
     <div className="w-full h-fit flex gap-10">
-      <div className="w-60 max-h-60 md:max-h-fit relative overflow-hidden rounded-xl">
+      <div className="w-60 h-80 max-h-80 md:max-h-fit relative overflow-hidden rounded-xl">
         <Image
           draggable={false}
           alt="cover"
           className="object-cover"
           fill
+          sizes="(max-width: 768px) 90vw,
+          (max-width: 1200px) 33vw,
+          10vw"
+          placeholder={blurData ? "blur" : "empty"}
+          blurDataURL={`data:image/png;base64,${blurData}`}
           src={
             img ??
             "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
