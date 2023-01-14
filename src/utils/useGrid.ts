@@ -1,11 +1,11 @@
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useLayoutEffect, useState } from "react";
 
 const useGridCols = (itemWidth: number) => {
   const [cols, setCols] = useState(0);
   const handleResize = () => {
     setCols(Math.floor(window.innerWidth / itemWidth));
   };
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.addEventListener("resize", handleResize);
     handleResize();
     return () => {
