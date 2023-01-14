@@ -27,6 +27,7 @@ export const theaterRouter = router({
             Season: {
               select: {
                 number: true,
+                blurData: true,
                 poster: true,
                 id: true,
                 _count: { select: { Episodes: {} } },
@@ -47,10 +48,12 @@ export const theaterRouter = router({
         backdrop: seasons.backdrop,
         rating: seasons.rating,
         plot: seasons.plot,
+        blurData: seasons.blurData,
         seasons: seasons.Season.map((s) => {
           return {
             number: s.number,
             poster: s.poster,
+            blurData: s.blurData,
             id: s.id,
             episodesCount: s._count.Episodes,
           };
@@ -69,12 +72,14 @@ export const theaterRouter = router({
           },
           select: {
             poster: true,
+            blurData: true,
             number: true,
             plot: true,
             releaseDate: true,
             Episodes: {
               select: {
                 poster: true,
+                blurData: true,
                 id: true,
                 number: true,
                 releaseDate: true,
@@ -93,6 +98,7 @@ export const theaterRouter = router({
       if (episodes === null) throw new TRPCError({ code: "NOT_FOUND" });
       return {
         poster: episodes.poster,
+        blurData: episodes.blurData,
         number: episodes.number,
         plot: episodes.plot,
         releaseDate: episodes.releaseDate,
@@ -134,6 +140,7 @@ export const theaterRouter = router({
                     subSrc: true,
                     title: true,
                     poster: true,
+                    blurData: true,
                     number: true,
                     id: true,
                   },

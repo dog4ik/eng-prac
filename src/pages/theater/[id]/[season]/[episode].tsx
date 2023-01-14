@@ -16,6 +16,7 @@ import UnauthorizedError from "../../../../components/ui/UnauthorizedError";
 type SideBarType = {
   episode: {
     poster: string | null;
+    blurData: string | null;
     title: string;
     number: number;
   };
@@ -43,6 +44,8 @@ const SideBarEpisodes = ({ episode, href, isCurrent }: SideBarType) => {
       <div className="w-full h-full">
         <Image
           src={episode.poster ?? "PLACEHOLDER"}
+          placeholder={episode.blurData ? "blur" : "empty"}
+          blurDataURL={`data:image/png;base64,${episode.blurData}`}
           width={230}
           height={128}
           alt={"Episode Poster"}
@@ -146,6 +149,7 @@ const Theater = (
                   number: episode.number,
                   title: episode.title,
                   poster: episode.poster,
+                  blurData: episode.blurData,
                 }}
                 href={{
                   id: episodeQuery.data.showId,

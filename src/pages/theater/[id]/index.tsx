@@ -9,6 +9,7 @@ import { trpc } from "../../../utils/trpc";
 import useGridCols from "../../../utils/useGrid";
 type SeasonCardProps = {
   img: string | null;
+  blurData: string | null;
   title: string;
   episodes: number;
   href: string;
@@ -19,7 +20,13 @@ export const getServerSideProps: GetServerSideProps<{
   const { id } = context.query;
   return { props: { id } };
 };
-const SeasonCard = ({ img, title, episodes, href }: SeasonCardProps) => {
+const SeasonCard = ({
+  img,
+  title,
+  episodes,
+  href,
+  blurData,
+}: SeasonCardProps) => {
   return (
     <div>
       <Link
@@ -34,6 +41,8 @@ const SeasonCard = ({ img, title, episodes, href }: SeasonCardProps) => {
           10vw"
           className="object-cover"
           alt="Season poster"
+          placeholder={blurData ? "blur" : "empty"}
+          blurDataURL={`data:image/png;base64,${blurData}`}
           src={
             img ??
             "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
@@ -96,6 +105,7 @@ const Seasons = (
             <SeasonCard
               key={season.id}
               img={season.poster}
+              blurData={season.blurData}
               title={`Season ${season.number}`}
               episodes={season.episodesCount}
               href={props.id + "/" + season.number.toString()}

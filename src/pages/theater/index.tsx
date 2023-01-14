@@ -7,12 +7,13 @@ import { trpc } from "../../utils/trpc";
 import useGridCols from "../../utils/useGrid";
 type ShowCardProps = {
   img: string | null;
+  blurData: string | null;
   title: string;
   seasons: number;
   id: string;
 };
 
-const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
+const ShowCard = ({ img, title, seasons, id, blurData }: ShowCardProps) => {
   return (
     <div>
       <Link
@@ -28,6 +29,8 @@ const ShowCard = ({ img, title, seasons, id }: ShowCardProps) => {
               10vw"
           className="object-cover"
           alt="Show poster"
+          placeholder={blurData ? "blur" : "empty"}
+          blurDataURL={`data:image/png;base64,${blurData}`}
           src={
             img ??
             "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
@@ -76,6 +79,7 @@ const Shows = () => {
             <ShowCard
               id={show.id}
               img={show.poster}
+              blurData={show.blurData}
               seasons={show.seasonsCount}
               title={show.title}
               key={show.id}

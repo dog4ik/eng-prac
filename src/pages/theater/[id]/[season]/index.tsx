@@ -9,6 +9,7 @@ import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 type EpisodeCardProps = {
   img: string | null;
+  blurData: string | null;
   title: string;
   episode: number;
   href: string;
@@ -21,7 +22,13 @@ export const getServerSideProps: GetServerSideProps<{
   const { id, season } = context.query;
   return { props: { id, season } };
 };
-const EpisodeCard = ({ img, title, episode, href }: EpisodeCardProps) => {
+const EpisodeCard = ({
+  img,
+  title,
+  episode,
+  href,
+  blurData,
+}: EpisodeCardProps) => {
   return (
     <div>
       <Link
@@ -36,6 +43,8 @@ const EpisodeCard = ({ img, title, episode, href }: EpisodeCardProps) => {
           10vw"
           className="object-cover"
           alt="Episode poster"
+          placeholder={blurData ? "blur" : "empty"}
+          blurDataURL={`data:image/png;base64,${blurData}`}
           src={
             img ??
             "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
@@ -101,6 +110,7 @@ const Season = (
             <EpisodeCard
               key={episode.id}
               img={episode.poster}
+              blurData={episode.blurData}
               title={episode.title}
               episode={episode.number}
               href={`/theater/${props.id}/${props.season}/${episode.number}`}
