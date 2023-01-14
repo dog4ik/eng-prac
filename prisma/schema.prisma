@@ -112,6 +112,7 @@ model Episode {
   releaseDate  String
   rating       String?
   poster       String?
+  blurData     String?
   plot         String?
   Season       Season?  @relation(fields: [seasonId], references: [id])
   seasonId     String?
@@ -126,6 +127,7 @@ model Season {
   releaseDate String
   plot        String?
   poster      String?
+  blurData    String?
   Shows       Shows     @relation(fields: [showsId], references: [id])
   tmdbId      Int?      @unique
   showsId     String
@@ -138,6 +140,7 @@ model Shows {
   title       String
   releaseDate String
   poster      String?
+  blurData    String?
   backdrop    String?
   rating      String?
   plot        String?

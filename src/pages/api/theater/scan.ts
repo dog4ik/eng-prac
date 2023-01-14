@@ -1,90 +1,25 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import PrismaClient from "../../../../prisma/PrismaClient";
-export const prisma = PrismaClient;
+import prisma from "../../../../prisma/PrismaClient";
+import {
+  TmdbShowSeason,
+  LibItem,
+  MyLibrary,
+  TmdbSearchShow,
+  TmdbSeasonEpisode,
+} from "./tmdb-api";
+
 type ReqestBody = {
-  password: string;
   language?: string;
 };
-type LibItem = {
-  title: string;
-  episodes: { number: number; src: string; subSrc: null | string }[];
-  season: number;
-};
-type TmdbSeasonEpisode = {
-  air_date: string;
-  episode_number: number;
-  crew: {
-    id: number;
-    credit_id: string;
-    name: string;
-    adult: boolean | null;
-    gender: number;
-    known_for_department: string;
-    department: string;
-    original_name: string;
-    popularity: number;
-    job: string;
-    profile_path: string | null;
-  }[];
-  guest_stars: {
-    adult: boolean;
-    gender: number | null;
-    known_for_department: string;
-    original_name: string;
-    popularity: number;
-    id: number;
-    name: string;
-    credit_id: string;
-    character: string;
-    order: number;
-    profile_path: string | null;
-  };
-  name: string;
-  overview: string;
-  id: number;
-  production_code: string | null;
-  season_number: number;
-  still_path: string | null;
-  vote_average: number;
-  vote_count: number;
-};
 
-type TmdbShowSeason = {
-  _id: string;
-  air_date: string;
-  episodes: TmdbSeasonEpisode[];
-  name: string;
-  overview: string;
-  id: number;
-  poster_path: string | null;
-  season_number: number;
+const generateBase64Image = async (path: string) => {
+  return await axios
+    .get("https://image.tmdb.org/t/p/w45" + path, {
+      responseType: "arraybuffer",
+    })
+    .then((data) => Buffer.from(data.data, "binary").toString("base64"));
 };
-type TmdbSearchShow = {
-  page: number;
-  results: {
-    poster_path: string | null;
-    popularity: number;
-    id: number;
-    backdrop_path: string | null;
-    vote_average: number;
-    overview: string;
-    first_air_date: string;
-    origin_country: string[];
-    genre_ids: number[];
-    original_language: string;
-    vote_count: number;
-    name: string;
-    original_name: string;
-  }[];
-  total_results: number;
-  total_pages: number;
-};
-
-interface MyLibrary extends TmdbSeasonEpisode {
-  src: string;
-  subSrc: string | null;
-}
 
 const filterEpisodes = (
   local: {
@@ -112,8 +47,8 @@ export default async function handler(
 ) {
   if (req.method == "POST") {
     const body = req.body as ReqestBody;
-    if (body.password !== process.env.PASSWORD) {
-      res.status(403).send("Failed");
+    if (req.socket.remoteAddress !== "::ffff:127.0.0.1") {
+      res.status(403).send("Forbidden");
       return;
     }
     const tmdbApi = axios.create({
@@ -131,31 +66,74 @@ export default async function handler(
         "Accept-Encoding": "compress",
       },
     });
-    const library = (await axios.get<LibItem[]>("http://127.0.0.1:3001/show"))
-      .data;
+    const library = (
+      await axios.get<LibItem[]>(process.env.MEDIA_SERVER_LINK + "/show")
+    ).data;
     if (library.length == 0 || !library) {
-      res.status(400).send("empty library");
+      await prisma.shows.deleteMany();
+      res.status(200).send("empty library");
       return;
     }
 
-    for (let i = 0; i < library.length; i++) {
-      const tmdbSearchResult = await tmdbApi.get<TmdbSearchShow>("/search/tv", {
-        params: { query: library[i].title },
-      });
+    const myFreshLibrary: {
+      showsIds: number[];
+      seasonsIds: number[];
+      episodesIds: Set<number>;
+    } = { episodesIds: new Set(), seasonsIds: [], showsIds: [] };
 
-      const season = await tmdbApi.get<TmdbShowSeason>(
-        `/tv/${tmdbSearchResult.data.results[0].id}/season/${library[i].season}`
-      );
+    for (let i = 0; i < library.length; i++) {
+      const tmdbSearchResult = await tmdbApi
+        .get<TmdbSearchShow>("/search/tv", {
+          params: { query: library[i].title },
+        })
+        .catch(() => {
+          return null;
+        });
+      if (tmdbSearchResult === null) continue;
+      const season = await tmdbApi
+        .get<TmdbShowSeason>(
+          `/tv/${tmdbSearchResult.data.results[0].id}/season/${library[i].season}`
+        )
+        .catch(() => null);
+      if (season === null) continue;
       const myEpisodes: MyLibrary[] = filterEpisodes(
         library[i].episodes,
         season.data.episodes
       );
+      let showBlurdata: string | null = null;
+      let seasonBlurdata: string | null = null;
+      let episodesBlurdata: Map<number, string> = new Map();
+      if (tmdbSearchResult.data.results[0].poster_path) {
+        showBlurdata = await generateBase64Image(
+          tmdbSearchResult.data.results[0].poster_path
+        );
+      }
+      if (season.data.poster_path) {
+        seasonBlurdata = await generateBase64Image(
+          season.data.poster_path
+        ).catch(() => null);
+      }
+      for (let i = 0; i < myEpisodes.length; i++) {
+        const episode = myEpisodes[i];
+        if (episode.still_path) {
+          const base64 = await generateBase64Image(episode.still_path).catch(
+            () => null
+          );
+          if (base64 != null) episodesBlurdata.set(episode.id, base64);
+        }
+        myFreshLibrary.episodesIds.add(episode.id);
+      }
+      myFreshLibrary.showsIds.push(tmdbSearchResult.data.results[0].id);
+      myFreshLibrary.seasonsIds.push(season.data.id);
+
       await prisma.shows.upsert({
         create: {
           releaseDate: tmdbSearchResult.data.results[0].first_air_date,
           title: tmdbSearchResult.data.results[0].name,
           rating: tmdbSearchResult.data.results[0].vote_average.toString(),
           poster: IMG_BASE_URL + tmdbSearchResult.data.results[0].poster_path,
+          blurData: showBlurdata,
+          scannedDate: new Date(),
           backdrop:
             IMG_BASE_URL + tmdbSearchResult.data.results[0].backdrop_path,
           plot: tmdbSearchResult.data.results[0].overview,
@@ -165,6 +143,8 @@ export default async function handler(
               number: season.data.season_number,
               releaseDate: season.data.air_date,
               poster: IMG_BASE_URL + season.data.poster_path,
+              blurData: seasonBlurdata,
+              scannedDate: new Date(),
               plot: season.data.overview,
               tmdbId: season.data.id,
               Episodes: {
@@ -179,6 +159,7 @@ export default async function handler(
                       releaseDate: item.air_date,
                       rating: item.vote_average.toString(),
                       poster: IMG_BASE_URL + item.still_path,
+                      blurData: episodesBlurdata.get(item.id) ?? null,
                       plot: item.overview,
                       tmdbId: item.id,
                     };
@@ -190,19 +171,14 @@ export default async function handler(
           },
         },
         update: {
-          releaseDate: tmdbSearchResult.data.results[0].first_air_date,
-          title: tmdbSearchResult.data.results[0].name,
-          rating: tmdbSearchResult.data.results[0].vote_average.toString(),
-          poster: IMG_BASE_URL + tmdbSearchResult.data.results[0].poster_path,
-          backdrop:
-            IMG_BASE_URL + tmdbSearchResult.data.results[0].backdrop_path,
-          plot: tmdbSearchResult.data.results[0].overview,
           Season: {
             upsert: {
               create: {
                 number: season.data.season_number,
                 releaseDate: season.data.air_date,
                 poster: IMG_BASE_URL + season.data.poster_path,
+                blurData: seasonBlurdata,
+                scannedDate: new Date(),
                 plot: season.data.overview,
                 tmdbId: season.data.id,
                 Episodes: {
@@ -217,6 +193,7 @@ export default async function handler(
                         releaseDate: item.air_date,
                         rating: item.vote_average.toString(),
                         poster: IMG_BASE_URL + item.still_path,
+                        blurData: episodesBlurdata.get(item.id) ?? null,
                         plot: item.overview,
                         tmdbId: item.id,
                       };
@@ -226,10 +203,6 @@ export default async function handler(
                 },
               },
               update: {
-                number: season.data.season_number,
-                releaseDate: season.data.air_date,
-                poster: IMG_BASE_URL + season.data.poster_path,
-                plot: season.data.overview,
                 Episodes: {
                   createMany: {
                     data: myEpisodes.map((item) => {
@@ -242,6 +215,7 @@ export default async function handler(
                         releaseDate: item.air_date,
                         rating: item.vote_average.toString(),
                         poster: IMG_BASE_URL + item.still_path,
+                        blurData: episodesBlurdata.get(item.id) ?? null,
                         plot: item.overview,
                         tmdbId: item.id,
                       };
@@ -257,8 +231,15 @@ export default async function handler(
         where: { tmdbId: tmdbSearchResult.data.results[0].id },
       });
     }
-
+    await prisma.season.deleteMany({
+      where: { tmdbId: { notIn: myFreshLibrary.seasonsIds } },
+    });
+    await prisma.shows.deleteMany({
+      where: { tmdbId: { notIn: myFreshLibrary.showsIds } },
+    });
+    await prisma.episode.deleteMany({
+      where: { tmdbId: { notIn: Array.from(myFreshLibrary.episodesIds) } },
+    });
     res.status(200).send("done");
   }
-  prisma.$disconnect();
 }
