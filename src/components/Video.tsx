@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import useToggle from "../utils/useToggle";
 import Subtitles from "../components/Subtitles";
+import Loading from "./ui/Loading";
 type Props = {
   src: string;
   title: string;
@@ -51,41 +52,40 @@ const Video = ({ src, title, subSrc }: Props) => {
   const timelineRef = useRef<HTMLDivElement>(null);
   let showControlsTimeout = useRef<NodeJS.Timeout>();
   const [isPaused, setIsPaused] = useToggle(true);
+  const [isError, setIsError] = useState(false);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(true);
+  const [isWaiting, setIsWaiting] = useState(false);
   const [isMuted, setIsMuted] = useToggle(false);
+  const isScubbing = useRef(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useToggle(true);
   const [showCaptions, setShowCaptions] = useToggle(false);
   const [volume, setVolume] = useState(0.3);
   const [time, setTime] = useState(0);
-  const [duration, setDuration] = useState(videoRef.current?.duration ?? 0);
+  const [duration, setDuration] = useState(0);
 
   const changeVolume = (state: number) => {
+    if (!videoRef.current) return;
     if (state > 1) {
-      videoRef.current!.volume = 1;
-      setVolume(1);
+      videoRef.current.volume = 1;
       return;
     }
     if (state < 0) {
-      videoRef.current!.volume = 0;
-      setVolume(0);
+      videoRef.current.volume = 0;
       return;
     }
-    videoRef.current!.volume = state;
-    setVolume(state);
+    videoRef.current.volume = state;
   };
   const togglePlay = (state?: boolean) => {
     console.log("toggled play");
 
-    if (typeof state != "undefined") {
-      setIsPaused(state);
-      state ? videoRef.current?.pause() : videoRef.current?.play();
+    if (typeof state !== "undefined") {
+      state ? videoRef.current?.play() : videoRef.current?.pause();
       return;
     }
     if (videoRef.current?.paused) {
-      setIsPaused(false);
       videoRef.current?.play();
     } else {
-      setIsPaused(true);
       videoRef.current?.pause();
     }
   };
@@ -108,11 +108,11 @@ const Video = ({ src, title, subSrc }: Props) => {
     setShowCaptions();
   };
   const toggleMute = () => {
-    if (videoRef.current!.volume == 0) {
-      videoRef.current!.volume = volume;
+    if (videoRef.current?.muted) {
+      videoRef.current!.muted = false;
       setIsMuted(false);
     } else {
-      videoRef.current!.volume = 0;
+      videoRef.current!.muted = true;
       setIsMuted(true);
     }
   };
@@ -132,14 +132,26 @@ const Video = ({ src, title, subSrc }: Props) => {
     const target = e.target as HTMLDivElement;
     const rect = timelineRef.current!.getBoundingClientRect();
     const offsetX = e.pageX - target.getBoundingClientRect().left;
+    console.log(target.getBoundingClientRect());
+    console.log(e.pageX);
     const percent = Math.min(Math.max(0, offsetX), rect.width) / rect.width;
     videoRef.current!.currentTime = percent * duration;
-    setTime(percent * duration);
   };
+  const handleScubbing = (e: React.MouseEvent | MouseEvent) => {
+    isScubbing.current = true;
+    const rect = timelineRef.current!.getBoundingClientRect();
+    const offsetX = e.pageX - rect.left;
+    console.log(e.pageX);
+    const percent = Math.min(Math.max(0, offsetX), rect.width) / rect.width;
+    videoRef.current!.currentTime = percent * duration;
+  };
+
   useEffect(() => {
-    videoRef.current!.volume = volume;
+    if (!videoRef.current) return;
+    videoRef.current.volume = volume;
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log(e.code);
+      if (!videoRef.current) return;
+      videoRef.current.volume = volume;
       switch (e.code) {
         case "KeyF":
           toggleFullScreenMode();
@@ -152,25 +164,25 @@ const Video = ({ src, title, subSrc }: Props) => {
           toggleCaptions();
           break;
         case "KeyJ":
-          videoRef.current!.currentTime -= 10;
+          videoRef.current.currentTime -= 10;
           break;
         case "KeyK":
           togglePlay();
           break;
         case "KeyL":
-          videoRef.current!.currentTime += 10;
+          videoRef.current.currentTime += 10;
           break;
         case "ArrowLeft":
-          videoRef.current!.currentTime -= 5;
+          videoRef.current.currentTime -= 5;
           break;
         case "ArrowRight":
-          videoRef.current!.currentTime += 5;
+          videoRef.current.currentTime += 5;
           break;
         case "ArrowUp":
-          changeVolume(videoRef.current!.volume + 0.05);
+          changeVolume(videoRef.current.volume + 0.05);
           break;
         case "ArrowDown":
-          changeVolume(videoRef.current!.volume - 0.05);
+          changeVolume(videoRef.current.volume - 0.05);
           break;
         case "KeyM":
           toggleMute();
@@ -187,23 +199,63 @@ const Video = ({ src, title, subSrc }: Props) => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("fullscreenchange", handleFullscreen);
     };
-  }, []);
+  }, [videoRef.current, subSrc]);
   useEffect(() => {
-    setDuration(videoRef.current?.duration ?? 0);
-  }, [videoRef.current?.duration]);
-
+    const handleMouseUp = (e: MouseEvent) => {
+      isScubbing.current = false;
+    };
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isScubbing.current) return;
+      handleScubbing(e);
+    };
+    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [timelineRef.current]);
+  if (isError) {
+    return (
+      <div className="bg-black max-w-6xl aspect-video flex flex-col gap-4 justify-center items-center">
+        <span className="text-2xl"> Error loading video</span>
+        <button
+          onClick={() => {
+            setIsError(false);
+            setIsMetadataLoading(true);
+          }}
+          className="px-4 py-2 bg-red-500 rounded-lg font-semibold"
+        >
+          Try refresh
+        </button>
+      </div>
+    );
+  }
   return (
     <>
       <div
+        onMouseDown={(e) => e.preventDefault()}
         onMouseLeave={() => setShowControls(false)}
         ref={videoContainerRef}
-        className={`relative ${!showControls && "cursor-none"} ${
-          isFullScreen && "overflow-hidden h-screen w-screen"
-        }`}
+        className={`relative bg-black ${
+          !showControls && !isMetadataLoading && "cursor-none"
+        } ${
+          isFullScreen
+            ? "overflow-hidden h-screen w-screen"
+            : "max-w-6xl aspect-video"
+        } `}
       >
         <video
           onClick={handleClick}
+          onPlay={() => {
+            setIsPaused(false);
+          }}
+          onPause={() => {
+            setIsPaused(true);
+          }}
+          onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
           onDoubleClick={handleDoubleClick}
+          onContextMenu={(e) => e.preventDefault()}
           onMouseMove={() => {
             setShowControls(true);
             clearTimeout(showControlsTimeout.current);
@@ -216,11 +268,26 @@ const Video = ({ src, title, subSrc }: Props) => {
             (showCaptions || showControls) &&
               setTime(videoRef.current!.currentTime);
           }}
-          onLoadedMetadata={() => {
-            setDuration(videoRef.current?.duration ?? 0);
+          onPlaying={() => setIsWaiting(false)}
+          onLoadedMetadata={(e) => {
+            setDuration(e.currentTarget.duration);
+            setIsMetadataLoading(false);
+            setIsError(false);
+          }}
+          onError={() => {
+            setIsMetadataLoading(false);
+            setIsError(true);
+            toggleFullScreenMode(false);
+          }}
+          onWaiting={() => {
+            setIsWaiting(true);
+          }}
+          muted={isMuted}
+          onSeeking={(e) => {
+            setTime(e.currentTarget.currentTime);
           }}
           ref={videoRef}
-          className={isFullScreen ? "w-screen h-screen" : ""}
+          className={`${isMetadataLoading && "hidden"} w-full h-full`}
           src={src}
           autoPlay
         >
@@ -236,103 +303,112 @@ const Video = ({ src, title, subSrc }: Props) => {
             />
           </div>
         )}
-        {showControls && videoRef.current && (
-          <>
-            {isFullScreen && (
-              <div className="absolute top-5 left-5">
-                <span className="text-2xl">{title}</span>
-              </div>
-            )}
-            <div
-              onMouseMove={() => {
-                clearTimeout(showControlsTimeout.current);
-                setShowControls(true);
-              }}
-              className={`absolute bottom-0 transition-opacity left-0 right-0 animate-fade-in`}
-            >
+        {(isMetadataLoading || isWaiting) && <Loading />}
+
+        {(showControls || isScubbing.current) &&
+          !isMetadataLoading &&
+          !isError &&
+          videoRef.current && (
+            <>
+              {isFullScreen && (
+                <div className="absolute top-5 left-5">
+                  <span className="text-2xl">{title}</span>
+                </div>
+              )}
               <div
-                ref={timelineRef}
-                onClick={handleTimeStrap}
-                className="absolute group cursor-pointer bg-neutral-900 left-0 right-0 w-full h-1.5 flex"
+                onMouseMove={() => {
+                  clearTimeout(showControlsTimeout.current);
+                  setShowControls(true);
+                }}
+                className={`absolute bottom-0 transition-opacity left-0 right-0 animate-fade-in`}
               >
                 <div
-                  className="h-full flex justify-end rounded-md items-center bg-white after:content-[' '] after:bg-white after:p-2 after:translate-x-2 after:rounded-full after:opacity-0 after:group-hover:opacity-100 after:transition-opacity after:duration-150"
-                  style={{
-                    width: `${
-                      (videoRef.current.currentTime / duration) * 100
-                    }%`,
-                  }}
-                ></div>
-              </div>
-              <div className="flex justify-between items-center bg-black/70">
-                <div className="flex gap-4">
-                  <div
-                    className="p-2 cursor-pointer"
-                    onClick={() => togglePlay()}
-                  >
-                    {isPaused ? <FiPlay size={30} /> : <FiPause size={30} />}
-                  </div>
-                  <div className="flex group transition-all duration-300 items-center">
+                  className="h-4 flex items-end group cursor-pointer"
+                  ref={timelineRef}
+                  onMouseDown={handleScubbing}
+                >
+                  <div className="absolute bg-neutral-900 left-0 right-0 w-full h-1.5 flex">
                     <div
-                      className="p-2 cursor-pointer"
-                      onClick={() => toggleMute()}
-                    >
-                      <VolumeIcon volume={volume} isMuted={isMuted} />
-                    </div>
-
-                    <input
-                      className="rounded-lg w-0 scale-x-0 group-hover:w-20 group-hover:scale-x-100 origin-left transition-all duration-300 accent-white bg-neutral-800 h-1.5"
-                      onChange={(e) => {
-                        changeVolume(e.target.valueAsNumber / 100);
+                      className="h-full flex justify-end rounded-md items-center bg-white after:content-[' '] after:bg-white after:p-2 after:translate-x-2 after:rounded-full after:opacity-0 after:group-hover:opacity-100 after:transition-opacity after:duration-150"
+                      style={{
+                        width: `${
+                          (videoRef.current.currentTime / duration) * 100
+                        }%`,
                       }}
-                      type={"range"}
-                      min={0}
-                      max={100}
-                      value={!isMuted ? volume * 100 : 0}
-                    />
-                  </div>
-
-                  <div className="flex justify-center items-center">
-                    <span>
-                      {formatDuration(time) + " / " + formatDuration(duration)}
-                    </span>
+                    ></div>
                   </div>
                 </div>
-
-                <div className="flex items-center select-none gap-5">
-                  <div
-                    className={`${
-                      subSrc ? "cursor-pointer" : "cursor-not-allowed"
-                    }`}
-                    onClick={() => toggleCaptions()}
-                  >
+                <div className="flex justify-between items-center bg-black/70">
+                  <div className="flex gap-4">
                     <div
-                      className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${
-                        showCaptions
-                          ? "bg-white border-black"
-                          : "bg-black border-white"
-                      }`}
+                      className="p-2 cursor-pointer"
+                      onClick={() => togglePlay()}
                     >
-                      <span
-                        className={`text-xs font-semibold ${
-                          showCaptions ? "text-black" : "text-white"
-                        }`}
+                      {isPaused ? <FiPlay size={30} /> : <FiPause size={30} />}
+                    </div>
+                    <div className="flex group transition-all duration-300 items-center">
+                      <div
+                        className="p-2 cursor-pointer"
+                        onClick={() => toggleMute()}
                       >
-                        cc
+                        <VolumeIcon volume={volume} isMuted={isMuted} />
+                      </div>
+
+                      <input
+                        className="rounded-lg w-0 scale-x-0 group-hover:w-20 group-hover:scale-x-100 origin-left transition-all duration-300 accent-white bg-neutral-800 h-1.5"
+                        onChange={(e) => {
+                          changeVolume(e.target.valueAsNumber / 100);
+                        }}
+                        type={"range"}
+                        min={0}
+                        max={100}
+                        value={!isMuted ? volume * 100 : 0}
+                      />
+                    </div>
+
+                    <div className="flex justify-center items-center">
+                      <span>
+                        {formatDuration(time) +
+                          " / " +
+                          formatDuration(duration)}
                       </span>
                     </div>
                   </div>
-                  <div
-                    className="cursor-pointer p-2 hover:scale-105"
-                    onClick={() => toggleFullScreenMode()}
-                  >
-                    <FiMaximize size={30} />
+
+                  <div className="flex items-center select-none gap-5">
+                    <div
+                      className={`${
+                        subSrc ? "cursor-pointer" : "cursor-not-allowed"
+                      }`}
+                      onClick={() => toggleCaptions()}
+                    >
+                      <div
+                        className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${
+                          showCaptions
+                            ? "bg-white border-black"
+                            : "bg-black border-white"
+                        }`}
+                      >
+                        <span
+                          className={`text-xs font-semibold ${
+                            showCaptions ? "text-black" : "text-white"
+                          }`}
+                        >
+                          cc
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className="cursor-pointer p-2 hover:scale-105"
+                      onClick={() => toggleFullScreenMode()}
+                    >
+                      <FiMaximize size={30} />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
       </div>
     </>
   );
