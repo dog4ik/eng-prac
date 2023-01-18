@@ -11,6 +11,7 @@ module.exports = {
       animation: {
         "fade-in": "fadein 0.2s ease-in-out",
         "fade-out": "fadeout 0.2s ease-in-out",
+        "push-in-fade-out": "push-in-fade-out 0.5s ease-in-out",
         blob: "blob 7s infinite",
       },
       keyframes: {
@@ -21,6 +22,10 @@ module.exports = {
         fadeout: {
           "0%": { opacity: "1" },
           "100%": { opacity: "0" },
+        },
+        "push-in-fade-out": {
+          "0%": { opacity: "0.8", scale: "0.5" },
+          "100%": { opacity: "0", scale: "1" },
         },
         blob: {
           "0%": {

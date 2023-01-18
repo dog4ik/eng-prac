@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import {
   FiMaximize,
   FiPause,
+  FiPauseCircle,
   FiPlay,
   FiVolume,
   FiVolume1,
@@ -17,6 +18,7 @@ type Props = {
   externalSubs?: string;
   subSrc: string | null;
 };
+type ActionType = "play" | "pause" | undefined;
 
 const VolumeIcon = ({
   volume,
@@ -45,6 +47,28 @@ const formatDuration = (time: number) => {
       minutes
     )}:${leadingZeroFormatter.format(seconds)}`;
   }
+};
+const VideoError = ({ onRefresh }: { onRefresh: () => void }) => {
+  return (
+    <div className="bg-black w-full aspect-video flex flex-col gap-4 justify-center items-center">
+      <span className="text-2xl"> Error loading video</span>
+      <button
+        onClick={onRefresh}
+        className="px-4 py-2 bg-red-500 rounded-lg font-semibold"
+      >
+        Try refresh
+      </button>
+    </div>
+  );
+};
+const ActionWrapper = ({ children }: { children: ReactNode }) => {
+  return (
+    <div className="absolute flex justify-center items-center pointer-events-none top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
+      <div className="flex justify-center items-center animate-push-in-fade-out opacity-0 bg-black/50 w-32 h-32 rounded-full">
+        {children}
+      </div>
+    </div>
+  );
 };
 const Video = ({ src, title, subSrc }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -128,16 +152,8 @@ const Video = ({ src, title, subSrc }: Props) => {
   const handleDoubleClick = (e: React.MouseEvent) => {
     toggleFullScreenMode();
   };
-  const handleTimeStrap = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLDivElement;
-    const rect = timelineRef.current!.getBoundingClientRect();
-    const offsetX = e.pageX - target.getBoundingClientRect().left;
-    console.log(target.getBoundingClientRect());
-    console.log(e.pageX);
-    const percent = Math.min(Math.max(0, offsetX), rect.width) / rect.width;
-    videoRef.current!.currentTime = percent * duration;
-  };
   const handleScubbing = (e: React.MouseEvent | MouseEvent) => {
+    e.preventDefault();
     isScubbing.current = true;
     const rect = timelineRef.current!.getBoundingClientRect();
     const offsetX = e.pageX - rect.left;
@@ -214,27 +230,20 @@ const Video = ({ src, title, subSrc }: Props) => {
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [timelineRef.current]);
+  }, [timelineRef.current, isScubbing.current]);
   if (isError) {
     return (
-      <div className="bg-black max-w-6xl aspect-video flex flex-col gap-4 justify-center items-center">
-        <span className="text-2xl"> Error loading video</span>
-        <button
-          onClick={() => {
-            setIsError(false);
-            setIsMetadataLoading(true);
-          }}
-          className="px-4 py-2 bg-red-500 rounded-lg font-semibold"
-        >
-          Try refresh
-        </button>
-      </div>
+      <VideoError
+        onRefresh={() => {
+          setIsError(false);
+          setIsMetadataLoading(true);
+        }}
+      />
     );
   }
   return (
     <>
       <div
-        onMouseDown={(e) => e.preventDefault()}
         onMouseLeave={() => setShowControls(false)}
         ref={videoContainerRef}
         className={`relative bg-black ${
@@ -242,7 +251,7 @@ const Video = ({ src, title, subSrc }: Props) => {
         } ${
           isFullScreen
             ? "overflow-hidden h-screen w-screen"
-            : "max-w-6xl aspect-video"
+            : "w-full aspect-video"
         } `}
       >
         <video
@@ -293,6 +302,16 @@ const Video = ({ src, title, subSrc }: Props) => {
         >
           Your browser cant play videos
         </video>
+        {isPaused && (
+          <ActionWrapper>
+            <FiPlay size={50} />
+          </ActionWrapper>
+        )}
+        {!isPaused && (
+          <ActionWrapper>
+            <FiPause size={50} />
+          </ActionWrapper>
+        )}
         {showCaptions && (
           <div className="absolute bottom-20 flex justify-center items-center left-1/2 -translate-x-1/2">
             <Subtitles
@@ -304,7 +323,6 @@ const Video = ({ src, title, subSrc }: Props) => {
           </div>
         )}
         {(isMetadataLoading || isWaiting) && <Loading />}
-
         {(showControls || isScubbing.current) &&
           !isMetadataLoading &&
           !isError &&
