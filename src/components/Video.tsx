@@ -2,8 +2,8 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 import {
   FiMaximize,
   FiPause,
-  FiPauseCircle,
   FiPlay,
+  FiRepeat,
   FiVolume,
   FiVolume1,
   FiVolume2,
@@ -12,14 +12,21 @@ import {
 import useToggle from "../utils/useToggle";
 import Subtitles from "../components/Subtitles";
 import Loading from "./ui/Loading";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import Image from "next/image";
+type NextEpisode = {
+  title: string;
+  poster: string | null;
+  href: string;
+} | null;
 type Props = {
   src: string;
   title: string;
   externalSubs?: string;
   subSrc: string | null;
+  next: NextEpisode;
 };
-type ActionType = "play" | "pause" | undefined;
-
 const VolumeIcon = ({
   volume,
   isMuted,
@@ -70,7 +77,88 @@ const ActionWrapper = ({ children }: { children: ReactNode }) => {
     </div>
   );
 };
-const Video = ({ src, title, subSrc }: Props) => {
+const EndSelection = ({
+  next,
+  onRepeat,
+}: {
+  next: NextEpisode;
+  onRepeat: () => void;
+}) => {
+  let timeout: ReturnType<typeof setTimeout>;
+  let interval: ReturnType<typeof setInterval>;
+  const [countDown, setCountDown] = useState(10);
+  const [isCanceled, setIsCanceled] = useToggle(false);
+  const router = useRouter();
+  useEffect(() => {
+    if (next && !isCanceled) {
+      timeout = setTimeout(() => {
+        router.push(next.href);
+      }, 10_000);
+      interval = setInterval(() => setCountDown((prev) => prev - 1), 1000);
+    }
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [isCanceled]);
+  const handleCancel = () => {
+    clearTimeout(timeout);
+    clearInterval(interval);
+    setIsCanceled(true);
+  };
+  if (next)
+    return (
+      <div className="absolute flex flex-col gap-3 max-w-2xl w-80 h-fit select-none max-h-96 py-3 px-10 bg-black rounded-lg items-center top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
+        <div className="w-full text-center p-1">
+          <div className="text-xl">
+            {isCanceled ? "Up next" : "Next one starts in "}
+            {!isCanceled && <span className="">{countDown}</span>}
+          </div>
+        </div>
+        <div className="p-4 hidden md:block aspect-video max-w-lg w-full rounded-xl overflow-hidden relative">
+          {next.poster ? (
+            <Image
+              draggable={false}
+              alt="Next episode poster"
+              src={next.poster}
+              fill
+              sizes="300px"
+            ></Image>
+          ) : (
+            <div></div>
+          )}
+        </div>
+        <div>
+          <span className="truncate text-lg">{next.title}</span>
+        </div>
+        <div className="flex gap-5 items-center w-full">
+          {!isCanceled && (
+            <button
+              className="px-4 py-2 w-full bg-black text-white rounded-xl"
+              onClick={handleCancel}
+            >
+              Cancel
+            </button>
+          )}
+          <Link
+            className="px-4 py-2 w-full bg-white text-black rounded-xl text-center"
+            href={next.href}
+          >
+            Next
+          </Link>
+        </div>
+      </div>
+    );
+  return (
+    <div
+      className="absolute flex flex-col cursor-pointer justify-center h-32 w-32 rounded-full items-center top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
+      onClick={onRepeat}
+    >
+      <FiRepeat size={50} />
+    </div>
+  );
+};
+const Video = ({ src, title, subSrc, next }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -80,6 +168,7 @@ const Video = ({ src, title, subSrc }: Props) => {
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [isWaiting, setIsWaiting] = useState(false);
   const [isMuted, setIsMuted] = useToggle(false);
+  const [isEnded, setIsEnded] = useState(false);
   const isScubbing = useRef(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useToggle(true);
@@ -87,7 +176,6 @@ const Video = ({ src, title, subSrc }: Props) => {
   const [volume, setVolume] = useState(0.3);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
-
   const changeVolume = (state: number) => {
     if (!videoRef.current) return;
     if (state > 1) {
@@ -247,7 +335,10 @@ const Video = ({ src, title, subSrc }: Props) => {
         onMouseLeave={() => setShowControls(false)}
         ref={videoContainerRef}
         className={`relative bg-black ${
-          !showControls && !isMetadataLoading && "cursor-none"
+          !showControls &&
+          !isMetadataLoading &&
+          !videoRef.current?.ended &&
+          "cursor-none"
         } ${
           isFullScreen
             ? "overflow-hidden h-screen w-screen"
@@ -295,8 +386,14 @@ const Video = ({ src, title, subSrc }: Props) => {
           onSeeking={(e) => {
             setTime(e.currentTarget.currentTime);
           }}
+          onSeeked={(e) => {
+            setIsEnded(e.currentTarget.ended);
+          }}
+          onEnded={() => setIsEnded(true)}
           ref={videoRef}
-          className={`${isMetadataLoading && "hidden"} w-full h-full`}
+          className={`${
+            isMetadataLoading || (isEnded && "hidden")
+          } w-full h-full`}
           src={src}
           autoPlay
         >
@@ -322,8 +419,17 @@ const Video = ({ src, title, subSrc }: Props) => {
             />
           </div>
         )}
+        {isEnded && (
+          <EndSelection
+            next={next}
+            onRepeat={() => {
+              videoRef.current!.currentTime = 0;
+              togglePlay(true);
+            }}
+          />
+        )}
         {(isMetadataLoading || isWaiting) && <Loading />}
-        {(showControls || isScubbing.current) &&
+        {(showControls || isScubbing.current || isEnded) &&
           !isMetadataLoading &&
           !isError &&
           videoRef.current && (

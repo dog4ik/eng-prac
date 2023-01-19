@@ -1,9 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Error from "../../../../components/ui/Error";
 import Loading from "../../../../components/ui/Loading";
 import Video from "../../../../components/Video";
@@ -12,6 +10,12 @@ import useToggle from "../../../../utils/useToggle";
 import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 import UnauthorizedError from "../../../../components/ui/UnauthorizedError";
+
+type NextEpisode = {
+  title: string;
+  poster: string | null;
+  href: string;
+} | null;
 
 type SideBarType = {
   episode: {
@@ -34,12 +38,18 @@ export const getServerSideProps: GetServerSideProps<{
 };
 
 const SideBarEpisodes = ({ episode, href, isCurrent }: SideBarType) => {
+  const itemRef = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (isCurrent && window.innerWidth >= 1280)
+      itemRef.current?.scrollIntoView({ behavior: "auto", block: "center" });
+  }, []);
   return (
     <Link
       href={{ query: href }}
       className={`grid grid-rows-1 grid-cols-2 cursor-pointer overflow-hidden gap-2 items-center shrink-0 h-24 w-full rounded-lg ${
         isCurrent ? "bg-white text-black" : "bg-neutral-600 text-white"
       }`}
+      ref={itemRef}
     >
       <div className="w-full h-full">
         <Image
@@ -64,12 +74,28 @@ const Theater = (
 ) => {
   const [isSrtModalOpen, setIsSrtModalOpen] = useToggle(false);
   const [customSrt, setCustomSrt] = useState<string>();
-  const episodeQuery = trpc.theater.getEpisode.useQuery({
-    showId: props.id!.toString(),
-    episodeNumber: parseInt(props.episode!.toString()),
-    seasonNumber: parseInt(props.season!.toString()),
-  });
-
+  let [nextEpisode, setNextEpisode] = useState<NextEpisode>(null);
+  const episodeQuery = trpc.theater.getEpisode.useQuery(
+    {
+      showId: props.id!.toString(),
+      episodeNumber: parseInt(props.episode!.toString()),
+      seasonNumber: parseInt(props.season!.toString()),
+    },
+    {
+      onSuccess(data) {
+        const next = data.siblings?.find((ep) => ep.number === data.number + 1);
+        setNextEpisode(
+          next
+            ? {
+                poster: next.poster,
+                href: `/theater/${data.showId}/${data.seasonNumber}/${next.number}`,
+                title: next.title,
+              }
+            : null
+        );
+      },
+    }
+  );
   if (episodeQuery.isError) {
     if (episodeQuery.error.data?.code === "UNAUTHORIZED")
       return <UnauthorizedError />;
@@ -92,6 +118,7 @@ const Theater = (
           <div className="">
             <Video
               title={episodeQuery.data.title}
+              next={nextEpisode}
               src={
                 process.env.NEXT_PUBLIC_MEDIA_SERVER_LINK +
                 episodeQuery.data.src
@@ -106,43 +133,50 @@ const Theater = (
             />
           </div>
           <div className="flex flex-col">
-            <div>
-              <span className="text-xl font-semibold cursor-pointer">
-                {episodeQuery.data.title}
-              </span>
-            </div>
-            <div>
-              <span className="text-sm cursor-pointer hover:underline">
-                {`Season ${episodeQuery.data.seasonNumber}`}
-              </span>
+            <div className="flex justify-between items-center">
+              <div>
+                <div>
+                  <span className="text-xl font-semibold">
+                    {episodeQuery.data.title}
+                  </span>
+                </div>
+                <div>
+                  <Link
+                    href={`/theater/${episodeQuery.data.showId}/${episodeQuery.data.seasonNumber}`}
+                    className="text-sm cursor-pointer hover:underline"
+                  >
+                    {`Season ${episodeQuery.data.seasonNumber}`}
+                  </Link>
+                </div>
+              </div>
+              {episodeQuery.data.tmdbId && (
+                <div className="flex items-center gap-3">
+                  <button
+                    className="px-5 text-black py-2 bg-white rounded-lg"
+                    onClick={() => setIsSrtModalOpen()}
+                  >
+                    Download subs
+                  </button>
+                  {customSrt && (
+                    <span
+                      className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"
+                      onClick={() => setCustomSrt(undefined)}
+                    >
+                      {customSrt?.split("/")[customSrt.split("/").length - 1]}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             {episodeQuery.data.plot && (
               <div className="w-full p-2 mt-4 min-h-20 bg-neutral-700 rounded-lg">
                 <p className="break-words">{episodeQuery.data.plot}</p>
               </div>
             )}
-            {episodeQuery.data.tmdbId && (
-              <div className="flex items-center gap-3">
-                <button
-                  className="px-5 text-black py-2 bg-white rounded-lg"
-                  onClick={() => setIsSrtModalOpen()}
-                >
-                  Download subs
-                </button>
-                {customSrt && (
-                  <span
-                    className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"
-                    onClick={() => setCustomSrt(undefined)}
-                  >
-                    {customSrt?.split("/")[customSrt.split("/").length - 1]}
-                  </span>
-                )}
-              </div>
-            )}
           </div>
         </div>
-        <div className="">
-          <div className="h-[800px] flex flex-col gap-5 xl:overflow-y-auto xl:mr-10">
+        <div>
+          <div className="h-[800px] flex xl:max-w-xl flex-col gap-5 xl:overflow-y-auto xl:mr-10">
             {episodeQuery.data.siblings?.map((episode) => (
               <SideBarEpisodes
                 episode={{
