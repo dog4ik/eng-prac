@@ -373,6 +373,7 @@ const Video = ({ src, title, subSrc, next }: Props) => {
             setDuration(e.currentTarget.duration);
             setIsMetadataLoading(false);
             setIsError(false);
+            setIsEnded(false);
           }}
           onError={() => {
             setIsMetadataLoading(false);
