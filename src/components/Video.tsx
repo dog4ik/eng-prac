@@ -22,6 +22,7 @@ type NextEpisode = {
 } | null;
 type Props = {
   src: string;
+  preventEvents: boolean;
   title: string;
   externalSubs?: string;
   subSrc: string | null;
@@ -158,7 +159,7 @@ const EndSelection = ({
     </div>
   );
 };
-const Video = ({ src, title, subSrc, next }: Props) => {
+const Video = ({ src, title, subSrc, next, preventEvents }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -254,7 +255,7 @@ const Video = ({ src, title, subSrc, next }: Props) => {
     if (!videoRef.current) return;
     videoRef.current.volume = volume;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!videoRef.current) return;
+      if (!videoRef.current || preventEvents) return;
       videoRef.current.volume = volume;
       switch (e.code) {
         case "KeyF":
@@ -303,9 +304,9 @@ const Video = ({ src, title, subSrc, next }: Props) => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("fullscreenchange", handleFullscreen);
     };
-  }, [videoRef.current, subSrc]);
+  }, [videoRef.current, subSrc, preventEvents]);
   useEffect(() => {
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       isScubbing.current = false;
     };
     const handleMouseMove = (e: MouseEvent) => {
