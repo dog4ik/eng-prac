@@ -3,11 +3,12 @@ import LoadingSpinner from "../ui/Loading";
 import { FiX } from "react-icons/fi";
 import { trpc } from "../../utils/trpc";
 import useClose from "../../utils/useClose";
+import Input from "../ui/Input";
+import useDebounce from "../../utils/useDebounce";
 type ModalProps = {
   handleClose: () => void;
   onChoose: (link: string) => void;
   tmdbId: number;
-  lang?: string;
 };
 type RowProps = {
   title: string;
@@ -57,19 +58,22 @@ const Error = ({ onRetry }: { onRetry: () => void }) => {
     </>
   );
 };
-const SrtModal = ({ handleClose, tmdbId, lang, onChoose }: ModalProps) => {
+const SrtModal = ({ handleClose, tmdbId, onChoose }: ModalProps) => {
   const [open, setOpen] = useClose(handleClose, 200);
   const [currentId, setCurrentId] = useState<string>();
+  const [query, setQuery] = useState("");
+  const [lang, setLang] = useState<string>("en");
+  const debouncedQuery = useDebounce(query, 1000);
   const subs = trpc.subs.querySubs.useQuery(
-    { lang, tmdbId },
+    { lang, tmdbId, query: debouncedQuery },
     { refetchOnWindowFocus: false }
   );
   const downloadMutation = trpc.subs.downloadSubs.useMutation({
-    onSuccess(data, variables, context) {
+    onSuccess(data) {
       onChoose(data.link);
       setOpen();
     },
-    onError(error, variables, context) {
+    onError(error) {
       console.log(error);
     },
   });
@@ -96,6 +100,29 @@ const SrtModal = ({ handleClose, tmdbId, lang, onChoose }: ModalProps) => {
         </div>
         <div className="h-20 shrink-0 bg-neutral-700 flex items-center pl-4">
           <span className="text-xl">Subtitles</span>
+        </div>
+        <div className="h-20 flex px-10 my-2 gap-10 items-center">
+          <select
+            onChange={(e) => setLang(e.target.value)}
+            className="bg-neutral-700 p-2 rounded-xl outline-none"
+          >
+            <option value={"en"}>English</option>
+            <option value={"ru"}>Russian</option>
+            <option value={"sr"}>Serbian</option>
+            <option value={"es"}>Spanish</option>
+          </select>
+          <div className="w-full">
+            <Input
+              label="Search"
+              value={query}
+              onChange={(e) => {
+                console.log(e);
+                setQuery(e.target.value);
+              }}
+              style={{ backgroundColor: "rgb(64 64 64)" }}
+            />
+          </div>
+          <div>Downloads</div>
         </div>
         <div className=" flex flex-col rounded-xl overflow-y-auto h-full">
           {subs.isError && <Error onRetry={() => subs.refetch()} />}

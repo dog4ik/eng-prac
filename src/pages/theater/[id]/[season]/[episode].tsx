@@ -74,6 +74,7 @@ const Theater = (
 ) => {
   const [isSrtModalOpen, setIsSrtModalOpen] = useToggle(false);
   const [customSrt, setCustomSrt] = useState<string>();
+  const [videoEvents, setVideoEvents] = useToggle(true);
   let [nextEpisode, setNextEpisode] = useState<NextEpisode>(null);
   const episodeQuery = trpc.theater.getEpisode.useQuery(
     {
@@ -108,7 +109,10 @@ const Theater = (
     <>
       {isSrtModalOpen && episodeQuery.data.tmdbId && (
         <SrtModal
-          handleClose={() => setIsSrtModalOpen(false)}
+          handleClose={() => {
+            setIsSrtModalOpen(false);
+            setVideoEvents(true);
+          }}
           tmdbId={episodeQuery.data.tmdbId}
           onChoose={(link) => setCustomSrt(link)}
         />
@@ -117,6 +121,7 @@ const Theater = (
         <div className="flex xl:w-3/4 flex-col gap-2">
           <div className="">
             <Video
+              preventEvents={!videoEvents}
               title={episodeQuery.data.title}
               next={nextEpisode}
               src={
@@ -151,12 +156,15 @@ const Theater = (
               </div>
               {episodeQuery.data.tmdbId && (
                 <div className="flex items-center gap-3">
-                  <button
-                    className="px-5 text-black py-2 bg-white rounded-lg"
-                    onClick={() => setIsSrtModalOpen()}
+                  <div
+                    className="px-5 cursor-pointer text-black py-2 bg-white rounded-lg"
+                    onClick={() => {
+                      setVideoEvents(false);
+                      setIsSrtModalOpen();
+                    }}
                   >
                     Download subs
-                  </button>
+                  </div>
                   {customSrt && (
                     <span
                       className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"

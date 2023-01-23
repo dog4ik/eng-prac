@@ -64,9 +64,13 @@ const opensrtApi = axios.create({
     "Api-Key": process.env.OPENSRT_TOKEN,
   },
 });
-const parseSubs = async (tmdbId: number, lang?: string) => {
+const parseSubs = async (tmdbId: number, query: string, lang: string) => {
   const response = await opensrtApi.get<opensrtSearchResponse>("subtitles", {
-    params: { languages: lang ?? "en", tmdb_id: tmdbId },
+    params: {
+      languages: lang,
+      tmdb_id: query ? undefined : tmdbId,
+      query: query,
+    },
   });
   return response.data.data;
 };
@@ -74,7 +78,7 @@ const downloadSubs = async (file_id: number) => {
   const response = await opensrtApi.post<opensrtDownloadResponse>(
     "download",
     {
-      file_id: file_id,
+      file_id,
     },
     {
       headers: {
@@ -90,11 +94,12 @@ const subsRouter = router({
     .input(
       z.object({
         tmdbId: z.number().nonnegative(),
-        lang: z.string().optional(),
+        query: z.string().max(100),
+        lang: z.string().max(5),
       })
     )
     .query(async ({ input }) => {
-      return await parseSubs(input.tmdbId, input.lang);
+      return await parseSubs(input.tmdbId, input.query, input.lang);
     }),
   downloadSubs: procedure
     .input(z.object({ file_id: z.number().nonnegative() }))

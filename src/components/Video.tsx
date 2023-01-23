@@ -510,14 +510,14 @@ const Video = ({ src, title, subSrc, next, preventEvents }: Props) => {
                     >
                       <div
                         className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${
-                          showCaptions
+                          showCaptions && subSrc
                             ? "bg-white border-black"
                             : "bg-black border-white"
                         }`}
                       >
                         <span
                           className={`text-xs font-semibold ${
-                            showCaptions ? "text-black" : "text-white"
+                            showCaptions && subSrc ? "text-black" : "text-white"
                           }`}
                         >
                           cc
