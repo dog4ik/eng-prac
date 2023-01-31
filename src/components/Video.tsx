@@ -346,6 +346,7 @@ const Video = ({
         className={`relative bg-black ${
           !showControls &&
           !isMetadataLoading &&
+          !isLoading &&
           !videoRef.current?.ended &&
           "cursor-none"
         } ${
