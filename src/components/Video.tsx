@@ -21,6 +21,7 @@ type NextEpisode = {
   href: string;
 } | null;
 type Props = {
+  isLoading: boolean;
   src: string;
   preventEvents: boolean;
   title: string;
@@ -159,7 +160,14 @@ const EndSelection = ({
     </div>
   );
 };
-const Video = ({ src, title, subSrc, next, preventEvents }: Props) => {
+const Video = ({
+  src,
+  isLoading,
+  title,
+  subSrc,
+  next,
+  preventEvents,
+}: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -346,61 +354,63 @@ const Video = ({ src, title, subSrc, next, preventEvents }: Props) => {
             : "w-full aspect-video"
         } `}
       >
-        <video
-          onClick={handleClick}
-          onPlay={() => {
-            setIsPaused(false);
-          }}
-          onPause={() => {
-            setIsPaused(true);
-          }}
-          onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
-          onDoubleClick={handleDoubleClick}
-          onContextMenu={(e) => e.preventDefault()}
-          onMouseMove={() => {
-            setShowControls(true);
-            clearTimeout(showControlsTimeout.current);
-            showControlsTimeout.current = setTimeout(
-              () => setShowControls(false),
-              1500
-            );
-          }}
-          onTimeUpdate={() => {
-            (showCaptions || showControls) &&
-              setTime(videoRef.current!.currentTime);
-          }}
-          onPlaying={() => setIsWaiting(false)}
-          onLoadedMetadata={(e) => {
-            setDuration(e.currentTarget.duration);
-            setIsMetadataLoading(false);
-            setIsError(false);
-            setIsEnded(false);
-          }}
-          onError={() => {
-            setIsMetadataLoading(false);
-            setIsError(true);
-            toggleFullScreenMode(false);
-          }}
-          onWaiting={() => {
-            setIsWaiting(true);
-          }}
-          muted={isMuted}
-          onSeeking={(e) => {
-            setTime(e.currentTarget.currentTime);
-          }}
-          onSeeked={(e) => {
-            setIsEnded(e.currentTarget.ended);
-          }}
-          onEnded={() => setIsEnded(true)}
-          ref={videoRef}
-          className={`${
-            isMetadataLoading || (isEnded && "hidden")
-          } w-full h-full`}
-          src={src}
-          autoPlay
-        >
-          Your browser cant play videos
-        </video>
+        {!isLoading && (
+          <video
+            onClick={handleClick}
+            onPlay={() => {
+              setIsPaused(false);
+            }}
+            onPause={() => {
+              setIsPaused(true);
+            }}
+            onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
+            onDoubleClick={handleDoubleClick}
+            onContextMenu={(e) => e.preventDefault()}
+            onMouseMove={() => {
+              setShowControls(true);
+              clearTimeout(showControlsTimeout.current);
+              showControlsTimeout.current = setTimeout(
+                () => setShowControls(false),
+                1500
+              );
+            }}
+            onTimeUpdate={() => {
+              (showCaptions || showControls) &&
+                setTime(videoRef.current!.currentTime);
+            }}
+            onPlaying={() => setIsWaiting(false)}
+            onLoadedMetadata={(e) => {
+              setDuration(e.currentTarget.duration);
+              setIsMetadataLoading(false);
+              setIsError(false);
+              setIsEnded(false);
+            }}
+            onError={() => {
+              setIsMetadataLoading(false);
+              setIsError(true);
+              toggleFullScreenMode(false);
+            }}
+            onWaiting={() => {
+              setIsWaiting(true);
+            }}
+            muted={isMuted}
+            onSeeking={(e) => {
+              setTime(e.currentTarget.currentTime);
+            }}
+            onSeeked={(e) => {
+              setIsEnded(e.currentTarget.ended);
+            }}
+            onEnded={() => setIsEnded(true)}
+            ref={videoRef}
+            className={`${
+              isMetadataLoading || (isEnded && "hidden")
+            } w-full h-full`}
+            src={src}
+            autoPlay
+          >
+            Your browser cant play videos
+          </video>
+        )}
         {isPaused && (
           <ActionWrapper>
             <FiPlay size={50} />

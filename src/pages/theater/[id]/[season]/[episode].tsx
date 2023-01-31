@@ -95,6 +95,9 @@ const Theater = (
             : null
         );
       },
+      onSettled() {
+        setCustomSrt(undefined);
+      },
     }
   );
   if (episodeQuery.isError) {
@@ -104,10 +107,9 @@ const Theater = (
       return <NotFoundError text="Episode" />;
     return <Error />;
   }
-  if (episodeQuery.isLoading) return <Loading />;
   return (
     <>
-      {isSrtModalOpen && episodeQuery.data.tmdbId && (
+      {isSrtModalOpen && episodeQuery.isSuccess && episodeQuery.data.tmdbId && (
         <SrtModal
           handleClose={() => {
             setIsSrtModalOpen(false);
@@ -117,92 +119,94 @@ const Theater = (
           onChoose={(link) => setCustomSrt(link)}
         />
       )}
+
       <div className="flex flex-col p-4 xl:flex-row justify-between w-full gap-3">
         <div className="flex xl:w-3/4 flex-col gap-2">
           <div className="">
             <Video
+              isLoading={episodeQuery.isLoading}
               preventEvents={!videoEvents}
-              title={episodeQuery.data.title}
+              title={episodeQuery.data?.title ?? ""}
               next={nextEpisode}
-              src={
-                process.env.NEXT_PUBLIC_MEDIA_SERVER_LINK +
-                episodeQuery.data.src
-              }
+              src={episodeQuery.data?.src ?? ""}
               subSrc={
                 customSrt ??
-                (episodeQuery.data.subSrc === null
+                (episodeQuery.data?.subSrc == null
                   ? null
-                  : process.env.NEXT_PUBLIC_MEDIA_SERVER_LINK +
-                    episodeQuery.data.subSrc)
+                  : episodeQuery.data?.subSrc)
               }
             />
           </div>
-          <div className="flex flex-col">
-            <div className="flex justify-between items-center">
-              <div>
+          {episodeQuery.isSuccess && (
+            <div className="flex flex-col">
+              <div className="flex justify-between items-center">
                 <div>
-                  <span className="text-xl font-semibold">
-                    {episodeQuery.data.title}
-                  </span>
-                </div>
-                <div>
-                  <Link
-                    href={`/theater/${episodeQuery.data.showId}/${episodeQuery.data.seasonNumber}`}
-                    className="text-sm cursor-pointer hover:underline"
-                  >
-                    {`Season ${episodeQuery.data.seasonNumber}`}
-                  </Link>
-                </div>
-              </div>
-              {episodeQuery.data.tmdbId && (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="px-5 cursor-pointer text-black py-2 bg-white rounded-lg"
-                    onClick={() => {
-                      setVideoEvents(false);
-                      setIsSrtModalOpen();
-                    }}
-                  >
-                    Download subs
-                  </div>
-                  {customSrt && (
-                    <span
-                      className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"
-                      onClick={() => setCustomSrt(undefined)}
-                    >
-                      {customSrt?.split("/")[customSrt.split("/").length - 1]}
+                  <div>
+                    <span className="text-xl font-semibold">
+                      {episodeQuery.data.title}
                     </span>
-                  )}
+                  </div>
+                  <div>
+                    <Link
+                      href={`/theater/${episodeQuery.data.showId}/${episodeQuery.data.seasonNumber}`}
+                      className="text-sm cursor-pointer hover:underline"
+                    >
+                      {`Season ${episodeQuery.data.seasonNumber}`}
+                    </Link>
+                  </div>
+                </div>
+                {episodeQuery.data.tmdbId && (
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="px-5 cursor-pointer text-black py-2 bg-white rounded-lg"
+                      onClick={() => {
+                        setVideoEvents(false);
+                        setIsSrtModalOpen();
+                      }}
+                    >
+                      Download subs
+                    </div>
+                    {customSrt && (
+                      <span
+                        className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"
+                        onClick={() => setCustomSrt(undefined)}
+                      >
+                        {customSrt?.split("/")[customSrt.split("/").length - 1]}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              {episodeQuery.data.plot && (
+                <div className="w-full p-2 mt-4 min-h-20 bg-neutral-700 rounded-lg">
+                  <p className="break-words">{episodeQuery.data.plot}</p>
                 </div>
               )}
             </div>
-            {episodeQuery.data.plot && (
-              <div className="w-full p-2 mt-4 min-h-20 bg-neutral-700 rounded-lg">
-                <p className="break-words">{episodeQuery.data.plot}</p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
-        <div>
-          <div className="h-[800px] flex xl:max-w-xl flex-col gap-5 xl:overflow-y-auto xl:mr-10">
-            {episodeQuery.data.siblings?.map((episode) => (
-              <SideBarEpisodes
-                episode={{
-                  number: episode.number,
-                  title: episode.title,
-                  poster: episode.poster,
-                  blurData: episode.blurData,
-                }}
-                href={{
-                  id: episodeQuery.data.showId,
-                  season: episodeQuery.data.seasonNumber,
-                  episode: episode.number,
-                }}
-                isCurrent={episode.id === episodeQuery.data.id}
-              />
-            ))}
+        {episodeQuery.isSuccess && (
+          <div>
+            <div className="h-[800px] flex xl:max-w-xl flex-col gap-5 xl:overflow-y-auto xl:mr-10">
+              {episodeQuery.data.siblings?.map((episode) => (
+                <SideBarEpisodes
+                  episode={{
+                    number: episode.number,
+                    title: episode.title,
+                    poster: episode.poster,
+                    blurData: episode.blurData,
+                  }}
+                  href={{
+                    id: episodeQuery.data.showId,
+                    season: episodeQuery.data.seasonNumber,
+                    episode: episode.number,
+                  }}
+                  isCurrent={episode.id === episodeQuery.data.id}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

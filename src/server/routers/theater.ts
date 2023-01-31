@@ -158,7 +158,7 @@ export const theaterRouter = router({
         plot: episode.plot,
         number: episode.number,
         title: episode.title,
-        src: episode.src,
+        src: process.env.MEDIA_SERVER_LINK + "/static" + episode.src,
         subSrc: episode.subSrc,
         rating: episode.rating,
         id: episode.id,
