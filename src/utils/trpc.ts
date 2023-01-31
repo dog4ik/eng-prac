@@ -1,6 +1,7 @@
 import { httpBatchLink } from "@trpc/client";
 import { retryLink } from "./retryLink";
 import { createTRPCNext } from "@trpc/next";
+import superjson from "superjson";
 import type { AppRouter } from "../server/root";
 import axios from "axios";
 const getRefresh_token = () => {
@@ -51,6 +52,7 @@ function getBaseUrl() {
 export const trpc = createTRPCNext<AppRouter>({
   config({ ctx }) {
     return {
+      transformer: superjson,
       links: [
         retryLink({
           attempts: 1,
