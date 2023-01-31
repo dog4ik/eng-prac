@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import TheaterHeader from "../../../components/TheaterHeader";
+import Title from "../../../components/Title";
 import Error from "../../../components/ui/Error";
 import NotFoundError from "../../../components/ui/NotFoundError";
 import { trpc } from "../../../utils/trpc";
@@ -85,35 +86,38 @@ const Seasons = (
     return <Error />;
   }
   return (
-    <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
-      {seasonsQuery.isSuccess && (
-        <TheaterHeader
-          description={seasonsQuery.data.plot}
-          blurData={seasonsQuery.data.blurData}
-          img={seasonsQuery.data.poster}
-          title={seasonsQuery.data.title}
-          subtitle={seasonsQuery.data.releaseDate}
-          ratings={Number(seasonsQuery.data.rating)}
-        />
-      )}
-      <div
-        className="w-full py-4 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
-        style={cols}
-      >
-        {seasonsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
-        {seasonsQuery.isSuccess &&
-          seasonsQuery.data.seasons.map((season) => (
-            <SeasonCard
-              key={season.id}
-              img={season.poster}
-              blurData={season.blurData}
-              title={`Season ${season.number}`}
-              episodes={season.episodesCount}
-              href={props.id + "/" + season.number.toString()}
-            />
-          ))}
+    <>
+      <Title title={seasonsQuery.data?.title ?? "Loading..."} />
+      <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
+        {seasonsQuery.isSuccess && (
+          <TheaterHeader
+            description={seasonsQuery.data.plot}
+            blurData={seasonsQuery.data.blurData}
+            img={seasonsQuery.data.poster}
+            title={seasonsQuery.data.title}
+            subtitle={seasonsQuery.data.releaseDate}
+            ratings={Number(seasonsQuery.data.rating)}
+          />
+        )}
+        <div
+          className="w-full py-4 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
+          style={cols}
+        >
+          {seasonsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
+          {seasonsQuery.isSuccess &&
+            seasonsQuery.data.seasons.map((season) => (
+              <SeasonCard
+                key={season.id}
+                img={season.poster}
+                blurData={season.blurData}
+                title={`Season ${season.number}`}
+                episodes={season.episodesCount}
+                href={props.id + "/" + season.number.toString()}
+              />
+            ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

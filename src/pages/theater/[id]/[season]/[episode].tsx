@@ -10,6 +10,7 @@ import useToggle from "../../../../utils/useToggle";
 import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 import UnauthorizedError from "../../../../components/ui/UnauthorizedError";
+import Title from "../../../../components/Title";
 
 type NextEpisode = {
   title: string;
@@ -109,6 +110,7 @@ const Theater = (
   }
   return (
     <>
+      <Title title={episodeQuery.data?.title ?? "Loading..."} />
       {isSrtModalOpen && episodeQuery.isSuccess && episodeQuery.data.tmdbId && (
         <SrtModal
           handleClose={() => {

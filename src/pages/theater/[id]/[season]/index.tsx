@@ -7,6 +7,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Error from "../../../../components/ui/Error";
 import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
+import Title from "../../../../components/Title";
 type EpisodeCardProps = {
   haveSubs: boolean;
   img: string | null;
@@ -101,36 +102,45 @@ const Season = (
     return <Error />;
   }
   return (
-    <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
-      {episodesQuery.isSuccess && (
-        <TheaterHeader
-          description={episodesQuery.data.plot}
-          blurData={episodesQuery.data.blurData}
-          img={episodesQuery.data.poster}
-          title={"Season " + episodesQuery.data.number}
-          subtitle={`${episodesQuery.data.releaseDate}`}
-        />
-      )}
-      <div
-        className="w-full py-4 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
-        style={cols}
-      >
-        {episodesQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
+    <>
+      <Title
+        title={
+          episodesQuery.isSuccess
+            ? `Season ${episodesQuery.data?.number}`
+            : "Loading..."
+        }
+      />
+      <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
+        {episodesQuery.isSuccess && (
+          <TheaterHeader
+            description={episodesQuery.data.plot}
+            blurData={episodesQuery.data.blurData}
+            img={episodesQuery.data.poster}
+            title={"Season " + episodesQuery.data.number}
+            subtitle={`${episodesQuery.data.releaseDate}`}
+          />
+        )}
+        <div
+          className="w-full py-4 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
+          style={cols}
+        >
+          {episodesQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}
 
-        {episodesQuery.isSuccess &&
-          episodesQuery.data.episodes.map((episode) => (
-            <EpisodeCard
-              haveSubs={episode.subSrc !== null}
-              key={episode.id}
-              img={episode.poster}
-              blurData={episode.blurData}
-              title={episode.title}
-              episode={episode.number}
-              href={`/theater/${props.id}/${props.season}/${episode.number}`}
-            />
-          ))}
+          {episodesQuery.isSuccess &&
+            episodesQuery.data.episodes.map((episode) => (
+              <EpisodeCard
+                haveSubs={episode.subSrc !== null}
+                key={episode.id}
+                img={episode.poster}
+                blurData={episode.blurData}
+                title={episode.title}
+                episode={episode.number}
+                href={`/theater/${props.id}/${props.season}/${episode.number}`}
+              />
+            ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
