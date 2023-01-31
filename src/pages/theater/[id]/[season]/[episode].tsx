@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Error from "../../../../components/ui/Error";
-import Loading from "../../../../components/ui/Loading";
 import Video from "../../../../components/Video";
 import SrtModal from "../../../../components/modals/SrtModal";
 import useToggle from "../../../../utils/useToggle";
@@ -38,31 +37,34 @@ export const getServerSideProps: GetServerSideProps<{
   return { props: { id, season, episode } };
 };
 
-const SideBarEpisodes = ({ episode, href, isCurrent }: SideBarType) => {
+const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
   const itemRef = useRef<HTMLAnchorElement>(null);
   useEffect(() => {
     if (isCurrent && window.innerWidth >= 1280)
       itemRef.current?.scrollIntoView({ behavior: "auto", block: "center" });
   }, []);
+
   return (
     <Link
       href={{ query: href }}
-      className={`grid grid-rows-1 grid-cols-2 cursor-pointer overflow-hidden gap-2 items-center shrink-0 h-24 w-full rounded-lg ${
-        isCurrent ? "bg-white text-black" : "bg-neutral-600 text-white"
+      className={`grid grid-rows-1 grid-cols-2 p-1 cursor-pointer overflow-hidden gap-2 items-center shrink-0 h-28 w-full rounded-lg ${
+        isCurrent
+          ? "bg-white text-black"
+          : " hover:bg-neutral-700 duration-100 text-white"
       }`}
       ref={itemRef}
     >
-      <div className="w-full h-full">
+      <div className="xl:w-full w-1/2 relative h-full flex overflow-hidden rounded-lg items-center">
         <Image
           src={episode.poster ?? "PLACEHOLDER"}
           placeholder={episode.blurData ? "blur" : "empty"}
           blurDataURL={`data:image/png;base64,${episode.blurData}`}
-          width={230}
-          height={128}
+          fill
+          className="object-cover"
           alt={"Episode Poster"}
         />
       </div>
-      <div className="flex flex-col justify-center items-center gap-5">
+      <div className="flex flex-col justify-center gap-5">
         <span className="text-md">{episode.title}</span>
         <span className="text-sm truncate">{`Episode ${episode.number}`}</span>
       </div>
@@ -77,6 +79,11 @@ const Theater = (
   const [customSrt, setCustomSrt] = useState<string>();
   const [videoEvents, setVideoEvents] = useToggle(true);
   let [nextEpisode, setNextEpisode] = useState<NextEpisode>(null);
+  const [height, setHeight] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    setHeight(containerRef.current?.clientHeight ?? 0);
+  }, []);
   const episodeQuery = trpc.theater.getEpisode.useQuery(
     {
       showId: props.id!.toString(),
@@ -123,7 +130,7 @@ const Theater = (
       )}
 
       <div className="flex flex-col p-4 xl:flex-row justify-between w-full gap-3">
-        <div className="flex xl:w-3/4 flex-col gap-2">
+        <div className="flex xl:w-3/4 flex-col gap-2" ref={containerRef}>
           <div className="">
             <Video
               isLoading={episodeQuery.isLoading}
@@ -189,9 +196,12 @@ const Theater = (
         </div>
         {episodeQuery.isSuccess && (
           <div>
-            <div className="h-[800px] flex xl:max-w-xl flex-col gap-5 xl:overflow-y-auto xl:mr-10">
+            <div
+              style={{ height: height }}
+              className="flex xl:max-w-xl px-2 flex-col xl:overflow-y-auto xl:mr-10 scrollbar-w-1 scrollbar-thumb-white scrollbar-track-neutral-700 "
+            >
               {episodeQuery.data.siblings?.map((episode) => (
-                <SideBarEpisodes
+                <SideBarEpisode
                   episode={{
                     number: episode.number,
                     title: episode.title,
