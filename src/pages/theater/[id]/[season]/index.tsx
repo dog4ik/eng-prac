@@ -8,6 +8,7 @@ import Error from "../../../../components/ui/Error";
 import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 type EpisodeCardProps = {
+  haveSubs: boolean;
   img: string | null;
   blurData: string | null;
   title: string;
@@ -28,6 +29,7 @@ const EpisodeCard = ({
   episode,
   href,
   blurData,
+  haveSubs,
 }: EpisodeCardProps) => {
   return (
     <div>
@@ -50,6 +52,15 @@ const EpisodeCard = ({
             "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
           }
         ></Image>
+        <div className="absolute top-0 right-0 p-1">
+          <span
+            className={`inline-block text-sm px-1.5 py-1 rounded-xl ${
+              haveSubs ? "bg-green-500" : "bg-red-500"
+            }`}
+          >
+            Subs
+          </span>
+        </div>
       </Link>
       <div className="py-3 flex flex-col gap-1 w-full">
         <div>
@@ -109,6 +120,7 @@ const Season = (
         {episodesQuery.isSuccess &&
           episodesQuery.data.episodes.map((episode) => (
             <EpisodeCard
+              haveSubs={episode.subSrc !== null}
               key={episode.id}
               img={episode.poster}
               blurData={episode.blurData}
