@@ -63,26 +63,30 @@ export const usersRouter = router({
         password: z.string().min(8).max(40),
       })
     )
-    .mutation(async ({ input }) => {
-      const user = await prisma.user.findUnique({
-        where: { email: input.email },
-      });
-      if (user === null) throw new TRPCError({ code: "NOT_FOUND" });
-      if (
-        await bcrypt.compare(input.password, user.password).catch(() => false)
-      ) {
-        const access_token = jwt.sign(
-          { id: user.id },
-          process.env.ACCESS_TOKEN_SECRET!,
-          { expiresIn: "20s" }
-        );
-        const refresh_token = jwt.sign(
-          { id: user!.id },
-          process.env.REFRESH_TOKEN_SECRET!
-        );
-        return { access_token: access_token, refresh_token: refresh_token };
-      } else {
-        new TRPCError({ code: "FORBIDDEN" });
+    .mutation(
+      async ({
+        input,
+      }): Promise<{ access_token: string; refresh_token: string }> => {
+        const user = await prisma.user.findUnique({
+          where: { email: input.email },
+        });
+        if (user === null) throw new TRPCError({ code: "NOT_FOUND" });
+        if (
+          await bcrypt.compare(input.password, user.password).catch(() => false)
+        ) {
+          const access_token = jwt.sign(
+            { id: user.id },
+            process.env.ACCESS_TOKEN_SECRET!,
+            { expiresIn: "20s" }
+          );
+          const refresh_token = jwt.sign(
+            { id: user!.id },
+            process.env.REFRESH_TOKEN_SECRET!
+          );
+          return { access_token: access_token, refresh_token: refresh_token };
+        } else {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
       }
-    }),
+    ),
 });

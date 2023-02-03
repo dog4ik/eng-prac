@@ -8,7 +8,7 @@ import { z } from "zod";
 import { useAllWordbooks } from "../../utils/useAllWordbooks";
 type GameRowProps = {
   word: string;
-  date: string | null;
+  date: Date | null;
   id: string;
   isWin: boolean;
 };
@@ -41,13 +41,12 @@ const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
     if (Math.floor(diff / (1000 * 60 * 60 * 24)) > 30)
       return new Date(date).toLocaleDateString();
   };
-  const dateFrom = date ? calculate(date) : Date();
 
   return (
     <Link href={"/wordle/game/" + id}>
       <div className="w-80 bg-neutral-600 hover:bg-neutral-500 transition duration-150 rounded-xl flex items-center px-5 py-4 cursor-pointer">
         <span className="text-white w-1/3 text-end">
-          {date ? dateFrom : ""}
+          {date ? date.toLocaleDateString() : ""}
         </span>
         <span className="text-white w-1/3 text-end">{date ? word : "???"}</span>
         <Status />
