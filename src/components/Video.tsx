@@ -18,7 +18,7 @@ import Image from "next/image";
 type NextEpisode = {
   title: string;
   poster: string | null;
-  href: string;
+  src: string;
 } | null;
 type Props = {
   isLoading: boolean;
@@ -82,9 +82,11 @@ const ActionWrapper = ({ children }: { children: ReactNode }) => {
 const EndSelection = ({
   next,
   onRepeat,
+  onNext,
 }: {
   next: NextEpisode;
   onRepeat: () => void;
+  onNext: () => void;
 }) => {
   let timeout: ReturnType<typeof setTimeout>;
   let interval: ReturnType<typeof setInterval>;
@@ -94,7 +96,8 @@ const EndSelection = ({
   useEffect(() => {
     if (next && !isCanceled) {
       timeout = setTimeout(() => {
-        router.push(next.href);
+        onNext();
+        router.push(next.src);
       }, 10_000);
       interval = setInterval(() => setCountDown((prev) => prev - 1), 1000);
     }
@@ -114,7 +117,9 @@ const EndSelection = ({
         <div className="w-full text-center p-1">
           <div className="text-xl">
             {isCanceled ? "Up next" : "Next one starts in "}
-            {!isCanceled && <span className="">{countDown}</span>}
+            {!isCanceled && (
+              <span className="">{countDown > 0 ? countDown : 0}</span>
+            )}
           </div>
         </div>
         <div className="p-4 hidden md:block aspect-video max-w-lg w-full rounded-xl overflow-hidden relative">
@@ -144,7 +149,8 @@ const EndSelection = ({
           )}
           <Link
             className="px-4 py-2 w-full bg-white text-black rounded-xl text-center"
-            href={next.href}
+            href={next.src}
+            onClick={() => onNext()}
           >
             Next
           </Link>
@@ -237,7 +243,7 @@ const Video = ({
       setIsMuted(true);
     }
   };
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     setTimeout(() => {
       if (isFullScreen != (document.fullscreenElement == null)) {
         togglePlay();
@@ -246,7 +252,7 @@ const Video = ({
       }
     }, 200);
   };
-  const handleDoubleClick = (e: React.MouseEvent) => {
+  const handleDoubleClick = () => {
     toggleFullScreenMode();
   };
   const handleScubbing = (e: React.MouseEvent | MouseEvent) => {
@@ -404,7 +410,7 @@ const Video = ({
             onEnded={() => setIsEnded(true)}
             ref={videoRef}
             className={`${
-              isMetadataLoading || (isEnded && "hidden")
+              isMetadataLoading || isEnded ? "hidden" : ""
             } w-full h-full`}
             src={src}
             autoPlay
@@ -432,16 +438,17 @@ const Video = ({
             />
           </div>
         )}
-        {isEnded && (
+        {isEnded && !isLoading && (
           <EndSelection
             next={next}
             onRepeat={() => {
               videoRef.current!.currentTime = 0;
               togglePlay(true);
             }}
+            onNext={() => setIsEnded(false)}
           />
         )}
-        {(isMetadataLoading || isWaiting) && <Loading />}
+        {(isMetadataLoading || isWaiting || isLoading) && <Loading />}
         {(showControls || isScubbing.current || isEnded) &&
           !isMetadataLoading &&
           !isError &&

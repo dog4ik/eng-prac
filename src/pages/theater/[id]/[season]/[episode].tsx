@@ -11,12 +11,6 @@ import NotFoundError from "../../../../components/ui/NotFoundError";
 import UnauthorizedError from "../../../../components/ui/UnauthorizedError";
 import Title from "../../../../components/Title";
 
-type NextEpisode = {
-  title: string;
-  poster: string | null;
-  href: string;
-} | null;
-
 type SideBarType = {
   episode: {
     poster: string | null;
@@ -24,10 +18,15 @@ type SideBarType = {
     title: string;
     number: number;
   };
-  href: any;
+  href: string;
   isCurrent: boolean;
 };
 
+type NextEpisode = {
+  title: string;
+  poster: string | null;
+  src: string;
+} | null;
 export const getServerSideProps: GetServerSideProps<{
   id?: string | string[];
   season?: string | string[];
@@ -46,7 +45,7 @@ const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
 
   return (
     <Link
-      href={{ query: href }}
+      href={href}
       className={`grid grid-rows-1 grid-cols-2 p-1 cursor-pointer overflow-hidden gap-2 items-center shrink-0 h-28 w-full rounded-lg ${
         isCurrent
           ? "bg-white text-black"
@@ -78,8 +77,8 @@ const Theater = (
   const [isSrtModalOpen, setIsSrtModalOpen] = useToggle(false);
   const [customSrt, setCustomSrt] = useState<string>();
   const [videoEvents, setVideoEvents] = useToggle(true);
-  let [nextEpisode, setNextEpisode] = useState<NextEpisode>(null);
   const [height, setHeight] = useState(0);
+  const [nextEp, setNextEp] = useState<NextEpisode>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     setHeight(containerRef.current?.clientHeight ?? 0);
@@ -91,20 +90,33 @@ const Theater = (
       seasonNumber: parseInt(props.season!.toString()),
     },
     {
-      onSuccess(data) {
-        const next = data.siblings?.find((ep) => ep.number === data.number + 1);
-        setNextEpisode(
-          next
-            ? {
-                poster: next.poster,
-                href: `/theater/${data.showId}/${data.seasonNumber}/${next.number}`,
-                title: next.title,
-              }
-            : null
-        );
-      },
       onSettled() {
         setCustomSrt(undefined);
+      },
+    }
+  );
+  const siblingsQuery = trpc.theater.getEpisodeSiblings.useQuery(
+    {
+      season: parseInt(props.season!.toString()),
+      showId: props.id!.toString(),
+    },
+    {
+      enabled: !episodeQuery.isLoading,
+      onSuccess(data) {
+        if (episodeQuery.isSuccess) {
+          const next = data.find(
+            (item) => item.number == episodeQuery.data?.number + 1
+          );
+          next
+            ? setNextEp({
+                title: next.title,
+                poster: next.poster,
+                src: `/theater/${episodeQuery.data.showId}/${
+                  episodeQuery.data.seasonNumber
+                }/${episodeQuery.data.number + 1}`,
+              })
+            : setNextEp(null);
+        }
       },
     }
   );
@@ -136,7 +148,7 @@ const Theater = (
               isLoading={episodeQuery.isLoading}
               preventEvents={!videoEvents}
               title={episodeQuery.data?.title ?? ""}
-              next={nextEpisode}
+              next={nextEp}
               src={episodeQuery.data?.src ?? ""}
               subSrc={
                 customSrt ??
@@ -194,13 +206,13 @@ const Theater = (
             </div>
           )}
         </div>
-        {episodeQuery.isSuccess && (
+        {siblingsQuery.isSuccess && (
           <div>
             <div
               style={{ height: height }}
               className="flex xl:max-w-xl px-2 flex-col xl:overflow-y-auto xl:mr-10 scrollbar-w-1 scrollbar-thumb-white scrollbar-track-neutral-700 "
             >
-              {episodeQuery.data.siblings?.map((episode) => (
+              {siblingsQuery.data?.map((episode) => (
                 <SideBarEpisode
                   episode={{
                     number: episode.number,
@@ -208,12 +220,8 @@ const Theater = (
                     poster: episode.poster,
                     blurData: episode.blurData,
                   }}
-                  href={{
-                    id: episodeQuery.data.showId,
-                    season: episodeQuery.data.seasonNumber,
-                    episode: episode.number,
-                  }}
-                  isCurrent={episode.id === episodeQuery.data.id}
+                  href={`/theater/${episodeQuery.data?.showId}/${episodeQuery.data?.seasonNumber}/${episode.number}`}
+                  isCurrent={episode.id === episodeQuery.data?.id}
                 />
               ))}
             </div>

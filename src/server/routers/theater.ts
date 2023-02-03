@@ -135,16 +135,6 @@ export const theaterRouter = router({
               select: {
                 number: true,
                 showsId: true,
-                Episodes: {
-                  select: {
-                    subSrc: true,
-                    title: true,
-                    poster: true,
-                    blurData: true,
-                    number: true,
-                    id: true,
-                  },
-                },
               },
             },
           },
@@ -153,6 +143,7 @@ export const theaterRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         });
       if (episode === null) throw new TRPCError({ code: "NOT_FOUND" });
+
       return {
         releaseDate: episode.releaseDate,
         plot: episode.plot,
@@ -165,7 +156,22 @@ export const theaterRouter = router({
         tmdbId: episode.tmdbId,
         seasonNumber: episode.Season?.number,
         showId: episode.Season?.showsId,
-        siblings: episode.Season?.Episodes,
       };
+    }),
+  getEpisodeSiblings: protectedProcedure
+    .input(z.object({ showId: z.string(), season: z.number() }))
+    .query(async ({ input }) => {
+      const siblings = await prisma.episode.findMany({
+        where: { Season: { showsId: input.showId, number: input.season } },
+        select: {
+          number: true,
+          title: true,
+          id: true,
+          poster: true,
+          blurData: true,
+        },
+        orderBy: { number: "asc" },
+      });
+      return siblings;
     }),
 });
