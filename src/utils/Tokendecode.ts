@@ -1,28 +1,16 @@
 import * as jwt from "jsonwebtoken";
-type Data = {
-  id?: string;
+type TokenData = {
+  id: string;
 };
-export default function TokenDecode(header?: string) {
+export default function TokenDecode(header: string): string | null {
   const token = header && header.split(" ")[1];
 
-  let user_id: string | null = null;
-  jwt.verify(
-    token!,
-    process.env.ACCESS_TOKEN_SECRET!,
-    (err, token_data?: any) => {
-      if (err) {
-        if (err.message == "jwt expired") {
-          console.log(err.message);
-          return;
-        }
-        console.log(err.message);
-        return;
-      } else {
-        user_id = token_data!.id;
-        return user_id;
-      }
-    }
-  );
+  let payload: TokenData | null = null;
+  try {
+    payload = jwt.verify(token!, process.env.ACCESS_TOKEN_SECRET!) as TokenData;
+  } catch (e) {
+    payload = null;
+  }
 
-  return user_id;
+  return payload ? payload.id : null;
 }
