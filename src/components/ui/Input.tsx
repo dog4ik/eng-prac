@@ -1,4 +1,4 @@
-import React, { ForwardedRef, forwardRef, HTMLProps, ReactNode } from "react";
+import React, { ForwardedRef } from "react";
 interface Props
   extends React.DetailedHTMLProps<
     React.InputHTMLAttributes<HTMLInputElement>,
@@ -13,7 +13,7 @@ const Input = React.forwardRef(
         <input
           ref={ref}
           className="peer pl-2 h-14 w-full border-2 rounded-lg border-gray-300 text-gray-900 placeholder-transparent select-none focus:outline-none"
-          placeholder="placeholder"
+          placeholder=" "
           {...props}
         />
         {props.required ? (

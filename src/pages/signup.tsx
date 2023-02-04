@@ -100,6 +100,7 @@ const SignUp = () => {
               label="Email"
               required
               type="email"
+              name="email"
               autoComplete="email"
             ></Input>
             <Input
@@ -114,6 +115,7 @@ const SignUp = () => {
               label="Password"
               required
               type="password"
+              name="new-password"
               autoComplete="new-password"
             ></Input>
             <Input
@@ -131,6 +133,7 @@ const SignUp = () => {
               }}
               label="Repeat Password"
               required
+              name="repeat-password"
               type="password"
               autoComplete="new-password"
             ></Input>
