@@ -29,6 +29,8 @@ type Props = {
   externalSubs?: string;
   subSrc: string | null;
   next: NextEpisode;
+  onHistoryUpdate: (time: number) => void;
+  initialTime: number;
 };
 const VolumeIcon = ({
   volume,
@@ -159,6 +161,8 @@ const Video = ({
   subSrc,
   next,
   preventEvents,
+  initialTime,
+  onHistoryUpdate,
 }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -171,11 +175,12 @@ const Video = ({
   const [isMuted, setIsMuted] = useToggle(false);
   const [isEnded, setIsEnded] = useState(false);
   const isScubbing = useRef(false);
+  const lastSynced = useRef(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useToggle(true);
   const [showCaptions, setShowCaptions] = useToggle(false);
   const [volume, setVolume] = useState(0.3);
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(initialTime);
   const [duration, setDuration] = useState(0);
   const changeVolume = (state: number) => {
     if (!videoRef.current) return;
@@ -227,6 +232,12 @@ const Video = ({
     } else {
       videoRef.current!.muted = true;
       setIsMuted(true);
+    }
+  };
+  const handleSync = (curTime: number) => {
+    if (Math.abs(curTime - lastSynced.current) > 5 && !isScubbing.current) {
+      onHistoryUpdate(Math.floor(curTime));
+      lastSynced.current = curTime;
     }
   };
   const handleClick = () => {
@@ -308,6 +319,7 @@ const Video = ({
   useEffect(() => {
     const handleMouseUp = () => {
       isScubbing.current = false;
+      handleSync(time);
     };
     const handleMouseMove = (e: MouseEvent) => {
       if (!isScubbing.current) return;
@@ -319,7 +331,7 @@ const Video = ({
       document.removeEventListener("mouseup", handleMouseUp);
       document.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [timelineRef.current, isScubbing.current]);
+  }, [timelineRef.current, isScubbing.current, time]);
   if (isError) {
     return (
       <VideoError
@@ -367,12 +379,14 @@ const Video = ({
                 1500
               );
             }}
-            onTimeUpdate={() => {
+            onTimeUpdate={(e) => {
               (showCaptions || showControls) &&
-                setTime(videoRef.current!.currentTime);
+                setTime(e.currentTarget.currentTime);
+              handleSync(e.currentTarget.currentTime);
             }}
             onPlaying={() => setIsWaiting(false)}
             onLoadedMetadata={(e) => {
+              e.currentTarget.currentTime = initialTime;
               setDuration(e.currentTarget.duration);
               setIsMetadataLoading(false);
               setIsError(false);

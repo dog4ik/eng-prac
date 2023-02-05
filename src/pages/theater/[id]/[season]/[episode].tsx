@@ -38,6 +38,10 @@ export const getServerSideProps: GetServerSideProps<{
   return { props: { id, season, episode } };
 };
 
+const calcPersent = (first: number, second: number) => {
+  return (first / second) * 100;
+};
+
 const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
   const itemRef = useRef<HTMLAnchorElement>(null);
   useEffect(() => {
@@ -90,6 +94,7 @@ const Theater = (
   useLayoutEffect(() => {
     setHeight(containerRef.current?.clientHeight ?? 0);
   }, []);
+  const updateHistoryMutation = trpc.theater.updateHistory.useMutation();
   const episodeQuery = trpc.theater.getEpisode.useQuery(
     {
       showId: props.id!.toString(),
@@ -168,6 +173,17 @@ const Theater = (
         <div className="flex flex-col gap-2 xl:w-3/4" ref={containerRef}>
           <div className="">
             <Video
+              onHistoryUpdate={(time) => {
+                updateHistoryMutation.mutate({
+                  time,
+                  isFinished:
+                    calcPersent(time, episodeQuery.data?.duration ?? 0) > 95
+                      ? true
+                      : false,
+                  episodeId: episodeQuery.data?.id ?? "",
+                });
+              }}
+              initialTime={episodeQuery.data?.history?.time ?? 0}
               isLoading={episodeQuery.isLoading}
               preventEvents={!videoEvents}
               title={episodeQuery.data?.title ?? ""}

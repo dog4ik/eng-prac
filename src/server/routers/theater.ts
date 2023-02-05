@@ -115,7 +115,7 @@ export const theaterRouter = router({
         seasonNumber: z.number(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const episode = await prisma.episode
         .findFirst({
           where: {
@@ -130,6 +130,7 @@ export const theaterRouter = router({
             src: true,
             subSrc: true,
             rating: true,
+            duration: true,
             id: true,
             tmdbId: true,
             Season: {
@@ -144,7 +145,10 @@ export const theaterRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         });
       if (episode === null) throw new TRPCError({ code: "NOT_FOUND" });
-
+      const history = await prisma.watchHisory.findFirst({
+        where: { userId: ctx.userId, episodeId: episode.id },
+        select: { isFinished: true, time: true, updatedAt: true },
+      });
       return {
         releaseDate: episode.releaseDate,
         plot: episode.plot,
@@ -154,9 +158,11 @@ export const theaterRouter = router({
         subSrc: episode.subSrc,
         rating: episode.rating,
         id: episode.id,
+        duration: episode.duration,
         tmdbId: episode.tmdbId,
         seasonNumber: episode.Season?.number,
         showId: episode.Season?.showsId,
+        history,
       };
     }),
   getEpisodeSiblings: protectedProcedure
@@ -175,5 +181,33 @@ export const theaterRouter = router({
         orderBy: { number: "asc" },
       });
       return siblings;
+    }),
+  updateHistory: protectedProcedure
+    .input(
+      z.object({
+        episodeId: z.string(),
+        time: z.number(),
+        isFinished: z.boolean(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const history = await prisma.watchHisory.findFirst({
+        where: { userId: ctx.userId, episodeId: input.episodeId },
+      });
+      if (!history) {
+        await prisma.watchHisory.create({
+          data: {
+            userId: ctx.userId,
+            episodeId: input.episodeId,
+            time: input.time,
+            isFinished: input.isFinished,
+          },
+        });
+      } else {
+        await prisma.watchHisory.update({
+          where: { id: history.id },
+          data: { time: input.time, isFinished: input.isFinished },
+        });
+      }
     }),
 });
