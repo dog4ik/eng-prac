@@ -1,12 +1,3 @@
-type ReqestBody = {
-  password: string;
-  language?: string;
-};
-type LibItem = {
-  title: string;
-  episodes: { number: number; src: string; subSrc: null | string }[];
-  season: number;
-};
 type TmdbSeasonEpisode = {
   air_date: string;
   episode_number: number;
@@ -77,15 +68,4 @@ type TmdbSearchShow = {
   total_pages: number;
 };
 
-interface MyLibrary extends TmdbSeasonEpisode {
-  src: string;
-  subSrc: string | null;
-}
-export {
-  TmdbSeasonEpisode,
-  TmdbSearchShow,
-  MyLibrary,
-  LibItem,
-  ReqestBody,
-  TmdbShowSeason,
-};
+export { TmdbSeasonEpisode, TmdbSearchShow, TmdbShowSeason };

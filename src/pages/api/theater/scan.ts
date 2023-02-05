@@ -1,18 +1,27 @@
 import axios from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../prisma/PrismaClient";
-import {
-  TmdbShowSeason,
-  LibItem,
-  MyLibrary,
-  TmdbSearchShow,
-  TmdbSeasonEpisode,
-} from "./tmdb-api";
+import { TmdbShowSeason, TmdbSearchShow, TmdbSeasonEpisode } from "./tmdb-api";
 
 type ReqestBody = {
   language?: string;
 };
-
+type MyLibrary = {
+  src: string;
+  subSrc: string | null;
+  duration: number;
+} & TmdbSeasonEpisode;
+type LibEpisode = {
+  number: number;
+  src: string;
+  subSrc: null | string;
+  duration: number;
+};
+type LibItem = {
+  title: string;
+  episodes: LibEpisode[];
+  season: number;
+};
 const generateBase64Image = async (path: string) => {
   return await axios
     .get("https://image.tmdb.org/t/p/w45" + path, {
@@ -21,14 +30,7 @@ const generateBase64Image = async (path: string) => {
     .then((data) => Buffer.from(data.data, "binary").toString("base64"));
 };
 
-const filterEpisodes = (
-  local: {
-    number: number;
-    src: string;
-    subSrc: string | null;
-  }[],
-  tmdb: TmdbSeasonEpisode[]
-) => {
+const filterEpisodes = (local: LibEpisode[], tmdb: TmdbSeasonEpisode[]) => {
   return tmdb
     .filter((te) => local.map((le) => le.number).includes(te.episode_number))
     .map((item) => {
@@ -37,6 +39,7 @@ const filterEpisodes = (
         ...item,
         src: e!.src,
         subSrc: e!.subSrc,
+        duration: e!.duration,
       };
     });
 };
@@ -113,6 +116,7 @@ export default async function handler(
           season.data.poster_path
         ).catch(() => null);
       }
+
       for (let i = 0; i < myEpisodes.length; i++) {
         const episode = myEpisodes[i];
         if (episode.still_path) {
@@ -161,6 +165,7 @@ export default async function handler(
                       poster: IMG_BASE_URL + item.still_path,
                       blurData: episodesBlurdata.get(item.id) ?? null,
                       plot: item.overview,
+                      duration: item.duration,
                       tmdbId: item.id,
                     };
                   }),
@@ -195,6 +200,7 @@ export default async function handler(
                         poster: IMG_BASE_URL + item.still_path,
                         blurData: episodesBlurdata.get(item.id) ?? null,
                         plot: item.overview,
+                        duration: item.duration,
                         tmdbId: item.id,
                       };
                     }),
@@ -217,6 +223,7 @@ export default async function handler(
                         poster: IMG_BASE_URL + item.still_path,
                         blurData: episodesBlurdata.get(item.id) ?? null,
                         plot: item.overview,
+                        duration: item.duration,
                         tmdbId: item.id,
                       };
                     }),
