@@ -26,6 +26,7 @@ model User {
   Tests         Tests[]
   Notifications Notifications[]
   Wordle        Wordle[]
+  WatchHisory   WatchHisory[]
 }
 
 model Wordbook {
@@ -102,8 +103,20 @@ model Wordle {
   finishDate DateTime?
 }
 
+model WatchHisory {
+  id         String   @id @default(cuid())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  isFinished Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Episode    Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  episodeId  String
+  time       Int
+}
+
 model Episode {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   title        String
   number       Int
   src          String
@@ -114,11 +127,12 @@ model Episode {
   poster       String?
   blurData     String?
   plot         String?
-  Season       Season?  @relation(fields: [seasonId], references: [id])
+  Season       Season?       @relation(fields: [seasonId], references: [id])
   seasonId     String?
-  tmdbId       Int?     @unique
-  scannedDate  DateTime @default(now())
+  tmdbId       Int?          @unique
+  scannedDate  DateTime      @default(now())
   duration     Float
+  WatchHisory  WatchHisory[]
 }
 
 model Season {
