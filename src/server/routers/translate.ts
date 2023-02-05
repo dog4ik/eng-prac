@@ -41,7 +41,7 @@ async function handleYandexToken(err: AxiosError) {
     });
   });
   console.log(token);
-  err.config!.headers = { Authorization: "Bearer " + token };
+  err.config!.headers.Authorization = "Bearer " + token;
   err.config!.data = JSON.parse(err.config!.data);
   return await axios
     .request(err.config!)

@@ -46,9 +46,7 @@ authApi.interceptors.response.use(
   }
 );
 authApi.interceptors.request.use(function (config) {
-  config.headers! = {
-    Authorization: "Bearer " + getAccess_token(),
-  };
+  config.headers!.Authorization = "Bearer " + getAccess_token();
   return config;
 });
 export default authApi;

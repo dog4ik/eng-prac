@@ -2,7 +2,7 @@ import * as jwt from "jsonwebtoken";
 type TokenData = {
   id: string;
 };
-export default function TokenDecode(header: string): string | null {
+export default function TokenDecode(header?: string): string | null {
   const token = header && header.split(" ")[1];
 
   let payload: TokenData | null = null;
