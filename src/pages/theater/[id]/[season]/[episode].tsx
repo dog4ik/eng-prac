@@ -160,7 +160,7 @@ const Theater = (
           </div>
           {episodeQuery.isSuccess && (
             <div className="flex flex-col">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between flex-col lg:flex-row lg:items-center">
                 <div>
                   <div>
                     <span className="text-xl font-semibold">
@@ -178,22 +178,22 @@ const Theater = (
                 </div>
                 {episodeQuery.data.tmdbId && (
                   <div className="flex items-center gap-3">
-                    <div
-                      className="px-5 cursor-pointer text-black py-2 bg-white rounded-lg"
+                    <button
+                      className="px-5 cursor-pointer text-black py-2 bg-white rounded-lg truncate"
                       onClick={() => {
                         setVideoEvents(false);
                         setIsSrtModalOpen();
                       }}
                     >
                       Download subs
-                    </div>
+                    </button>
                     {customSrt && (
-                      <span
+                      <button
                         className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"
                         onClick={() => setCustomSrt(undefined)}
                       >
                         {customSrt?.split("/")[customSrt.split("/").length - 1]}
-                      </span>
+                      </button>
                     )}
                   </div>
                 )}
