@@ -10,6 +10,7 @@ import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 import UnauthorizedError from "../../../../components/ui/UnauthorizedError";
 import Title from "../../../../components/Title";
+import formatDuration from "../../../../utils/formatDuration";
 
 type SideBarType = {
   episode: {
@@ -17,6 +18,7 @@ type SideBarType = {
     blurData: string | null;
     title: string;
     number: number;
+    duration: number;
   };
   href: string;
   isCurrent: boolean;
@@ -62,6 +64,11 @@ const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
           className="object-cover"
           alt={"Episode Poster"}
         />
+        <div className="absolute bottom-0 right-0 flex items-center p-1">
+          <span className="rounded-md bg-black p-0.5 text-sm text-white">
+            {formatDuration(episode.duration)}
+          </span>
+        </div>
       </div>
       <div className="flex flex-col justify-center gap-5">
         <span className="text-md">{episode.title}</span>
@@ -236,6 +243,7 @@ const Theater = (
                     title: episode.title,
                     poster: episode.poster,
                     blurData: episode.blurData,
+                    duration: episode.duration,
                   }}
                   href={`/theater/${episodeQuery.data?.showId}/${episodeQuery.data?.seasonNumber}/${episode.number}`}
                   isCurrent={episode.id === episodeQuery.data?.id}

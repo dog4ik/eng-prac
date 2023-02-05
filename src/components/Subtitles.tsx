@@ -57,7 +57,10 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
     }[]
   >(
     ["subs", subSrc],
-    () => axios.get(subSrc ?? "").then((data) => srtParser(data.data)),
+    () =>
+      axios
+        .get(process.env.NEXT_PUBLIC_MEDIA_SERVER_LINK! + subSrc ?? "")
+        .then((data) => srtParser(data.data)),
     { enabled: subSrc != null }
   );
   const translateMutation = useMutation<

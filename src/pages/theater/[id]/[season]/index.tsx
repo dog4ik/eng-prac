@@ -8,6 +8,7 @@ import Error from "../../../../components/ui/Error";
 import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 import Title from "../../../../components/Title";
+import formatDuration from "../../../../utils/formatDuration";
 type EpisodeCardProps = {
   haveSubs: boolean;
   img: string | null;
@@ -15,6 +16,7 @@ type EpisodeCardProps = {
   title: string;
   episode: number;
   href: string;
+  duration: number;
 };
 
 export const getServerSideProps: GetServerSideProps<{
@@ -31,6 +33,7 @@ const EpisodeCard = ({
   href,
   blurData,
   haveSubs,
+  duration,
 }: EpisodeCardProps) => {
   return (
     <div>
@@ -53,13 +56,18 @@ const EpisodeCard = ({
             "https://images.unsplash.com/photo-1626846116799-ad61f874f99d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
           }
         ></Image>
-        <div className="absolute top-0 right-0 p-1">
+        <div className="absolute top-0 right-0 flex items-center p-1">
           <span
-            className={`inline-block rounded-xl px-1.5 py-1 text-sm ${
+            className={`inline-block rounded-xl px-1 py-0.5 text-sm ${
               haveSubs ? "bg-green-500" : "bg-red-500"
             }`}
           >
             Subs
+          </span>
+        </div>
+        <div className="absolute bottom-0 right-0 flex items-center p-1">
+          <span className="rounded-md bg-black p-0.5 text-sm">
+            {formatDuration(duration)}
           </span>
         </div>
       </Link>
@@ -130,6 +138,7 @@ const Season = (
             episodesQuery.data.episodes.map((episode) => (
               <EpisodeCard
                 haveSubs={episode.subSrc !== null}
+                duration={episode.duration}
                 key={episode.id}
                 img={episode.poster}
                 blurData={episode.blurData}
