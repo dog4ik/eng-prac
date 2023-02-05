@@ -57,7 +57,7 @@ const Keyboard = ({
     console.log("fire", tries);
   }, [tries]);
   return (
-    <div className="flex flex-col justify-center items-center gap-2">
+    <div className="flex flex-col items-center justify-center gap-2">
       {keys.map((row, index) => (
         <div key={index} className="flex gap-2">
           {index == 2 && (
@@ -65,7 +65,7 @@ const Keyboard = ({
               onClick={() => {
                 onDelete();
               }}
-              className="flex justify-center select-none items-center rounded-lg bg-white text-black py-2 px-4 cursor-pointer"
+              className="flex cursor-pointer select-none items-center justify-center rounded-lg bg-white py-2 px-4 text-black"
             >
               <span className="text-xl uppercase">del</span>
             </div>
@@ -86,7 +86,7 @@ const Keyboard = ({
                     : evaluation === "present"
                     ? "bg-yellow-400"
                     : "bg-white"
-                } flex justify-center select-none items-center rounded-lg text-black py-2 px-4 cursor-pointer`}
+                } flex cursor-pointer select-none items-center justify-center rounded-lg py-2 px-4 text-black`}
               >
                 <span className="text-xl uppercase">{key}</span>
               </div>
@@ -98,7 +98,7 @@ const Keyboard = ({
               onClick={() => {
                 onEnter();
               }}
-              className="flex justify-center select-none items-center rounded-lg bg-white text-black py-2 px-4 cursor-pointer"
+              className="flex cursor-pointer select-none items-center justify-center rounded-lg bg-white py-2 px-4 text-black"
             >
               <span className="text-xl uppercase">enter</span>
             </div>
@@ -118,7 +118,7 @@ const Letter = ({
 }) => {
   return (
     <div
-      className={`w-20 h-20 rounded-xl flex justify-center items-center ${
+      className={`flex h-20 w-20 items-center justify-center rounded-xl ${
         evaluation === "correct" && "bg-green-400"
       } ${evaluation === "present" && "bg-yellow-400"} ${
         evaluation === "absent" && "bg-gray-500"
@@ -139,7 +139,7 @@ const Row = ({
   evaluation: ("absent" | "present" | "correct")[] | null;
 }) => {
   return (
-    <div className={`w-full flex gap-5 mb-5 rounded-full py-2 px-10`}>
+    <div className={`mb-5 flex w-full gap-5 rounded-full py-2 px-10`}>
       {[...Array(maxLetters)].map((_, index) => (
         <Letter
           key={index}
@@ -232,7 +232,7 @@ const Wordle = (
         />
       )}
 
-      <div className="flex flex-col flex-1 justify-center items-center">
+      <div className="flex flex-1 flex-col items-center justify-center">
         <div>
           {[...Array(wordleQuery.data.maxTries)].map((_, index) => (
             <Row

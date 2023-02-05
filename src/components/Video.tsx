@@ -59,11 +59,11 @@ const formatDuration = (time: number) => {
 };
 const VideoError = ({ onRefresh }: { onRefresh: () => void }) => {
   return (
-    <div className="bg-black w-full aspect-video flex flex-col gap-4 justify-center items-center">
+    <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 bg-black">
       <span className="text-2xl"> Error loading video</span>
       <button
         onClick={onRefresh}
-        className="px-4 py-2 bg-red-500 rounded-lg font-semibold"
+        className="rounded-lg bg-red-500 px-4 py-2 font-semibold"
       >
         Try refresh
       </button>
@@ -72,8 +72,8 @@ const VideoError = ({ onRefresh }: { onRefresh: () => void }) => {
 };
 const ActionWrapper = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="absolute flex justify-center items-center pointer-events-none top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
-      <div className="flex justify-center items-center animate-push-in-fade-out opacity-0 bg-black/50 w-32 h-32 rounded-full">
+    <div className="pointer-events-none absolute top-1/2 left-1/2 flex -translate-y-1/2 -translate-x-1/2 items-center justify-center">
+      <div className="flex h-32 w-32 animate-push-in-fade-out items-center justify-center rounded-full bg-black/50 opacity-0">
         {children}
       </div>
     </div>
@@ -113,8 +113,8 @@ const EndSelection = ({
   };
   if (next)
     return (
-      <div className="absolute flex flex-col gap-3 max-w-2xl w-80 h-fit select-none max-h-96 py-3 px-10 bg-black rounded-lg items-center top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">
-        <div className="w-full text-center p-1">
+      <div className="absolute top-1/2 left-1/2 flex h-fit max-h-96 w-80 max-w-2xl -translate-y-1/2 -translate-x-1/2 select-none flex-col items-center gap-3 rounded-lg bg-black py-3 px-10">
+        <div className="w-full p-1 text-center">
           <div className="text-xl">
             {isCanceled ? "Up next" : "Next one starts in "}
             {!isCanceled && (
@@ -122,7 +122,7 @@ const EndSelection = ({
             )}
           </div>
         </div>
-        <div className="p-4 hidden md:block aspect-video max-w-lg w-full rounded-xl overflow-hidden relative">
+        <div className="relative hidden aspect-video w-full max-w-lg overflow-hidden rounded-xl p-4 md:block">
           {next.poster ? (
             <Image
               draggable={false}
@@ -138,17 +138,17 @@ const EndSelection = ({
         <div>
           <span className="truncate text-lg">{next.title}</span>
         </div>
-        <div className="flex gap-5 items-center w-full">
+        <div className="flex w-full items-center gap-5">
           {!isCanceled && (
             <button
-              className="px-4 py-2 w-full bg-black text-white rounded-xl"
+              className="w-full rounded-xl bg-black px-4 py-2 text-white"
               onClick={handleCancel}
             >
               Cancel
             </button>
           )}
           <Link
-            className="px-4 py-2 w-full bg-white text-black rounded-xl text-center"
+            className="w-full rounded-xl bg-white px-4 py-2 text-center text-black"
             href={next.src}
             onClick={() => onNext()}
           >
@@ -159,7 +159,7 @@ const EndSelection = ({
     );
   return (
     <div
-      className="absolute flex flex-col cursor-pointer justify-center h-32 w-32 rounded-full items-center top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"
+      className="absolute top-1/2 left-1/2 flex h-32 w-32 -translate-y-1/2 -translate-x-1/2 cursor-pointer flex-col items-center justify-center rounded-full"
       onClick={onRepeat}
     >
       <FiRepeat size={50} />
@@ -357,8 +357,8 @@ const Video = ({
           "cursor-none"
         } ${
           isFullScreen
-            ? "overflow-hidden h-screen w-screen"
-            : "w-full aspect-video"
+            ? "h-screen w-screen overflow-hidden"
+            : "aspect-video w-full"
         } `}
       >
         {!isLoading && (
@@ -411,7 +411,7 @@ const Video = ({
             ref={videoRef}
             className={`${
               isMetadataLoading || isEnded ? "hidden" : ""
-            } w-full h-full`}
+            } h-full w-full`}
             src={src}
             autoPlay
           >
@@ -429,7 +429,7 @@ const Video = ({
           </ActionWrapper>
         )}
         {showCaptions && (
-          <div className="absolute bottom-20 flex justify-center items-center left-1/2 -translate-x-1/2">
+          <div className="absolute bottom-20 left-1/2 flex -translate-x-1/2 items-center justify-center">
             <Subtitles
               subSrc={subSrc}
               videoRef={videoRef}
@@ -464,16 +464,16 @@ const Video = ({
                   clearTimeout(showControlsTimeout.current);
                   setShowControls(true);
                 }}
-                className={`absolute bottom-0 transition-opacity left-0 right-0 animate-fade-in`}
+                className={`absolute bottom-0 left-0 right-0 animate-fade-in transition-opacity`}
               >
                 <div
-                  className="h-4 flex items-end group cursor-pointer"
+                  className="group flex h-4 cursor-pointer items-end"
                   ref={timelineRef}
                   onMouseDown={handleScubbing}
                 >
-                  <div className="absolute bg-neutral-900 left-0 right-0 w-full h-1.5 flex">
+                  <div className="absolute left-0 right-0 flex h-1.5 w-full bg-neutral-900">
                     <div
-                      className="h-full flex justify-end rounded-md items-center bg-white after:content-[' '] after:bg-white after:p-2 after:translate-x-2 after:rounded-full after:opacity-0 after:group-hover:opacity-100 after:transition-opacity after:duration-150"
+                      className="after:content-[' '] flex h-full items-center justify-end rounded-md bg-white after:translate-x-2 after:rounded-full after:bg-white after:p-2 after:opacity-0 after:transition-opacity after:duration-150 after:group-hover:opacity-100"
                       style={{
                         width: `${
                           (videoRef.current.currentTime / duration) * 100
@@ -482,24 +482,24 @@ const Video = ({
                     ></div>
                   </div>
                 </div>
-                <div className="flex justify-between items-center bg-black/70">
+                <div className="flex items-center justify-between bg-black/70">
                   <div className="flex gap-4">
                     <div
-                      className="p-2 cursor-pointer"
+                      className="cursor-pointer p-2"
                       onClick={() => togglePlay()}
                     >
                       {isPaused ? <FiPlay size={30} /> : <FiPause size={30} />}
                     </div>
-                    <div className="flex group transition-all duration-300 items-center">
+                    <div className="group flex items-center transition-all duration-300">
                       <div
-                        className="p-2 cursor-pointer"
+                        className="cursor-pointer p-2"
                         onClick={() => toggleMute()}
                       >
                         <VolumeIcon volume={volume} isMuted={isMuted} />
                       </div>
 
                       <input
-                        className="rounded-lg w-0 scale-x-0 group-hover:w-20 group-hover:scale-x-100 origin-left transition-all duration-300 accent-white bg-neutral-800 h-1.5"
+                        className="h-1.5 w-0 origin-left scale-x-0 rounded-lg bg-neutral-800 accent-white transition-all duration-300 group-hover:w-20 group-hover:scale-x-100"
                         onChange={(e) => {
                           changeVolume(e.target.valueAsNumber / 100);
                         }}
@@ -510,7 +510,7 @@ const Video = ({
                       />
                     </div>
 
-                    <div className="flex justify-center items-center">
+                    <div className="flex items-center justify-center">
                       <span>
                         {formatDuration(time) +
                           " / " +
@@ -519,7 +519,7 @@ const Video = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center select-none gap-5">
+                  <div className="flex select-none items-center gap-5">
                     <div
                       className={`${
                         subSrc ? "cursor-pointer" : "cursor-not-allowed"
@@ -527,10 +527,10 @@ const Video = ({
                       onClick={() => toggleCaptions()}
                     >
                       <div
-                        className={`rounded-sm px-2 py-0.5 flex justify-center items-center border-2 ${
+                        className={`flex items-center justify-center rounded-sm border-2 px-2 py-0.5 ${
                           showCaptions && subSrc
-                            ? "bg-white border-black"
-                            : "bg-black border-white"
+                            ? "border-black bg-white"
+                            : "border-white bg-black"
                         }`}
                       >
                         <span

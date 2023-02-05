@@ -19,18 +19,18 @@ export const getServerSideProps: GetServerSideProps<{
 const Option = ({ word, isSelected, isError, onClick }: Props) => {
   return (
     <div
-      className="group cursor-pointer md:w-1/5 h-32 bg-neutral-600 rounded-lg relative flex items-center justify-center"
+      className="group relative flex h-32 cursor-pointer items-center justify-center rounded-lg bg-neutral-600 md:w-1/5"
       onClick={() => onClick(word)}
     >
-      <p className="text-2xl truncate">{word?.eng}</p>
+      <p className="truncate text-2xl">{word?.eng}</p>
       <div
-        className={`absolute select-none top-2 right-2 flex items-center justify-center border-white border-2 rounded-full w-6 h-6 ${
+        className={`absolute top-2 right-2 flex h-6 w-6 select-none items-center justify-center rounded-full border-2 border-white ${
           isSelected && !isError && "bg-green-400"
         } ${isError && "bg-red-400"}`}
       ></div>
       <div
-        className={`w-1/2 group-hover:h-2/3 group-hover:w-2/3 duration-300 rounded-full blur-3xl absolute animate-blob ${
-          isError ? "bg-red-500 h-full" : "bg-sky-500 h-1/4 "
+        className={`absolute w-1/2 animate-blob rounded-full blur-3xl duration-300 group-hover:h-2/3 group-hover:w-2/3 ${
+          isError ? "h-full bg-red-500" : "h-1/4 bg-sky-500 "
         }`}
       />
     </div>
@@ -88,13 +88,13 @@ const Learning = (
       <>
         <Title title="Learn" />
 
-        <div className="flex px-5 md:px-20 flex-col gap-5 flex-1 items-center">
+        <div className="flex flex-1 flex-col items-center gap-5 px-5 md:px-20">
           <div className="p-10">
             <span className="text-4xl" onClick={() => console.log(selected)}>
               {answer}
             </span>
           </div>
-          <div className="w-full h-full md:flex grid grid-cols-2 items-center gap-5 justify-around">
+          <div className="grid h-full w-full grid-cols-2 items-center justify-around gap-5 md:flex">
             <Option
               key={0}
               isError={error == options[0]?.rus}
@@ -125,7 +125,7 @@ const Learning = (
             />
           </div>
           <button
-            className={`px-10 py-5 rounded-md  transition duration-200 ${
+            className={`rounded-md px-10 py-5  transition duration-200 ${
               error
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-green-600 hover:bg-green-700"

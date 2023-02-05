@@ -48,15 +48,15 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
     return (
       <div
         ref={containerRef}
-        className="absolute bg-white rounded-lg divide-y left-0 right-0 top-20 w-full border border-black/50 "
+        className="absolute left-0 right-0 top-20 w-full divide-y rounded-lg border border-black/50 bg-white "
       >
         {[...Array(9)].map((_, index) => (
           <div
             key={index}
-            className="px-5 flex justify-between items-center cursor-pointer py-2 w-full"
+            className="flex w-full cursor-pointer items-center justify-between px-5 py-2"
           >
             <div className="h-6">
-              <div className="w-16 h-2/3 rounded-full bg-neutral-300 animate-pulse"></div>
+              <div className="h-2/3 w-16 animate-pulse rounded-full bg-neutral-300"></div>
             </div>
           </div>
         ))}
@@ -65,14 +65,14 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
   return (
     <div
       ref={containerRef}
-      className="absolute bg-white rounded-lg divide-y left-0 right-0 top-20 w-full border border-black/50"
+      className="absolute left-0 right-0 top-20 w-full divide-y rounded-lg border border-black/50 bg-white"
     >
       {autoCompleteMutation.data
         ?.filter((item) => item.word != word)
         .map((syn) => (
           <div
             key={syn.word}
-            className="px-5 flex justify-between items-center cursor-pointer py-2 w-full"
+            className="flex w-full cursor-pointer items-center justify-between px-5 py-2"
             onClick={(e) => {
               onClick(syn.word);
             }}
@@ -80,9 +80,9 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
             <div className="">
               <span>{syn.word}</span>
             </div>
-            <div className="flex gap-0.5 h-3 w-20 items-center">
+            <div className="flex h-3 w-20 items-center gap-0.5">
               <div
-                className={`w-1/4 h-full rounded-l-full ${
+                className={`h-full w-1/4 rounded-l-full ${
                   syn.score < 300
                     ? "bg-red-500"
                     : syn.score < 500
@@ -91,7 +91,7 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
                 }`}
               ></div>
               <div
-                className={`w-1/4 h-full ${
+                className={`h-full w-1/4 ${
                   syn.score < 300
                     ? "bg-neutral-300"
                     : syn.score < 500
@@ -100,7 +100,7 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
                 }`}
               ></div>
               <div
-                className={`w-1/4 h-full rounded-r-full ${
+                className={`h-full w-1/4 rounded-r-full ${
                   syn.score < 500 ? "bg-neutral-300" : "bg-green-500"
                 }`}
               ></div>
@@ -159,11 +159,11 @@ const Translate = (
       <Head>
         <title>Translate</title>
       </Head>
-      <div className="flex flex-1 flex-col gap-5 items-center">
-        <div className="w-full flex justify-center items-center">
-          <div className="w-2/3 px-5 py-2 border bg-white text-black rounded-xl flex justify-center">
-            <div className="w-1/2 relative">
-              <div className=" h-32 flex border-r-2">
+      <div className="flex flex-1 flex-col items-center gap-5">
+        <div className="flex w-full items-center justify-center">
+          <div className="flex w-2/3 justify-center rounded-xl border bg-white px-5 py-2 text-black">
+            <div className="relative w-1/2">
+              <div className=" flex h-32 border-r-2">
                 <textarea
                   value={searchTerm}
                   onChange={(e) => {
@@ -172,9 +172,9 @@ const Translate = (
                   }}
                   ref={input}
                   maxLength={500}
-                  className="resize-none scrollbar-thin scrollbar-track-gray-200 scrollbar-thumb-neutral-700 scrollbar-track-rounded-md scrollbar-thumb-rounded-md text-xl bg-white w-full flex-1 h-full outline-none"
+                  className="h-full w-full flex-1 resize-none bg-white text-xl outline-none scrollbar-thin scrollbar-track-gray-200 scrollbar-thumb-neutral-700 scrollbar-track-rounded-md scrollbar-thumb-rounded-md"
                 ></textarea>
-                <div className="flex-col flex gap-2 pr-3">
+                <div className="flex flex-col gap-2 pr-3">
                   <FiVolume2
                     className="right-5 top-0 cursor-pointer stroke-gray-400 hover:stroke-gray-600"
                     size={35}
@@ -194,13 +194,13 @@ const Translate = (
               )}
             </div>
             <div className="w-1/2">
-              <div className="w-full h-full flex outline-none bg-white ">
+              <div className="flex h-full w-full bg-white outline-none ">
                 <div className="flex-1">
                   <span className="break-all">
                     {translateMutation.data?.translations[0].text}
                   </span>
                 </div>
-                <div className="flex-col flex gap-2">
+                <div className="flex flex-col gap-2">
                   <FiHeart
                     onClick={() => {
                       likesQuery.data?.find((item) => item.eng == searchTerm)
@@ -212,28 +212,28 @@ const Translate = (
                     }}
                     className={
                       likesQuery.data?.find((item) => item.eng == searchTerm)
-                        ? "self-center cursor-pointer duration-100 fill-pink-500 hover:fill-pink-400 stroke-pink-500 hover:stroke-pink-400"
-                        : "self-center cursor-pointer duration-100 stroke-gray-400 hover:stroke-gray-600"
+                        ? "cursor-pointer self-center fill-pink-500 stroke-pink-500 duration-100 hover:fill-pink-400 hover:stroke-pink-400"
+                        : "cursor-pointer self-center stroke-gray-400 duration-100 hover:stroke-gray-600"
                     }
                     size={35}
                   ></FiHeart>
                   <FiBook
                     size={35}
-                    className="self-center cursor-pointer duration-100 stroke-gray-400 hover:stroke-gray-600"
+                    className="cursor-pointer self-center stroke-gray-400 duration-100 hover:stroke-gray-600"
                   />
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="w-2/3 overflow-y-auto h-60 flex flex-wrap bg-white rounded-xl">
+        <div className="flex h-60 w-2/3 flex-wrap overflow-y-auto rounded-xl bg-white">
           {dictionaryMutation.isLoading ? (
             <p className="text-balack">Loading..</p>
           ) : (
             <div className="flex flex-col">
               {dictionaryMutation.data?.map((item, index) => (
                 <p
-                  className="text-black cursor-pointer"
+                  className="cursor-pointer text-black"
                   key={index}
                   onClick={() => {
                     setSearchTerm(item.word);

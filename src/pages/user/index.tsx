@@ -17,21 +17,21 @@ const UserModal = ({ handleClose, name, email }: Props) => {
   const emailRef = useRef<HTMLInputElement>(null);
   return (
     <div
-      className="fixed flex z-20 top-0 left-0 h-screen w-screen overflow-hidden bg-neutral-900/75 animate-fade-in"
+      className="fixed top-0 left-0 z-20 flex h-screen w-screen animate-fade-in overflow-hidden bg-neutral-900/75"
       onMouseDown={handleClose}
     >
       <div
         onMouseDown={(e) => e.stopPropagation()}
-        className="m-auto py-0 relative px-0 rounded-xl flex flex-col gap-5 w-full min-h-full md:min-h-fit dark:text-white max-w-md h-auto bg-white dark:bg-neutral-700 animate-fade-in"
+        className="relative m-auto flex h-auto min-h-full w-full max-w-md animate-fade-in flex-col gap-5 rounded-xl bg-white py-0 px-0 dark:bg-neutral-700 dark:text-white md:min-h-fit"
       >
         <FiX
-          className="absolute place-self-end top-3 right-3 self-end cursor-pointer"
+          className="absolute top-3 right-3 cursor-pointer place-self-end self-end"
           size={27}
           onClick={handleClose}
         />
 
         <div className="mx-5 overflow-x-hidden">
-          <h1 className="text-xl my-5 ">User info</h1>
+          <h1 className="my-5 text-xl ">User info</h1>
           <form className=" flex flex-col gap-4 ">
             <Input
               label="Name"
@@ -49,14 +49,14 @@ const UserModal = ({ handleClose, name, email }: Props) => {
               defaultValue={email}
             />
           </form>
-          <div className="flex flex-col md:flex-row px-4 my-5 gap-3 justify-around">
+          <div className="my-5 flex flex-col justify-around gap-3 px-4 md:flex-row">
             <button
-              className="py-3 px-16 w-full md:w-auto bg-gray-100 text-black font-bold rounded-xl"
+              className="w-full rounded-xl bg-gray-100 py-3 px-16 font-bold text-black md:w-auto"
               onClick={handleClose}
             >
               Cancel
             </button>
-            <button className="py-3 px-16 w-full md:w-auto bg-black text-white font-bold rounded-xl">
+            <button className="w-full rounded-xl bg-black py-3 px-16 font-bold text-white md:w-auto">
               Save
             </button>
           </div>
@@ -84,7 +84,7 @@ const User = () => {
         />
       )}
 
-      <div className="w-full px-5 md:px-20 flex flex-col flex-1">
+      <div className="flex w-full flex-1 flex-col px-5 md:px-20">
         <Header
           type="Profile"
           data={{

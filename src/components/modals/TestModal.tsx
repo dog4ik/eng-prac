@@ -25,12 +25,12 @@ const ModeCard = ({
 }: CardProps) => {
   return (
     <div
-      className={`w-52 flex flex-col justify-center items-center h-32 rounded-lg ${
+      className={`flex h-32 w-52 flex-col items-center justify-center rounded-lg ${
         recRange < 20 ? "bg-yellow-500" : "bg-neutral-700"
       } border-4 ${isSelected ? "border-white" : "border-neutral-600"}`}
       onClick={() => handleClick(mode)}
     >
-      <span className="text-xl pointer-events-none select-none">{title}</span>
+      <span className="pointer-events-none select-none text-xl">{title}</span>
     </div>
   );
 };
@@ -53,13 +53,13 @@ const TestModal = ({ id, handleClose }: ModalProps) => {
   return (
     <div
       onClick={setOpen}
-      className={`absolute top-0 left-0 h-screen w-screen backdrop-filter backdrop-blur-sm z-20 flex justify-center items-center  transition-opacity duration-200 ${
+      className={`absolute top-0 left-0 z-20 flex h-screen w-screen items-center justify-center backdrop-blur-sm backdrop-filter  transition-opacity duration-200 ${
         open ? "animate-fade-in" : "opacity-0"
       }`}
     >
       <div
         onClick={(event) => event.stopPropagation()}
-        className="h-2/3 w-2/3 relative bg-neutral-900 rounded-xl"
+        className="relative h-2/3 w-2/3 rounded-xl bg-neutral-900"
       >
         <FiX
           className="absolute right-3 top-3 cursor-pointer"
@@ -67,12 +67,12 @@ const TestModal = ({ id, handleClose }: ModalProps) => {
           size={35}
         />
         {wordbook.isLoading && <Loading />}
-        <div className="flex p-5 flex-col h-full w-full">
+        <div className="flex h-full w-full flex-col p-5">
           <div className="">
             <span className="text-4xl">{wordbook.data?.name}</span>
           </div>
-          <div className="flex-1 w-full ">
-            <div className="flex gap-3 justify-center">
+          <div className="w-full flex-1 ">
+            <div className="flex justify-center gap-3">
               <ModeCard
                 mode="Normal"
                 handleClick={(mode) => setMode(mode)}
@@ -88,7 +88,7 @@ const TestModal = ({ id, handleClose }: ModalProps) => {
                 title="Last 50"
               />
             </div>
-            <div className="w-full px-10 py-5 relative">
+            <div className="relative w-full px-10 py-5">
               <div className="absolute right-0">
                 <p className="text-xl">{length}</p>
               </div>
@@ -114,7 +114,7 @@ const TestModal = ({ id, handleClose }: ModalProps) => {
               )}
             </div>
             <button
-              className="disabled:cursor-not-allowed disabled:bg-neutral-700 px-10 py-3 bg-white rounded-lg text-black select-none"
+              className="select-none rounded-lg bg-white px-10 py-3 text-black disabled:cursor-not-allowed disabled:bg-neutral-700"
               disabled={typeof mode === "undefined"}
               onClick={() => {
                 handleStart();

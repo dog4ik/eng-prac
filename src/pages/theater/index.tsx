@@ -18,7 +18,7 @@ const ShowCard = ({ img, title, seasons, id, blurData }: ShowCardProps) => {
     <div>
       <Link
         href={`theater/${id}`}
-        className="relative cursor-pointer hover:scale-105 duration-200 overflow-hidden rounded-xl bg-neutral-500 w-52 h-72 flex justify-center items-end"
+        className="relative flex h-72 w-52 cursor-pointer items-end justify-center overflow-hidden rounded-xl bg-neutral-500 duration-200 hover:scale-105"
       >
         <Image
           draggable={false}
@@ -37,16 +37,16 @@ const ShowCard = ({ img, title, seasons, id, blurData }: ShowCardProps) => {
           }
         ></Image>
       </Link>
-      <div className="py-3 flex flex-col gap-1 w-full">
+      <div className="flex w-full flex-col gap-1 py-3">
         <div>
-          <Link href={`theater/${id}`} className="text-lg cursor-pointer">
+          <Link href={`theater/${id}`} className="cursor-pointer text-lg">
             {title}
           </Link>
         </div>
         <div>
           <Link
             href={`theater/${id}`}
-            className="text-sm text-neutral-300 hover:underline cursor-pointer"
+            className="cursor-pointer text-sm text-neutral-300 hover:underline"
           >
             {`${seasons} season${seasons === 1 ? "" : "s"}`}
           </Link>
@@ -57,7 +57,7 @@ const ShowCard = ({ img, title, seasons, id, blurData }: ShowCardProps) => {
 };
 const LoadingCard = () => {
   return (
-    <div className="w-52 h-72 rounded-xl bg-neutral-400 animate-pulse"></div>
+    <div className="h-72 w-52 animate-pulse rounded-xl bg-neutral-400"></div>
   );
 };
 const Shows = () => {
@@ -70,7 +70,7 @@ const Shows = () => {
     <>
       <Title title="Shows" />
       <div
-        className="w-full py-4 md:px-10 px-1 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
+        className="grid w-full auto-rows-auto place-items-center items-center justify-center gap-5 py-4 px-1 md:px-10"
         style={cols}
       >
         {showsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}

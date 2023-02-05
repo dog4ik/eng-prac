@@ -36,7 +36,7 @@ const EpisodeCard = ({
     <div>
       <Link
         href={href}
-        className="relative cursor-pointer hover:scale-105 duration-200 overflow-hidden aspect-video rounded-xl bg-neutral-500 w-80 max-xs flex justify-center items-end"
+        className="max-xs relative flex aspect-video w-80 cursor-pointer items-end justify-center overflow-hidden rounded-xl bg-neutral-500 duration-200 hover:scale-105"
       >
         <Image
           draggable={false}
@@ -55,7 +55,7 @@ const EpisodeCard = ({
         ></Image>
         <div className="absolute top-0 right-0 p-1">
           <span
-            className={`inline-block text-sm px-1.5 py-1 rounded-xl ${
+            className={`inline-block rounded-xl px-1.5 py-1 text-sm ${
               haveSubs ? "bg-green-500" : "bg-red-500"
             }`}
           >
@@ -63,10 +63,10 @@ const EpisodeCard = ({
           </span>
         </div>
       </Link>
-      <div className="py-3 flex flex-col gap-1 w-full">
+      <div className="flex w-full flex-col gap-1 py-3">
         <div>
           <Link href={href}>
-            <p className="truncate max-w-xs text-lg" title={title}>
+            <p className="max-w-xs truncate text-lg" title={title}>
               {title}
             </p>
           </Link>
@@ -74,7 +74,7 @@ const EpisodeCard = ({
         <div>
           <Link
             href={href}
-            className="text-sm text-neutral-300 hover:underline cursor-pointer"
+            className="cursor-pointer text-sm text-neutral-300 hover:underline"
           >
             {`Episode ${episode}`}
           </Link>
@@ -85,7 +85,7 @@ const EpisodeCard = ({
 };
 const LoadingCard = () => {
   return (
-    <div className="w-80 h-40 rounded-xl bg-neutral-400 animate-ping"></div>
+    <div className="h-40 w-80 animate-ping rounded-xl bg-neutral-400"></div>
   );
 };
 const Season = (
@@ -110,7 +110,7 @@ const Season = (
             : "Loading..."
         }
       />
-      <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
+      <div className="flex flex-col gap-10 px-1 py-4 md:px-20">
         {episodesQuery.isSuccess && (
           <TheaterHeader
             description={episodesQuery.data.plot}
@@ -121,7 +121,7 @@ const Season = (
           />
         )}
         <div
-          className="w-full py-4 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
+          className="grid w-full auto-rows-auto place-items-center items-center justify-center gap-5 py-4"
           style={cols}
         >
           {episodesQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}

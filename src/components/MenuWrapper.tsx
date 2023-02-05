@@ -34,7 +34,7 @@ export const ExpandedRow = ({ title, children, x, y }: ExpandedRowProps) => {
   }, [x, y, childCount]);
   return (
     <li
-      className="h-16 flex items-center justify-between pl-2 hover:bg-neutral-700 cursor-pointer rounded-md relative"
+      className="relative flex h-16 cursor-pointer items-center justify-between rounded-md pl-2 hover:bg-neutral-700"
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
     >
@@ -59,7 +59,7 @@ export const ExpandedRow = ({ title, children, x, y }: ExpandedRowProps) => {
 export const MenuRow = ({ onClick, title }: RowProps) => {
   return (
     <li
-      className="h-16 flex items-center pl-2 hover:bg-neutral-700 cursor-pointer rounded-md"
+      className="flex h-16 cursor-pointer items-center rounded-md pl-2 hover:bg-neutral-700"
       onClick={onClick}
     >
       <span className="pointer-events-none">{title}</span>
@@ -98,7 +98,7 @@ export const MenuWrapper = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="w-60 z-50 bg-neutral-900 absolute rounded-md"
+      className="absolute z-50 w-60 rounded-md bg-neutral-900"
       style={{
         top: anchorPoint.y ?? 0,
         left: anchorPoint.x ?? 0,

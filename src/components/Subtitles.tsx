@@ -36,7 +36,7 @@ const TranslateModal = ({
     <div
       className={`transition-opacity duration-200 ${
         open ? "animate-fade-in" : "opacity-0"
-      } py-1 px-4 absolute -top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 rounded-full bg-neutral-600 flex justify-center items-center`}
+      } absolute -top-1/2 left-1/2 flex -translate-y-1/2 -translate-x-1/2 items-center justify-center rounded-full bg-neutral-600 py-1 px-4`}
     >
       <span>{word}</span>
     </div>
@@ -78,7 +78,7 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
     };
   }, []);
   return (
-    <div className="flex flex-col gap-2 relative bg-black/80">
+    <div className="relative flex flex-col gap-2 bg-black/80">
       {isTranslateOpen && translateMutation.isSuccess && (
         <TranslateModal
           word={translateMutation.data?.data.translations[0].text ?? ""}
@@ -89,7 +89,7 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
         <div key={i} className="flex gap-2">
           {row.split(" ").map((word, index) => (
             <span
-              className={`text-2xl 2xl:text-4xl cursor-pointer truncate rounded-md hover:outline ${
+              className={`cursor-pointer truncate rounded-md text-2xl hover:outline 2xl:text-4xl ${
                 likes.data?.find(
                   (item) => item.eng == word.replace(/\W+\B/g, "").trim()
                 ) && "bg-pink-500"

@@ -97,13 +97,13 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
 
   return (
     <div
-      className={`fixed z-20 backdrop-filter backdrop-blur-sm top-0 left-0 w-screen h-screen flex justify-center items-center transition-opacity duration-200 ${
+      className={`fixed top-0 left-0 z-20 flex h-screen w-screen items-center justify-center backdrop-blur-sm backdrop-filter transition-opacity duration-200 ${
         open ? "animate-fade-in" : "opacity-0"
       }`}
       onClick={() => setOpen()}
     >
       <div
-        className="bg-neutral-900 relative md:w-2/3 md:h-2/3 w-5/6 h-5/6 rounded-2xl flex flex-col items-center"
+        className="relative flex h-5/6 w-5/6 flex-col items-center rounded-2xl bg-neutral-900 md:h-2/3 md:w-2/3"
         onClick={(event) => event.stopPropagation()}
       >
         <FiX
@@ -111,12 +111,12 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
           size={35}
           onClick={() => setOpen()}
         />
-        <div className="w-5/6 h-full flex flex-col">
+        <div className="flex h-full w-5/6 flex-col">
           <div className="flex flex-col gap-4">
             <h1 className="text-center text-2xl">Add word</h1>
-            <div className="bg-gray-400 relative w-3/4 self-center flex justify-between rounded-2xl overflow-hidden">
+            <div className="relative flex w-3/4 justify-between self-center overflow-hidden rounded-2xl bg-gray-400">
               <div
-                className={`absolute transition-transform duration-300 rounded-2xl bg-green-500 blur-sm w-1/3 h-full z-10 ${
+                className={`absolute z-10 h-full w-1/3 rounded-2xl bg-green-500 blur-sm transition-transform duration-300 ${
                   option === "Manual" && "translate-x-full"
                 } ${option === "Export" && "translate-x-[200%]"}
                    ${option === "Auto" && "translate-x-0"}`}
@@ -127,7 +127,7 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
                   setOption("Auto");
                 }}
                 className={
-                  "rounded-2xl z-10 cursor-pointer basis-1/3 text-center"
+                  "z-10 basis-1/3 cursor-pointer rounded-2xl text-center"
                 }
               >
                 Auto
@@ -137,7 +137,7 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
                   setOption("Manual");
                 }}
                 className={
-                  "rounded-2xl z-10 cursor-pointer basis-1/3 text-center"
+                  "z-10 basis-1/3 cursor-pointer rounded-2xl text-center"
                 }
               >
                 Manual
@@ -147,7 +147,7 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
                   setOption("Export");
                 }}
                 className={
-                  "rounded-2xl z-10 cursor-pointer basis-1/3 text-center"
+                  "z-10 basis-1/3 cursor-pointer rounded-2xl text-center"
                 }
               >
                 Export
@@ -192,12 +192,12 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
             </>
           ) : option == "Export" ? (
             <>
-              <div className=" w-full flex py-10 flex-col overflow-hidden items-center justify-between">
+              <div className=" flex w-full flex-col items-center justify-between overflow-hidden py-10">
                 <label
                   htmlFor="file"
-                  className="relative block bg-green-400 rounded-2xl h-60 w-5/6 md:w-2/3 "
+                  className="relative block h-60 w-5/6 rounded-2xl bg-green-400 md:w-2/3 "
                 >
-                  <p className="w-5/6 text-center truncate absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 pointer-events-none text-xl md:text-2xl text-white font-bold">
+                  <p className="pointer-events-none absolute left-1/2 top-1/2 w-5/6 -translate-x-1/2 -translate-y-1/2 truncate text-center text-xl font-bold text-white md:text-2xl">
                     {file != null ? file.name.toString() : "Pick a file"}
                   </p>
                   <input
@@ -208,7 +208,7 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
                       setFile(e.target.files![0]);
                     }}
                     id="file"
-                    className="w-full h-full cursor-pointer opacity-0 file:hidden"
+                    className="h-full w-full cursor-pointer opacity-0 file:hidden"
                   />
                 </label>
               </div>
@@ -216,7 +216,7 @@ const AddWordsModal = ({ handleClose, id }: ModalProps) => {
           ) : null}
           <button
             onClick={() => handleAdd()}
-            className="py-5 absolute right-10 bottom-10 px-10 flex justify-center items-center bg-green-400 rounded-xl self-end"
+            className="absolute right-10 bottom-10 flex items-center justify-center self-end rounded-xl bg-green-400 py-5 px-10"
           >
             {addMutation.isLoading || exportMutation.isLoading ? (
               <Loading />

@@ -42,14 +42,14 @@ const SearchField = ({
   }, [searchExpand]);
 
   return (
-    <div className="rounded-full bg-neutral-500 relative" ref={containerRef}>
+    <div className="relative rounded-full bg-neutral-500" ref={containerRef}>
       {searchExpand && (
         <div className="w-full ">
           <div className="relative">
             <input
               ref={inputRef}
               placeholder={"Search"}
-              className="w-full rounded-full bg-neutral-500 h-8 text-sm pl-2 pr-6 outline-none font-semibold placeholder:text-sm placeholder:text-neutral-400"
+              className="h-8 w-full rounded-full bg-neutral-500 pl-2 pr-6 text-sm font-semibold outline-none placeholder:text-sm placeholder:text-neutral-400"
               type="text"
               onChange={(e) => {
                 onChange(e);
@@ -61,16 +61,16 @@ const SearchField = ({
                 onClear(event);
                 setSearchExpand(false);
               }}
-              className={`absolute right-1 top-1/2 -translate-y-1/2 h-5 w-5 hover:bg-neutral-300 rounded-full flex justify-center items-center cursor-pointer`}
+              className={`absolute right-1 top-1/2 flex h-5 w-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full hover:bg-neutral-300`}
             >
-              <FiX className="w-full h-full stroke-black" />
+              <FiX className="h-full w-full stroke-black" />
             </div>
           </div>
         </div>
       )}
       {!searchExpand && (
         <div
-          className="w-8 h-8 rounded-full hover:bg-neutral-600 transition duration-200 flex justify-center items-center cursor-pointer"
+          className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition duration-200 hover:bg-neutral-600"
           onClick={(e) => {
             e.stopPropagation();
             setSearchExpand(true);
@@ -85,20 +85,20 @@ const SearchField = ({
 
 const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
   return (
-    <div className="w-full select-none h-16 flex px-2 sticky top-0 bg-neutral-800/95 z-10 border-b border-neutral-600">
+    <div className="sticky top-0 z-10 flex h-16 w-full select-none border-b border-neutral-600 bg-neutral-800/95 px-2">
       <div className="flex w-1/12 items-center">
-        <p className="font-extrabold text-md">#</p>
+        <p className="text-md font-extrabold">#</p>
       </div>
       <div className="flex w-4/12 items-center">
         <div
           onClick={() => onSort("rus")}
-          className={`flex gap-2 p-1 rounded-full items-center transition-all duration-300 cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
             words.sortTitle == "rus" &&
             words.sortState != "default" &&
             "bg-neutral-500"
           }`}
         >
-          <p className="font-extrabold text-md">Russian</p>
+          <p className="text-md font-extrabold">Russian</p>
           <FiPlay
             className={`${
               ((words.sortTitle == "rus" && words.sortState == "default") ||
@@ -121,13 +121,13 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
       <div className="flex w-4/12 items-center">
         <div
           onClick={() => onSort("eng")}
-          className={`flex gap-2 p-1 rounded-full items-center transition-all duration-300 cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
             words.sortTitle == "eng" &&
             words.sortState != "default" &&
             "bg-neutral-500"
           }`}
         >
-          <p className="font-extrabold text-md">English</p>
+          <p className="text-md font-extrabold">English</p>
           <FiPlay
             className={`${
               ((words.sortTitle == "eng" && words.sortState == "default") ||
@@ -150,13 +150,13 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
       <div className="flex w-2/12 items-center">
         <div
           onClick={() => onSort("createdAt")}
-          className={`flex gap-2 p-1 rounded-full items-center transition-all duration-300 cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
             words.sortTitle == "createdAt" &&
             words.sortState != "default" &&
             "bg-neutral-500"
           }`}
         >
-          <p className="font-extrabold text-md">Addded</p>
+          <p className="text-md font-extrabold">Addded</p>
           <FiPlay
             className={`${
               ((words.sortTitle == "createdAt" &&
@@ -177,7 +177,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
           />
         </div>
       </div>
-      <div className="flex w-1/12 gap-5 justify-end items-center">
+      <div className="flex w-1/12 items-center justify-end gap-5">
         <SearchField onClear={onClearSearch} onChange={onSearch} />
       </div>
     </div>

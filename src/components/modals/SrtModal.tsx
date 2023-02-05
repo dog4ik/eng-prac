@@ -20,7 +20,7 @@ const SrtRow = ({ title, downloads, onClick, state }: RowProps) => {
   return (
     <>
       <div
-        className={`h-24 flex px-5 shrink-0 cursor-pointer rounded-md items-center justify-between ${
+        className={`flex h-24 shrink-0 cursor-pointer items-center justify-between rounded-md px-5 ${
           state === "normal"
             ? "bg-neutral-900 hover:bg-neutral-800"
             : state === "error"
@@ -29,7 +29,7 @@ const SrtRow = ({ title, downloads, onClick, state }: RowProps) => {
         } duration-150`}
         onClick={onClick}
       >
-        <span className="text-white w-5/6 truncate">{title}</span>
+        <span className="w-5/6 truncate text-white">{title}</span>
         <span className="text-white">{downloads}</span>
       </div>
     </>
@@ -38,7 +38,7 @@ const SrtRow = ({ title, downloads, onClick, state }: RowProps) => {
 const Loading = () => {
   return (
     <>
-      <div className="flex h-full justify-center items-center">
+      <div className="flex h-full items-center justify-center">
         <LoadingSpinner />
       </div>
     </>
@@ -47,10 +47,10 @@ const Loading = () => {
 const Error = ({ onRetry }: { onRetry: () => void }) => {
   return (
     <>
-      <div className="flex flex-col gap-5 h-full justify-center items-center">
+      <div className="flex h-full flex-col items-center justify-center gap-5">
         <span className="text-2xl">Failed to load subs</span>
         <div onClick={onRetry}>
-          <button className="px-5 py-3 bg-white text-black rounded-full">
+          <button className="rounded-full bg-white px-5 py-3 text-black">
             Try again
           </button>
         </div>
@@ -79,7 +79,7 @@ const SrtModal = ({ handleClose, tmdbId, onChoose }: ModalProps) => {
   });
   return (
     <div
-      className={`fixed top-0 left-0 h-screen w-screen backdrop-filter backdrop-blur-sm z-20 flex justify-center items-center duration-200 transition-opacity ${
+      className={`fixed top-0 left-0 z-20 flex h-screen w-screen items-center justify-center backdrop-blur-sm backdrop-filter transition-opacity duration-200 ${
         open ? "animate-fade-in" : "opacity-0"
       } `}
       onClick={() => {
@@ -87,7 +87,7 @@ const SrtModal = ({ handleClose, tmdbId, onChoose }: ModalProps) => {
       }}
     >
       <div
-        className="w-5/6 relative h-2/3 rounded-md overflow-hidden bg-neutral-900 flex flex-col "
+        className="relative flex h-2/3 w-5/6 flex-col overflow-hidden rounded-md bg-neutral-900 "
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -98,13 +98,13 @@ const SrtModal = ({ handleClose, tmdbId, onChoose }: ModalProps) => {
         >
           <FiX size={35} />
         </div>
-        <div className="h-20 shrink-0 bg-neutral-700 flex items-center pl-4">
+        <div className="flex h-20 shrink-0 items-center bg-neutral-700 pl-4">
           <span className="text-xl">Subtitles</span>
         </div>
-        <div className="h-20 flex px-10 my-2 gap-10 items-center">
+        <div className="my-2 flex h-20 items-center gap-10 px-10">
           <select
             onChange={(e) => setLang(e.target.value)}
-            className="bg-neutral-700 p-2 rounded-xl outline-none"
+            className="rounded-xl bg-neutral-700 p-2 outline-none"
           >
             <option value={"en"}>English</option>
             <option value={"ru"}>Russian</option>
@@ -124,7 +124,7 @@ const SrtModal = ({ handleClose, tmdbId, onChoose }: ModalProps) => {
           </div>
           <div>Downloads</div>
         </div>
-        <div className=" flex flex-col rounded-xl overflow-y-auto h-full">
+        <div className=" flex h-full flex-col overflow-y-auto rounded-xl">
           {subs.isError && <Error onRetry={() => subs.refetch()} />}
           {subs.isLoading && <Loading />}
           {subs.isSuccess &&

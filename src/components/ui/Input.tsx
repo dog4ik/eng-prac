@@ -12,16 +12,16 @@ const Input = React.forwardRef(
       <div className="relative">
         <input
           ref={ref}
-          className="peer pl-2 h-14 w-full border-2 rounded-lg border-gray-300 text-gray-900 placeholder-transparent select-none focus:outline-none"
+          className="peer h-14 w-full select-none rounded-lg border-2 border-gray-300 pl-2 text-gray-900 placeholder-transparent focus:outline-none"
           placeholder=" "
           {...props}
         />
         {props.required ? (
-          <label className="pointer-events-none select-none absolute left-2 top-0 text-gray-400 text-xs transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:text-xs peer-focus:top-0 after:content-['*'] after:text-red-500 ">
+          <label className="pointer-events-none absolute left-2 top-0 select-none text-xs text-gray-400 transition-all after:text-red-500 after:content-['*'] peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:top-0 peer-focus:text-xs ">
             {props.label}
           </label>
         ) : (
-          <label className="pointer-events-none select-none absolute left-2 top-0 text-gray-400 text-xs transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:text-xs peer-focus:top-0">
+          <label className="pointer-events-none absolute left-2 top-0 select-none text-xs text-gray-400 transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-lg peer-focus:top-0 peer-focus:text-xs">
             {props.label}
           </label>
         )}

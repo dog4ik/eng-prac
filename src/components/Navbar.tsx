@@ -27,16 +27,16 @@ const Popout = () => {
     await router.push("/");
   };
   return (
-    <ul className="absolute z-10 right-0 top-6 w-60 animate-fade-in rounded-xl bg-neutral-700 overflow-hidden">
+    <ul className="absolute right-0 top-6 z-10 w-60 animate-fade-in overflow-hidden rounded-xl bg-neutral-700">
       <Link href={"/user"}>
-        <li className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer ">
+        <li className="flex h-16 cursor-pointer items-center gap-5 px-3 dark:hover:bg-neutral-500 ">
           <FiUser className="pointer-events-none" />
-          <p className="text-center after:border-b after:w-full">Profile</p>
+          <p className="text-center after:w-full after:border-b">Profile</p>
         </li>
       </Link>
       <li
         onClick={() => handleLogout()}
-        className="h-16 dark:hover:bg-neutral-500 flex gap-5 items-center px-3 cursor-pointer"
+        className="flex h-16 cursor-pointer items-center gap-5 px-3 dark:hover:bg-neutral-500"
       >
         <FiLogOut className="pointer-events-none" />
         <span className="text-center ">Logout</span>
@@ -46,14 +46,14 @@ const Popout = () => {
 };
 const GuestGreeting = () => {
   return (
-    <div className="flex h-2/3 justify-center items-center">
+    <div className="flex h-2/3 items-center justify-center">
       <Link href={"/signup"}>
-        <button className="px-10 py-2 text-lg  text-white/75 rounded-xl transition duration-75 hover:font-semibold hover:text-white hover:scale-105">
+        <button className="rounded-xl px-10 py-2  text-lg text-white/75 transition duration-75 hover:scale-105 hover:font-semibold hover:text-white">
           Sign up
         </button>
       </Link>
       <Link href={"/login"}>
-        <button className="px-10 py-2 text-lg text-black bg-white rounded-full transition duration-75 hover:scale-105">
+        <button className="rounded-full bg-white px-10 py-2 text-lg text-black transition duration-75 hover:scale-105">
           Login
         </button>
       </Link>
@@ -62,23 +62,23 @@ const GuestGreeting = () => {
 };
 const Loading = () => {
   return (
-    <div className="w-3/12 bg-gray-300 h-9 animate-pulse rounded-full"></div>
+    <div className="h-9 w-3/12 animate-pulse rounded-full bg-gray-300"></div>
   );
 };
 const UserGreeting = ({ email }: { email: string }) => {
   const userRef = useRef<HTMLDivElement>(null);
   const [profile, setProfile] = usePopout(userRef);
   return (
-    <div className="flex gap-7 justify-center items-center">
+    <div className="flex items-center justify-center gap-7">
       <div
         onClick={() => {
           setProfile();
         }}
         ref={userRef}
-        className="p-1 cursor-pointer select-none flex gap-2 items-center justify-center rounded-full bg-neutral-500"
+        className="flex cursor-pointer select-none items-center justify-center gap-2 rounded-full bg-neutral-500 p-1"
       >
-        <div className=" bg-neutral-800 rounded-full p-1">
-          <FiUser size={20} className="dark:fill-white cursor-pointer" />
+        <div className=" rounded-full bg-neutral-800 p-1">
+          <FiUser size={20} className="cursor-pointer dark:fill-white" />
         </div>
         <span className="hidden lg:block">{email}</span>
         {profile ? (
@@ -97,21 +97,21 @@ const Navbar = () => {
   return (
     <>
       <SideBar isExpanded={isExpanded} />
-      <div className="hidden max-h-20 h-full flex-1 fixed top-0 z-20 w-full md:flex pr-16 py-5 border-b border-neutral-700 items-center gap-5 justify-between dark:bg-neutral-800 dark:text-white ">
+      <div className="fixed top-0 z-20 hidden h-full max-h-20 w-full flex-1 items-center justify-between gap-5 border-b border-neutral-700 py-5 pr-16 dark:bg-neutral-800 dark:text-white md:flex ">
         <div
           onClick={() => setIsExpanded()}
-          className="flex flex-col rounded-full justify-center py-4 w-16 gap-1 items-center"
+          className="flex w-16 flex-col items-center justify-center gap-1 rounded-full py-4"
         >
-          <div className="rounded-full w-10 h-10 flex justify-center items-center hover:bg-neutral-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-neutral-600">
             <FiMenu size={25} className="stroke-2" />
           </div>
         </div>
-        <div className="flex gap-10 justify-center items-center">
+        <div className="flex items-center justify-center gap-10">
           <span>
             This product uses the TMDB API but is not endorsed or certified by
             TMDB.
           </span>
-          <div className="h-32 w-20 flex justify-center items-center">
+          <div className="flex h-32 w-20 items-center justify-center">
             <svg
               className="fill-white"
               xmlns="http://www.w3.org/2000/svg"

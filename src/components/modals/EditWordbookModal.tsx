@@ -44,12 +44,12 @@ const EditWordbookModal = ({ handleClose, id }: ModalProps) => {
   return (
     <div
       onClick={() => setOpen()}
-      className={`fixed top-0 left-0 h-screen w-screen backdrop-filter backdrop-blur-sm z-20 flex justify-center items-center duration-200 transition-opacity ${
+      className={`fixed top-0 left-0 z-20 flex h-screen w-screen items-center justify-center backdrop-blur-sm backdrop-filter transition-opacity duration-200 ${
         open ? "animate-fade-in" : "opacity-0"
       } `}
     >
       <div
-        className=" py-5 max-w-lg w-full relative bg-neutral-900 rounded-2xl flex flex-col "
+        className=" relative flex w-full max-w-lg flex-col rounded-2xl bg-neutral-900 py-5 "
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -59,28 +59,28 @@ const EditWordbookModal = ({ handleClose, id }: ModalProps) => {
           size={35}
           onClick={() => setOpen()}
         />
-        <p className="text-3xl px-5 pb-1">Edit wordbook</p>
-        <div className="flex justify-evenly self-center w-full gap-2">
-          <div className="w-52 h-52  shrink-0 relative">
+        <p className="px-5 pb-1 text-3xl">Edit wordbook</p>
+        <div className="flex w-full justify-evenly gap-2 self-center">
+          <div className="relative h-52  w-52 shrink-0">
             <Image
               src="https://images.unsplash.com/photo-1667163589961-5d1f2a74b410?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80"
               alt="placeholder"
               height={300}
               width={300}
-              className="aspect-square drop-shadow-2xl shadow-xl object-cover object-center cursor-pointer"
+              className="aspect-square cursor-pointer object-cover object-center shadow-xl drop-shadow-2xl"
               priority
             />
           </div>
-          <div className="flex gap-5 flex-col justify-between py-1">
+          <div className="flex flex-col justify-between gap-5 py-1">
             <Input label="Name" defaultValue={query.data?.name} ref={nameRef} />
-            <div className="flex gap-3 items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <p>Is private:</p>
               <div
                 onClick={() => setIsPrivate()}
-                className="w-12 h-6 flex bg-white rounded-full cursor-pointer"
+                className="flex h-6 w-12 cursor-pointer rounded-full bg-white"
               >
                 <div
-                  className={`h-full flex justify-center items-center rounded-full transition duration-100 bg-green-400 w-1/2 ${
+                  className={`flex h-full w-1/2 items-center justify-center rounded-full bg-green-400 transition duration-100 ${
                     isPrivate ? `translate-x-6` : null
                   }`}
                 >
@@ -94,13 +94,13 @@ const EditWordbookModal = ({ handleClose, id }: ModalProps) => {
             </div>
             <div className="flex justify-end gap-5">
               <button
-                className="p-2 rounded-xl bg-red-500"
+                className="rounded-xl bg-red-500 p-2"
                 onClick={() => deleteMutation.mutate()}
               >
                 Delete
               </button>
               <button
-                className="p-2 rounded-xl bg-green-500"
+                className="rounded-xl bg-green-500 p-2"
                 onClick={() =>
                   editMutation.mutate({
                     private: isPrivate,

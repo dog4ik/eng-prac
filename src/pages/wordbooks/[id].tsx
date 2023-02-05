@@ -94,7 +94,7 @@ const Wordbook = (
         <WordbookCtxProvider>
           <Menu id={props.id} />
           <div
-            className={`px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 flex-1 `}
+            className={`flex-1 px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 `}
             ref={scrollListRef}
           >
             <div

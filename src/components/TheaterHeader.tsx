@@ -17,8 +17,8 @@ const TheaterHeader = ({
   blurData,
 }: HeaderProps) => {
   return (
-    <div className="w-full h-fit flex gap-10">
-      <div className="w-60 h-80 max-h-80 md:max-h-fit relative overflow-hidden rounded-xl">
+    <div className="flex h-fit w-full gap-10">
+      <div className="relative h-80 max-h-80 w-60 overflow-hidden rounded-xl md:max-h-fit">
         <Image
           draggable={false}
           alt="cover"

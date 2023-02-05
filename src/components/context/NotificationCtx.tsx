@@ -48,19 +48,19 @@ const Notififcation = ({
       onMouseLeave={() =>
         (timeout.current = setTimeout(() => setClose(), 5_000))
       }
-      className={`w-fit duration-200 transition-all ${
+      className={`w-fit transition-all duration-200 ${
         !isOpen ? "translate-x-full" : "animate-fade-in"
-      } rounded-lg flex justify-between items-center ${
+      } flex items-center justify-between rounded-lg ${
         type === "success" ? "bg-green-500" : "bg-red-500"
       }`}
     >
       <p
         title={message}
-        className="text-white break-all text-lg font-semibold px-2"
+        className="break-all px-2 text-lg font-semibold text-white"
       >
         {message}
       </p>
-      <div className="p-2 cursor-pointer" onClick={setClose}>
+      <div className="cursor-pointer p-2" onClick={setClose}>
         <FiX size={30} className="stroke-white" />
       </div>
     </div>
@@ -81,7 +81,7 @@ const NotificationCtxProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, []);
   return (
     <NotificationCtx.Provider value={{ dispatch }}>
-      <div className="fixed max-w-xs md:max-w-2xl select-none z-50 flex items-end flex-col gap-3 top-2 right-2">
+      <div className="fixed top-2 right-2 z-50 flex max-w-xs select-none flex-col items-end gap-3 md:max-w-2xl">
         {state.map((item) => (
           <Notififcation
             handleClose={() => dispatch({ type: "REMOVE", id: item.id })}

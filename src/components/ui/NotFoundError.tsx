@@ -3,7 +3,7 @@ type Props = {
 };
 const NotFoundError = ({ text }: Props) => {
   return (
-    <div className="w-full h-full flex-1 flex flex-col justify-center items-center">
+    <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
       <span className="text-2xl font-semibold">{`${text} not found`}</span>
     </div>
   );

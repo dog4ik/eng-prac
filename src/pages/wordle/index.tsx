@@ -22,11 +22,11 @@ type WordbookRowProps = {
 const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
   const Status = () => {
     if (!date)
-      return <span className="text-white w-1/3 text-end">Ongoing</span>;
+      return <span className="w-1/3 text-end text-white">Ongoing</span>;
     if (isWin)
-      return <span className="text-green-500 w-1/3 text-end">Win</span>;
+      return <span className="w-1/3 text-end text-green-500">Win</span>;
     if (!isWin)
-      return <span className="text-red-500 w-1/3 text-end">Lose</span>;
+      return <span className="w-1/3 text-end text-red-500">Lose</span>;
     return null;
   };
   const calculate = (date: string) => {
@@ -44,11 +44,11 @@ const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
 
   return (
     <Link href={"/wordle/game/" + id}>
-      <div className="w-80 bg-neutral-600 hover:bg-neutral-500 transition duration-150 rounded-xl flex items-center px-5 py-4 cursor-pointer">
-        <span className="text-white w-1/3 text-end">
+      <div className="flex w-80 cursor-pointer items-center rounded-xl bg-neutral-600 px-5 py-4 transition duration-150 hover:bg-neutral-500">
+        <span className="w-1/3 text-end text-white">
           {date ? date.toLocaleDateString() : ""}
         </span>
-        <span className="text-white w-1/3 text-end">{date ? word : "???"}</span>
+        <span className="w-1/3 text-end text-white">{date ? word : "???"}</span>
         <Status />
       </div>
     </Link>
@@ -68,7 +68,7 @@ const WordbookRow = ({
         isSelected
           ? "bg-neutral-500 hover:bg-neutral-500"
           : "bg-neutral-700 hover:bg-neutral-600"
-      } flex transition duration-150 items-center justify-between cursor-pointer`}
+      } flex cursor-pointer items-center justify-between transition duration-150`}
     >
       <span className="text-sm">{title}</span>
       <span className="text-sm">{`${wordsAmount} words`}</span>
@@ -107,9 +107,9 @@ const Index = () => {
 
   if (getAllWordlesQuery.isSuccess && wordbooksQuery.isSuccess)
     return (
-      <div className="mt-10 flex gap-10 flex-col mx-5 md:mx-20 justify-center items-center">
+      <div className="mx-5 mt-10 flex flex-col items-center justify-center gap-10 md:mx-20">
         <span className="text-2xl">Choose WordLists:</span>
-        <div className="w-72 rounded-xl max-h-96 overflow-y-auto scrollbar-thumb-rounded-sm">
+        <div className="max-h-96 w-72 overflow-y-auto rounded-xl scrollbar-thumb-rounded-sm">
           {wordbooksQuery.data.map((item) => (
             <WordbookRow
               id={item.id}
@@ -137,11 +137,11 @@ const Index = () => {
             createGame();
           }}
         >
-          <div className="flex flex-col gap-5 items-center">
+          <div className="flex flex-col items-center gap-5">
             <label htmlFor="tries">Tries Amount:</label>
             <input
               required
-              className="text-black rounded-full p-2 outline-none"
+              className="rounded-full p-2 text-black outline-none"
               type="number"
               min={1}
               max={10}
@@ -151,7 +151,7 @@ const Index = () => {
               onChange={(e) => setMaxTries(e.target.valueAsNumber)}
             />
             <button
-              className="px-4 py-2 rounded-xl bg-white text-black"
+              className="rounded-xl bg-white px-4 py-2 text-black"
               type="submit"
             >
               Create

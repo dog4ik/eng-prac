@@ -32,7 +32,7 @@ const SeasonCard = ({
     <div>
       <Link
         href={href}
-        className="relative cursor-pointer hover:scale-105 duration-200 overflow-hidden rounded-xl bg-neutral-500 w-40 h-60 flex justify-center items-end"
+        className="relative flex h-60 w-40 cursor-pointer items-end justify-center overflow-hidden rounded-xl bg-neutral-500 duration-200 hover:scale-105"
       >
         <Image
           draggable={false}
@@ -50,16 +50,16 @@ const SeasonCard = ({
           }
         ></Image>
       </Link>
-      <div className="py-3 flex flex-col gap-1 w-full">
+      <div className="flex w-full flex-col gap-1 py-3">
         <div>
-          <Link href={href} className="text-lg cursor-pointer">
+          <Link href={href} className="cursor-pointer text-lg">
             {title}
           </Link>
         </div>
         <div>
           <Link
             href={href}
-            className="text-sm text-neutral-300 hover:underline cursor-pointer"
+            className="cursor-pointer text-sm text-neutral-300 hover:underline"
           >
             {`${episodes} episodes`}
           </Link>
@@ -70,7 +70,7 @@ const SeasonCard = ({
 };
 const LoadingCard = () => {
   return (
-    <div className="w-40 h-60 rounded-xl bg-neutral-400 animate-pulse"></div>
+    <div className="h-60 w-40 animate-pulse rounded-xl bg-neutral-400"></div>
   );
 };
 const Seasons = (
@@ -88,7 +88,7 @@ const Seasons = (
   return (
     <>
       <Title title={seasonsQuery.data?.title ?? "Loading..."} />
-      <div className="px-1 md:px-20 flex-col flex gap-10 py-4">
+      <div className="flex flex-col gap-10 px-1 py-4 md:px-20">
         {seasonsQuery.isSuccess && (
           <TheaterHeader
             description={seasonsQuery.data.plot}
@@ -100,7 +100,7 @@ const Seasons = (
           />
         )}
         <div
-          className="w-full py-4 place-items-center justify-center items-center auto-rows-auto gap-5 grid"
+          className="grid w-full auto-rows-auto place-items-center items-center justify-center gap-5 py-4"
           style={cols}
         >
           {seasonsQuery.isLoading && [...Array(4).map((_) => <LoadingCard />)]}

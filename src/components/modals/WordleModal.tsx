@@ -15,12 +15,12 @@ const WordleModal = ({ handleClose, isWin, word }: ModalProps) => {
   return (
     <div
       onClick={setOpen}
-      className={`fixed top-0 left-0 h-screen w-screen backdrop-filter backdrop-blur-sm z-20 flex justify-center items-center duration-200 transition-opacity ${
+      className={`fixed top-0 left-0 z-20 flex h-screen w-screen items-center justify-center backdrop-blur-sm backdrop-filter transition-opacity duration-200 ${
         open ? "animate-fade-in" : "opacity-0"
       } `}
     >
       <div
-        className=" py-5 max-w-lg w-full relative bg-neutral-900 rounded-2xl flex flex-col "
+        className=" relative flex w-full max-w-lg flex-col rounded-2xl bg-neutral-900 py-5 "
         onClick={(e) => {
           e.stopPropagation();
         }}
@@ -35,7 +35,7 @@ const WordleModal = ({ handleClose, isWin, word }: ModalProps) => {
             <span className="text-2xl">You won!</span>
             <span className="text-xl">{`You guessed word: ${word}`}</span>
             <Link href={"/wordle"}>
-              <button className="px-4 py-2 bg-green-500 rounded-full">
+              <button className="rounded-full bg-green-500 px-4 py-2">
                 Back to menu
               </button>
             </Link>
@@ -45,7 +45,7 @@ const WordleModal = ({ handleClose, isWin, word }: ModalProps) => {
             <span className="text-2xl">You Lose!</span>
             <span className="text-xl">{`Word was: ${word}`}</span>
             <Link href={"/wordle"}>
-              <button className="px-4 py-2 bg-red-500 rounded-full">
+              <button className="rounded-full bg-red-500 px-4 py-2">
                 Back to menu
               </button>
             </Link>

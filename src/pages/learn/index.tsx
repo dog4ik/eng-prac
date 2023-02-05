@@ -26,35 +26,35 @@ const generateColor = () =>
 const Test = ({ name, wordsCount, liked, id, setId }: CardProps) => {
   const [degree, setDegree] = useState(145);
   return (
-    <div className="w-60 h-60 overflow-hidden flex flex-col bg-neutral-600 rounded-3xl relative">
+    <div className="relative flex h-60 w-60 flex-col overflow-hidden rounded-3xl bg-neutral-600">
       <div
         onClick={() => setId(id)}
         style={{
           background: `conic-gradient(rgb(34 197 94) ${degree}deg, #fff 0deg)`,
         }}
-        className="absolute bottom-12 right-1 rounded-full cursor-pointer h-16 w-16 overflow-hidden shadow-lg hover:scale-105 hover:shadow-xl duration-300 justify-center items-center flex"
+        className="absolute bottom-12 right-1 flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full shadow-lg duration-300 hover:scale-105 hover:shadow-xl"
       >
-        <div className="w-5/6 h-5/6 bg-white rounded-full flex justify-center items-center">
-          <FiPlay className="w-2/3 h-2/3 fill-neutral-100 stroke-neutral-600" />
+        <div className="flex h-5/6 w-5/6 items-center justify-center rounded-full bg-white">
+          <FiPlay className="h-2/3 w-2/3 fill-neutral-100 stroke-neutral-600" />
         </div>
       </div>
 
       <div
-        className="p-3 h-2/3 overflow-hidden "
+        className="h-2/3 overflow-hidden p-3 "
         style={{
           backgroundColor: useMemo(() => generateColor(), []),
         }}
       >
         <p className="text-2xl font-semibold">{name}</p>
       </div>
-      <div className="h-1/3 bg-white flex justify-around text-black">
-        <div className="flex flex-col justify-evenly items-center">
+      <div className="flex h-1/3 justify-around bg-white text-black">
+        <div className="flex flex-col items-center justify-evenly">
           <p className="text-xl font-semibold">{wordsCount}</p>
-          <p className="text-black/75 text-sm ">Words</p>
+          <p className="text-sm text-black/75 ">Words</p>
         </div>
-        <div className="flex flex-col justify-evenly items-center">
+        <div className="flex flex-col items-center justify-evenly">
           <p className="text-xl font-semibold">{liked}</p>
-          <p className="text-black/75 text-sm ">Likes</p>
+          <p className="text-sm text-black/75 ">Likes</p>
         </div>
         <div className="flex flex-col justify-between"></div>
       </div>
@@ -76,9 +76,9 @@ const Learning = () => {
       <>
         <Title title="Learn" />
         {testModal && <TestModal id={modalId!} handleClose={setTestModal} />}
-        <div className=" flex-1 flex flex-col">
+        <div className=" flex flex-1 flex-col">
           <div
-            className="grid gap-5 place-items-center justify-center items-center auto-rows-auto"
+            className="grid auto-rows-auto place-items-center items-center justify-center gap-5"
             style={cols}
           >
             <Test

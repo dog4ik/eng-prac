@@ -44,12 +44,12 @@ const ContextMenu = ({
   }, []);
   return (
     <div
-      className="w-60 z-10 bg-neutral-900 absolute rounded-md overflow-hidden"
+      className="absolute z-10 w-60 overflow-hidden rounded-md bg-neutral-900"
       style={{ top: anchorPoint.y, left: anchorPoint.x }}
     >
       <ul className="w-full">
         <li
-          className="h-16 flex items-center pl-2 hover:bg-neutral-700 cursor-pointer"
+          className="flex h-16 cursor-pointer items-center pl-2 hover:bg-neutral-700"
           onClick={() =>
             deleteMutation.mutate({
               word: words.map((item) => item.eng),

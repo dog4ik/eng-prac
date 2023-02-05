@@ -18,7 +18,7 @@ import { useUser } from "../utils/useUser";
 import { Book } from "../utils/useWordbook";
 const Card = ({ name, words }: Book) => {
   return (
-    <div className=" w-60 rounded-lg items-center flex bg-neutral-700 flex-col cursor-pointer">
+    <div className=" flex w-60 cursor-pointer flex-col items-center rounded-lg bg-neutral-700">
       <p>{name}</p>
     </div>
   );
@@ -30,9 +30,9 @@ const Home = () => {
     <>
       <Title title="Home" />
 
-      <div className=" h-full w-full overflow-hidden flex-1 dark:text-white relative">
-        <div className=" absolute top-0 animate-blob left-0 w-full h-16 bg-purple-600 blur-3xl"></div>
-        <div className="w-full h-40 grid gap-5 grid-cols-3 md:grid-cols-4 lg:grid-cols-5 grid-rows-1 snap-mandatory"></div>
+      <div className=" relative h-full w-full flex-1 overflow-hidden dark:text-white">
+        <div className=" absolute top-0 left-0 h-16 w-full animate-blob bg-purple-600 blur-3xl"></div>
+        <div className="grid h-40 w-full snap-mandatory grid-cols-3 grid-rows-1 gap-5 md:grid-cols-4 lg:grid-cols-5"></div>
       </div>
     </>
   );

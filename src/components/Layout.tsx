@@ -9,9 +9,9 @@ const Layout = ({ children }: Props) => {
   // if (user.isLoading) return <div></div>;
   return (
     <>
-      <div className="flex min-h-screen max-h-screen overflow-hidden flex-col bg-neutral-800 text-white">
+      <div className="flex max-h-screen min-h-screen flex-col overflow-hidden bg-neutral-800 text-white">
         <Navbar />
-        <main className="flex overflow-y-auto md:mt-20 md:ml-16 flex-1 flex-col bg-neutral-800 ">
+        <main className="flex flex-1 flex-col overflow-y-auto bg-neutral-800 md:mt-20 md:ml-16 ">
           {children}
         </main>
         <NavMob />

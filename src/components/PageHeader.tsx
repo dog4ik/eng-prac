@@ -12,8 +12,8 @@ type Props = {
 const Header = ({ setEditModal, setAddModal, data, isOwner, type }: Props) => {
   return (
     <>
-      <div className="flex gap-5 relative">
-        <div className="w-52 h-52 shrink-0 relative">
+      <div className="relative flex gap-5">
+        <div className="relative h-52 w-52 shrink-0">
           <Image
             src={data.picture}
             alt="cover"
@@ -21,7 +21,7 @@ const Header = ({ setEditModal, setAddModal, data, isOwner, type }: Props) => {
             height={300}
             priority
             draggable={false}
-            className={`aspect-square select-none drop-shadow-2xl shadow-xl object-cover object-center ${
+            className={`aspect-square select-none object-cover object-center shadow-xl drop-shadow-2xl ${
               isOwner && "cursor-pointer"
             }`}
             onClick={() => (isOwner ? setEditModal!() : null)}
@@ -29,7 +29,7 @@ const Header = ({ setEditModal, setAddModal, data, isOwner, type }: Props) => {
         </div>
 
         <div className="flex flex-col justify-between overflow-hidden py-2">
-          <span className="uppercase text-xs">{type}</span>
+          <span className="text-xs uppercase">{type}</span>
           <h1
             className={`${
               data.name.length! > 35

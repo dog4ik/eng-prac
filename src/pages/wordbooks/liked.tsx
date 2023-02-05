@@ -85,7 +85,7 @@ const Liked = () => {
         <WordbookCtxProvider>
           <ConextMenu />
           <div
-            className="w-full px-5 md:px-20 flex-1 overflow-y-auto"
+            className="w-full flex-1 overflow-y-auto px-5 md:px-20"
             ref={scrollListRef}
           >
             <div

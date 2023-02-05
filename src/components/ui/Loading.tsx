@@ -7,9 +7,9 @@ const Loading = () => {
       <Head>
         <title>Loading...</title>
       </Head>
-      <div className="flex justify-center items-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
         <svg
-          className="animate-spin -ml-1 mr-3 h-7 w-7 text-white"
+          className="-ml-1 mr-3 h-7 w-7 animate-spin text-white"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

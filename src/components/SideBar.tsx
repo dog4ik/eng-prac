@@ -26,7 +26,7 @@ const MenuIcon = ({
       href={href}
       className={`flex ${
         isExpanded ? "flex-row px-4" : "flex-col "
-      } py-4 gap-1 items-center cursor-pointer hover:bg-neutral-500`}
+      } cursor-pointer items-center gap-1 py-4 hover:bg-neutral-500`}
     >
       {children}
       <span className="text-sm">{title}</span>
@@ -35,9 +35,9 @@ const MenuIcon = ({
 };
 const SideBar = ({ isExpanded }: { isExpanded: boolean }) => {
   return (
-    <div className="h-screen z-40 mt-20 hidden md:flex fixed items-start top-0 left-0 bg-neutral-700">
+    <div className="fixed top-0 left-0 z-40 mt-20 hidden h-screen items-start bg-neutral-700 md:flex">
       <div
-        className={`flex justify-center flex-col  ${
+        className={`flex flex-col justify-center  ${
           isExpanded ? "w-40" : "w-16"
         }`}
       >

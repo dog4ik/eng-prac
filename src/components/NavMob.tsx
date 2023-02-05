@@ -14,7 +14,7 @@ const NavIcon = ({
   return (
     <Link
       href={href}
-      className="flex-1 w-full flex flex-col gap-1 justify-center items-center"
+      className="flex w-full flex-1 flex-col items-center justify-center gap-1"
     >
       {children}
       <span className="text-sm">{title}</span>
@@ -23,7 +23,7 @@ const NavIcon = ({
 };
 const NavMob = () => {
   return (
-    <div className="flex z-10 max-h-16 h-16 bg-black/90 items-center shrink-0 md:hidden">
+    <div className="z-10 flex h-16 max-h-16 shrink-0 items-center bg-black/90 md:hidden">
       <NavIcon href={"/"} title="Home">
         <FiHome size={25} />
       </NavIcon>

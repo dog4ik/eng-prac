@@ -10,13 +10,13 @@ export const FilterChipBarItem = ({
 }) => {
   return (
     <div
-      className={`max-w-sm rounded-full flex justify-center items-center cursor-pointer border border-white/30 duration-200 transition ${
+      className={`flex max-w-sm cursor-pointer items-center justify-center rounded-full border border-white/30 transition duration-200 ${
         isSelected ? "bg-white" : "bg-neutral-700 hover:bg-neutral-600"
       }`}
       onClick={onClick}
     >
       <span
-        className={`py-1 px-4 text-sm truncate ${
+        className={`truncate py-1 px-4 text-sm ${
           isSelected ? "text-black" : "text-white"
         }`}
       >
@@ -27,7 +27,7 @@ export const FilterChipBarItem = ({
 };
 export const FilterChipBar = ({ children }: { children: ReactNode }) => {
   return (
-    <div className="w-full border-b border-white/20 py-3 overflow-x-auto flex gap-4 md:gap-10 items-center ">
+    <div className="flex w-full items-center gap-4 overflow-x-auto border-b border-white/20 py-3 md:gap-10 ">
       {children}
     </div>
   );

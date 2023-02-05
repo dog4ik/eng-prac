@@ -46,14 +46,14 @@ const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
   return (
     <Link
       href={href}
-      className={`grid grid-rows-1 grid-cols-2 p-1 cursor-pointer overflow-hidden gap-2 items-center shrink-0 h-28 w-full rounded-lg ${
+      className={`grid h-28 w-full shrink-0 cursor-pointer grid-cols-2 grid-rows-1 items-center gap-2 overflow-hidden rounded-lg p-1 ${
         isCurrent
           ? "bg-white text-black"
-          : " hover:bg-neutral-700 duration-100 text-white"
+          : " text-white duration-100 hover:bg-neutral-700"
       }`}
       ref={itemRef}
     >
-      <div className="xl:w-full w-1/2 relative h-full flex overflow-hidden rounded-lg items-center">
+      <div className="relative flex h-full w-1/2 items-center overflow-hidden rounded-lg xl:w-full">
         <Image
           src={episode.poster ?? "PLACEHOLDER"}
           placeholder={episode.blurData ? "blur" : "empty"}
@@ -65,7 +65,7 @@ const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
       </div>
       <div className="flex flex-col justify-center gap-5">
         <span className="text-md">{episode.title}</span>
-        <span className="text-sm truncate">{`Episode ${episode.number}`}</span>
+        <span className="truncate text-sm">{`Episode ${episode.number}`}</span>
       </div>
     </Link>
   );
@@ -141,8 +141,8 @@ const Theater = (
         />
       )}
 
-      <div className="flex flex-col p-4 xl:flex-row justify-between w-full gap-3">
-        <div className="flex xl:w-3/4 flex-col gap-2" ref={containerRef}>
+      <div className="flex w-full flex-col justify-between gap-3 p-4 xl:flex-row">
+        <div className="flex flex-col gap-2 xl:w-3/4" ref={containerRef}>
           <div className="">
             <Video
               isLoading={episodeQuery.isLoading}
@@ -160,7 +160,7 @@ const Theater = (
           </div>
           {episodeQuery.isSuccess && (
             <div className="flex flex-col">
-              <div className="flex justify-between flex-col lg:flex-row lg:items-center">
+              <div className="flex flex-col justify-between lg:flex-row lg:items-center">
                 <div>
                   <div>
                     <span className="text-xl font-semibold">
@@ -170,7 +170,7 @@ const Theater = (
                   <div>
                     <Link
                       href={`/theater/${episodeQuery.data.showId}/${episodeQuery.data.seasonNumber}`}
-                      className="text-sm cursor-pointer hover:underline"
+                      className="cursor-pointer text-sm hover:underline"
                     >
                       {`Season ${episodeQuery.data.seasonNumber}`}
                     </Link>
@@ -179,7 +179,7 @@ const Theater = (
                 {episodeQuery.data.tmdbId && (
                   <div className="flex items-center gap-3">
                     <button
-                      className="px-5 cursor-pointer text-black py-2 bg-white rounded-lg truncate"
+                      className="cursor-pointer truncate rounded-lg bg-white px-5 py-2 text-black"
                       onClick={() => {
                         setVideoEvents(false);
                         setIsSrtModalOpen();
@@ -189,7 +189,7 @@ const Theater = (
                     </button>
                     {customSrt && (
                       <button
-                        className="py-1 px-2 hover:bg-red-500 rounded-lg duration-200 transition-colors cursor-pointer"
+                        className="cursor-pointer rounded-lg py-1 px-2 transition-colors duration-200 hover:bg-red-500"
                         onClick={() => setCustomSrt(undefined)}
                       >
                         {customSrt?.split("/")[customSrt.split("/").length - 1]}
@@ -199,7 +199,7 @@ const Theater = (
                 )}
               </div>
               {episodeQuery.data.plot && (
-                <div className="w-full p-2 mt-4 min-h-20 bg-neutral-700 rounded-lg">
+                <div className="min-h-20 mt-4 w-full rounded-lg bg-neutral-700 p-2">
                   <p className="break-words">{episodeQuery.data.plot}</p>
                 </div>
               )}
@@ -210,7 +210,7 @@ const Theater = (
           <div>
             <div
               style={{ height: height }}
-              className="flex xl:max-w-xl px-2 flex-col xl:overflow-y-auto xl:mr-10 scrollbar-w-1 scrollbar-thumb-white scrollbar-track-neutral-700 "
+              className="flex flex-col px-2 scrollbar-track-neutral-700 scrollbar-thumb-white scrollbar-w-1 xl:mr-10 xl:max-w-xl xl:overflow-y-auto "
             >
               {siblingsQuery.data?.map((episode) => (
                 <SideBarEpisode
