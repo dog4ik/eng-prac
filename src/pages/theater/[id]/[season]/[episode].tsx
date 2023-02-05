@@ -93,6 +93,22 @@ const Theater = (
       onSettled() {
         setCustomSrt(undefined);
       },
+      onSuccess(data) {
+        if (siblingsQuery.isSuccess) {
+          const next = siblingsQuery.data.find(
+            (item) => item.number == data?.number + 1
+          );
+          next
+            ? setNextEp({
+                title: next.title,
+                poster: next.poster,
+                src: `/theater/${data.showId}/${data.seasonNumber}/${
+                  data.number + 1
+                }`,
+              })
+            : setNextEp(null);
+        }
+      },
     }
   );
   const siblingsQuery = trpc.theater.getEpisodeSiblings.useQuery(
@@ -101,11 +117,11 @@ const Theater = (
       showId: props.id!.toString(),
     },
     {
-      enabled: !episodeQuery.isLoading,
+      enabled: episodeQuery.isSuccess,
       onSuccess(data) {
         if (episodeQuery.isSuccess) {
           const next = data.find(
-            (item) => item.number == episodeQuery.data?.number + 1
+            (item) => item.number == episodeQuery.data.number + 1
           );
           next
             ? setNextEp({
@@ -214,6 +230,7 @@ const Theater = (
             >
               {siblingsQuery.data?.map((episode) => (
                 <SideBarEpisode
+                  key={episode.id}
                   episode={{
                     number: episode.number,
                     title: episode.title,
