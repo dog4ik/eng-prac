@@ -94,7 +94,7 @@ const Theater = (
   useLayoutEffect(() => {
     setHeight(containerRef.current?.clientHeight ?? 0);
   }, []);
-  const updateHistoryMutation = trpc.theater.updateHistory.useMutation();
+  const updateHistoryMutation = trpc.history.updateHistory.useMutation();
   const episodeQuery = trpc.theater.getEpisode.useQuery(
     {
       showId: props.id!.toString(),
