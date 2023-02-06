@@ -11,7 +11,14 @@ const isLogged = t.middleware(({ ctx, next }) => {
   if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
   return next({ ctx: { userId: ctx.user } });
 });
+
+const guest = t.middleware(({ ctx, next }) => {
+  //refresh token if possible
+  if (ctx.user === null) throw new TRPCError({ code: "UNAUTHORIZED" });
+  return next({ ctx: { userId: ctx.user } });
+});
+
 // Base router and procedure helpers
 export const router = t.router;
-export const procedure = t.procedure;
+export const procedure = t.procedure.use(guest);
 export const protectedProcedure = t.procedure.use(isLogged);

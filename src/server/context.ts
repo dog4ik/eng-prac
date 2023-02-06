@@ -9,7 +9,6 @@ export async function createContext({ req, res }: CreateNextContextOptions) {
       const user = TokenDecode(req.headers.authorization);
       return user;
     }
-    return null;
   }
   const user = await getUserFromHeader();
   return {

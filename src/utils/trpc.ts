@@ -14,12 +14,18 @@ const getAccess_token = () => {
     return localStorage.getItem("access_token");
   } else return null;
 };
-const authApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_LINK,
-  headers: {
-    Authorization: "Bearer " + getAccess_token(),
-  },
-});
+const authApi = axios.create(
+  getAccess_token()
+    ? {
+        baseURL: process.env.NEXT_PUBLIC_API_LINK,
+        headers: {
+          Authorization: "Bearer " + getAccess_token(),
+        },
+      }
+    : {
+        baseURL: process.env.NEXT_PUBLIC_API_LINK,
+      }
+);
 
 async function refreshToken() {
   return authApi
@@ -58,8 +64,12 @@ export const trpc = createTRPCNext<AppRouter>({
           attempts: 1,
           async onError(err) {
             if (err.data.code === "UNAUTHORIZED") {
-              await refreshToken().catch((e) => {
-                console.log(e);
+              await refreshToken().catch(() => {
+                //Remove tokens if can't refresh it
+                if (typeof window != "undefined") {
+                  localStorage.removeItem("access_token");
+                  localStorage.removeItem("refresh_token");
+                }
               });
             }
           },
@@ -71,9 +81,11 @@ export const trpc = createTRPCNext<AppRouter>({
            **/
           url: `${getBaseUrl()}/api/trpc`,
           headers() {
-            return {
-              Authorization: `Bearer ${getAccess_token()}`,
-            };
+            if (getAccess_token())
+              return {
+                Authorization: `Bearer ${getAccess_token()}`,
+              };
+            return {};
           },
         }),
       ],
