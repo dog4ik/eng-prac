@@ -319,7 +319,7 @@ const Video = ({
   useEffect(() => {
     const handleMouseUp = () => {
       isScubbing.current = false;
-      handleSync(time);
+      if (videoRef.current) handleSync(videoRef.current.currentTime);
     };
     const handleMouseMove = (e: MouseEvent) => {
       if (!isScubbing.current) return;
@@ -407,7 +407,10 @@ const Video = ({
             onSeeked={(e) => {
               setIsEnded(e.currentTarget.ended);
             }}
-            onEnded={() => setIsEnded(true)}
+            onEnded={(e) => {
+              setIsEnded(true);
+              onHistoryUpdate(e.currentTarget.currentTime);
+            }}
             ref={videoRef}
             className={`${
               isMetadataLoading || isEnded ? "hidden" : ""
