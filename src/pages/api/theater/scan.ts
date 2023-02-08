@@ -55,11 +55,6 @@ export default async function handler(
       return;
     }
     const tmdbApi = axios.create({
-      proxy: {
-        protocol: "http",
-        host: "94.228.122.168",
-        port: 3128,
-      },
       baseURL: "http://api.themoviedb.org/3",
       params: {
         api_key: process.env.TMDB_TOKEN,
