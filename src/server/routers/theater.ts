@@ -173,7 +173,7 @@ export const theaterRouter = router({
         number: episode.number,
         title: episode.title,
         src: process.env.MEDIA_SERVER_LINK + "/static" + episode.src,
-        subSrc: episode.subSrc,
+        subSrc: process.env.MEDIA_SERVER_LINK + "/static" + episode.subSrc,
         rating: episode.rating,
         id: episode.id,
         duration: episode.duration,

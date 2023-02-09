@@ -193,8 +193,7 @@ const Theater = (
                 customSrt ??
                 (episodeQuery.data?.subSrc == null
                   ? null
-                  : process.env.NEXT_PUBLIC_MEDIA_SERVER_LINK! +
-                    episodeQuery.data?.subSrc)
+                  : episodeQuery.data?.subSrc)
               }
             />
           </div>
