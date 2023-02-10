@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
+import React, { useRef } from "react";
 import TheaterHeader from "../../../../components/TheaterHeader";
 import useGridCols from "../../../../utils/useGrid";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
@@ -9,6 +9,7 @@ import { trpc } from "../../../../utils/trpc";
 import NotFoundError from "../../../../components/ui/NotFoundError";
 import Title from "../../../../components/Title";
 import formatDuration from "../../../../utils/formatDuration";
+import { FiCheck } from "react-icons/fi";
 type EpisodeCardProps = {
   haveSubs: boolean;
   img: string | null;
@@ -17,6 +18,8 @@ type EpisodeCardProps = {
   episode: number;
   href: string;
   duration: number;
+  userTime?: number;
+  isFinished: boolean;
 };
 
 export const getServerSideProps: GetServerSideProps<{
@@ -34,7 +37,14 @@ const EpisodeCard = ({
   blurData,
   haveSubs,
   duration,
+  userTime,
+  isFinished,
 }: EpisodeCardProps) => {
+  const getPersent = (larger: number, smaller?: number) => {
+    if (!smaller) return 0;
+    return (smaller / larger) * 100;
+  };
+
   return (
     <div>
       <Link
@@ -65,10 +75,25 @@ const EpisodeCard = ({
             Subs
           </span>
         </div>
+        {isFinished && (
+          <div className="absolute top-0 left-0 p-2">
+            <div className="rounded-full bg-white p-1">
+              <FiCheck className="stroke-black" size={25} />
+            </div>
+          </div>
+        )}
         <div className="absolute bottom-0 right-0 flex items-center p-1">
           <span className="rounded-md bg-black p-0.5 text-sm">
             {formatDuration(duration)}
           </span>
+        </div>
+        <div className="absolute left-0 bottom-0 right-0">
+          <div
+            className="h-1 bg-white "
+            style={{
+              width: `${isFinished ? 100 : getPersent(duration, userTime)}%`,
+            }}
+          />
         </div>
       </Link>
       <div className="flex w-full flex-col gap-1 py-3">
@@ -145,6 +170,16 @@ const Season = (
                 title={episode.title}
                 episode={episode.number}
                 href={`/theater/${props.id}/${props.season}/${episode.number}`}
+                userTime={
+                  episodesQuery.data.history.find(
+                    (item) => item.episodeId === episode.id
+                  )?.time
+                }
+                isFinished={
+                  episodesQuery.data.history.find(
+                    (item) => item.episodeId === episode.id
+                  )?.isFinished ?? false
+                }
               />
             ))}
         </div>
