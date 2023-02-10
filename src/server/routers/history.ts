@@ -31,33 +31,20 @@ export const historyRouter = router({
         });
       }
     }),
-  getAllHistory: protectedProcedure.query(async ({ ctx }) => {
-    const history = await prisma.watchHisory.findMany({
-      where: { userId: ctx.userId },
-      select: {
-        time: true,
-        isFinished: true,
-        updatedAt: true,
-        Episode: {
-          select: {
-            title: true,
-            duration: true,
-            poster: true,
-            blurData: true,
-            number: true,
-            plot: true,
-            id: true,
-            Season: { select: { number: true, showsId: true } },
-          },
-        },
-      },
-      orderBy: { updatedAt: "desc" },
-    });
-    return history;
-  }),
+
   deleteHistory: protectedProcedure.mutation(async ({ ctx }) => {
     await prisma.watchHisory.deleteMany({ where: { userId: ctx.userId } });
   }),
+
+  deleteHistoryItem: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const count = await prisma.watchHisory.deleteMany({
+        where: { id: input.id, userId: ctx.userId },
+      });
+      return count;
+    }),
+
   getPaginatedHistory: protectedProcedure
     .input(
       z.object({
