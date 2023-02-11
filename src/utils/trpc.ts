@@ -63,7 +63,7 @@ export const trpc = createTRPCNext<AppRouter>({
         retryLink({
           attempts: 1,
           async onError(err) {
-            if (err.data.code === "UNAUTHORIZED") {
+            if (err.data.code === "UNAUTHORIZED" && getRefresh_token()) {
               await refreshToken().catch(() => {
                 //Remove tokens if can't refresh it
                 if (typeof window != "undefined") {
