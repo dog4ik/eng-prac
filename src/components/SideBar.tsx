@@ -4,6 +4,7 @@ import {
   FiBold,
   FiBook,
   FiCheck,
+  FiClock,
   FiGlobe,
   FiHeart,
   FiHome,
@@ -69,6 +70,9 @@ const SideBar = ({ isExpanded }: { isExpanded: boolean }) => {
         </MenuIcon>
         <MenuIcon href={"/theater"} title="Theater" isExpanded={isExpanded}>
           <FiTv size={25} className="stroke-2 group-hover:fill-white" />
+        </MenuIcon>
+        <MenuIcon href={"/history"} title="History" isExpanded={isExpanded}>
+          <FiClock size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
       </div>
     </div>
