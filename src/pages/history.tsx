@@ -15,6 +15,7 @@ type HistoryItemProps = {
   episode: number;
   plot: string | null;
   poster: string | null;
+  blurData: string | null;
   showId: string;
   duration: number;
   userTime: number;
@@ -30,6 +31,7 @@ const HistoryItem = ({
   showId,
   plot,
   poster,
+  blurData,
   duration,
   userTime,
 }: HistoryItemProps) => {
@@ -44,6 +46,8 @@ const HistoryItem = ({
           className="object-cover"
           src={poster ?? "/image.jpg"}
           alt="History Item"
+          placeholder={blurData ? "blur" : "empty"}
+          blurDataURL={`data:image/png;base64,${blurData}`}
           fill
         />
         <div className="absolute bottom-0 right-0 p-1">
@@ -176,6 +180,7 @@ const History = () => {
                   season={item.Episode.Season?.number ?? 1}
                   episode={item.Episode.number}
                   poster={item.Episode.poster}
+                  blurData={item.Episode.blurData}
                   showId={item.Episode.Season?.showsId ?? ""}
                   userTime={item.time}
                   duration={item.Episode.duration}
