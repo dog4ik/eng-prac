@@ -99,7 +99,7 @@ const Navbar = () => {
   return (
     <>
       <SideBar isExpanded={isExpanded} />
-      <div className="fixed top-0 z-20 hidden h-full max-h-20 w-full flex-1 items-center justify-between gap-5 border-b border-neutral-700 py-5 pr-16 dark:bg-neutral-800 dark:text-white md:flex ">
+      <div className="fixed top-0 z-20 hidden h-full max-h-20 w-full flex-1 items-center justify-between gap-5 border-b border-neutral-700 bg-neutral-800 py-5 pr-16 dark:bg-neutral-800 dark:text-white md:flex ">
         <div
           onClick={() => setIsExpanded()}
           className="flex w-16 flex-col items-center justify-center gap-1 rounded-full py-4"
