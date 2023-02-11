@@ -185,7 +185,7 @@ export const theaterRouter = router({
       });
       return siblings;
     }),
-  getRandomSeasons: protectedProcedure.query(async () => {
+  getRandomSeasons: procedure.query(async () => {
     const seasons = await prisma.$queryRawUnsafe(
       'SELECT "id","blurData","number","poster","showsId" FROM "Season" ORDER BY RANDOM() LIMIT 10;'
     );
