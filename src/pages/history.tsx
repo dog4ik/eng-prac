@@ -4,6 +4,8 @@ import React, { useEffect, useRef } from "react";
 import { FiClock, FiTrash, FiX } from "react-icons/fi";
 import { useNotifications } from "../components/context/NotificationCtx";
 import Title from "../components/Title";
+import Error from "../components/ui/Error";
+import Loading from "../components/ui/Loading";
 import formatDuration from "../utils/formatDuration";
 import { trpc } from "../utils/trpc";
 type HistoryItemProps = {
@@ -33,7 +35,7 @@ const HistoryItem = ({
 }: HistoryItemProps) => {
   const episodeHref = useRef(`theater/${showId}/${season}/${episode}`);
   return (
-    <div className="group flex rounded-xl">
+    <div className="group flex max-h-64 max-w-5xl rounded-xl">
       <Link
         href={episodeHref.current}
         className="relative mr-2 aspect-video w-1/3 overflow-hidden rounded-xl duration-200 hover:scale-105"
@@ -56,7 +58,7 @@ const HistoryItem = ({
       </Link>
       <Link href={episodeHref.current} className="relative flex w-2/3 flex-col">
         <div className="block">
-          <span className="w-5/6 truncate whitespace-normal text-xl font-semibold line-clamp-2">
+          <span className="w-5/6 truncate whitespace-normal p-1 text-xl font-semibold line-clamp-2">
             {title}
           </span>
           <div className="flex items-center gap-1 text-neutral-300">
@@ -71,7 +73,10 @@ const HistoryItem = ({
           </div>
         </div>
         <div className="block p-1">
-          <p className="overflow-hidden overflow-ellipsis whitespace-normal text-neutral-300 line-clamp-2">
+          <p
+            title={plot ?? ""}
+            className="overflow-hidden overflow-ellipsis whitespace-normal text-neutral-300 line-clamp-2"
+          >
             {plot ?? ""}
           </p>
         </div>
@@ -137,16 +142,16 @@ const History = () => {
     };
   }, [observableRef.current, options]);
   if (historyQuery.isLoading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
   if (historyQuery.isError) {
-    return <div>Error</div>;
+    return <Error />;
   }
   return (
     <>
       <Title title="History" />
-      <div className="flex h-full w-full p-5">
-        <div className="w-1/2">
+      <div className="flex h-full w-full flex-col-reverse p-5 md:flex-row">
+        <div className="md:w-2/3">
           <div className="flex items-center gap-1">
             <div className="flex items-center justify-center">
               <FiClock size={35} />
@@ -154,6 +159,11 @@ const History = () => {
             <span className="p-2 text-2xl font-semibold">History</span>
           </div>
           <div className="flex flex-col gap-3 p-4">
+            {historyQuery.data.pages[0].history.length == 0 && (
+              <div className="flex h-60 items-center justify-center">
+                <span className="text-4xl">History is empty</span>
+              </div>
+            )}
             {historyQuery.data.pages.map((page) => {
               return page.history.map((item) => (
                 <HistoryItem
@@ -180,7 +190,7 @@ const History = () => {
             {historyQuery.isFetchingNextPage && "Loading..."}
           </div>
         </div>
-        <div className="w-1/4">
+        <div className="md:w-1/3">
           <span className="p-2 text-2xl font-semibold">Options</span>
           <div className="my-4 flex items-center gap-3">
             <button
