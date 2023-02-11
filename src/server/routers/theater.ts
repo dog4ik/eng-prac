@@ -2,6 +2,7 @@ import { z } from "zod";
 import { router, protectedProcedure, procedure } from "../trpc";
 import prisma from "../../../prisma/PrismaClient";
 import { TRPCError } from "@trpc/server";
+import { Season } from "@prisma/client";
 export const theaterRouter = router({
   getShows: procedure.query(async () => {
     const shows = await prisma.shows.findMany({
@@ -184,4 +185,13 @@ export const theaterRouter = router({
       });
       return siblings;
     }),
+  getRandomSeasons: protectedProcedure.query(async () => {
+    const seasons = await prisma.$queryRawUnsafe(
+      'SELECT "id","blurData","number","poster","showsId" FROM "Season" ORDER BY RANDOM() LIMIT 10;'
+    );
+    return seasons as Pick<
+      Season,
+      "poster" | "number" | "blurData" | "showsId" | "id"
+    >[];
+  }),
 });
