@@ -1,9 +1,17 @@
-import React, { ReactNode, useEffect, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { FiChevronRight } from "react-icons/fi";
 type WrapperProps = {
   x?: number;
   y?: number;
+  callerRef?: React.RefObject<HTMLElement>;
   scroll?: boolean;
+  onClose?: () => void;
   children: ReactNode;
   getChildCount?: (count: number) => void;
 };
@@ -14,32 +22,33 @@ type RowProps = {
 type ExpandedRowProps = {
   title: string;
   children: ReactNode;
-  x?: number;
-  y?: number;
 };
-export const ExpandedRow = ({ title, children, x, y }: ExpandedRowProps) => {
+export const ExpandedRow = ({ title, children }: ExpandedRowProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [childCount, setChildCount] = useState(0);
-  useEffect(() => {
+  const expandedRowRef = useRef<HTMLLIElement>(null);
+  useLayoutEffect(() => {
     console.log(childCount);
-    if (x != undefined && y != undefined) {
-      if (window.innerWidth < x + 480) setTranslate({ x: -480, y: 0 });
-      else setTranslate({ x: 0, y: 0 });
-      if (window.innerHeight < y + 64 * (childCount - 1))
-        setTranslate((prev) => {
-          return { x: prev.x, y: -64 * (childCount - 1) };
-        });
+    if (expandedRowRef.current) {
+      const { x, y } = expandedRowRef.current.getBoundingClientRect();
+      let translateX: number = 0;
+      let translateY: number = 0;
+      if (window.innerWidth < x + 480) translateX = -480;
+      if (window.innerHeight < y + 40 * childCount)
+        translateY = -40 * (childCount - 1);
+      setTranslate({ x: translateX, y: translateY });
     }
-  }, [x, y, childCount]);
+  }, [expandedRowRef.current, childCount]);
   return (
     <li
-      className="relative flex h-16 cursor-pointer items-center justify-between rounded-md pl-2 hover:bg-neutral-700"
+      className="relative flex h-10 cursor-pointer items-center justify-between rounded-md pl-2 hover:bg-neutral-700"
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
+      ref={expandedRowRef}
     >
-      <span className="pointer-events-none">{title}</span>
-      <FiChevronRight size={30} />
+      <span className="pointer-events-none text-white">{title}</span>
+      <FiChevronRight className="stroke-white" size={30} />
       {isExpanded && (
         <div
           className="absolute top-0 right-0"
@@ -59,10 +68,10 @@ export const ExpandedRow = ({ title, children, x, y }: ExpandedRowProps) => {
 export const MenuRow = ({ onClick, title }: RowProps) => {
   return (
     <li
-      className="flex h-16 cursor-pointer items-center rounded-md pl-2 hover:bg-neutral-700"
+      className="flex h-10 cursor-pointer items-center rounded-md pl-2 hover:bg-neutral-700"
       onClick={onClick}
     >
-      <span className="pointer-events-none">{title}</span>
+      <span className="pointer-events-none text-white">{title}</span>
     </li>
   );
 };
@@ -72,28 +81,51 @@ export const MenuWrapper = ({
   getChildCount,
   scroll,
   children,
+  callerRef,
+  onClose,
 }: WrapperProps) => {
   const [anchorPoint, setAnchorPoint] = useState({
-    x: x,
-    y: y,
+    x,
+    y,
     translateX: 0,
     translateY: 0,
   });
   const listRef = useRef<HTMLUListElement>(null);
-  const [childCount, setChildCount] = useState(
-    listRef.current?.childElementCount ?? 0
-  );
-  useEffect(() => {
-    setChildCount(listRef.current!.childElementCount);
-    getChildCount ? getChildCount(childCount) : null;
+  const [childCount, setChildCount] = useState(0);
+
+  useLayoutEffect(() => {
+    if (listRef.current) setChildCount(listRef.current.childElementCount);
+    if (getChildCount) getChildCount(childCount);
     if (x != undefined && y != undefined) {
       let offsetX = 0;
       let offsetY = 0;
       if (window.innerWidth < x + 240) offsetX = -240;
-      if (window.innerHeight < y + 64 * childCount) offsetY = -64 * childCount;
-      setAnchorPoint({ x: x, y: y, translateX: offsetX, translateY: offsetY });
+      if (window.innerHeight < y + 40 * childCount) offsetY = -40 * childCount;
+      setAnchorPoint({
+        x: window.innerWidth < x ? window.innerWidth : x,
+        y: window.innerHeight < y ? window.innerHeight : y,
+        translateX: offsetX,
+        translateY: offsetY,
+      });
     }
   }, [x, y, childCount]);
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLDivElement;
+      if (
+        listRef.current?.contains(target) ||
+        callerRef?.current?.contains(target)
+      )
+        return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (onClose) onClose();
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+    };
+  }, [listRef.current, callerRef?.current]);
 
   return (
     <div
@@ -112,7 +144,7 @@ export const MenuWrapper = ({
             ? "overflow-y-auto scrollbar-thumb-white scrollbar-track-rounded-sm scrollbar-thumb-rounded-sm"
             : ""
         }`}
-        style={{ maxHeight: scroll ? 64 * 5 : childCount * 64 }}
+        style={{ maxHeight: scroll ? 40 * 5 : childCount * 40 }}
       >
         {children}
       </ul>
