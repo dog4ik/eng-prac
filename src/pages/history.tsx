@@ -6,6 +6,7 @@ import { useNotifications } from "../components/context/NotificationCtx";
 import Title from "../components/Title";
 import Error from "../components/ui/Error";
 import Loading from "../components/ui/Loading";
+import UnauthorizedError from "../components/ui/UnauthorizedError";
 import formatDuration from "../utils/formatDuration";
 import { trpc } from "../utils/trpc";
 type HistoryItemProps = {
@@ -149,6 +150,8 @@ const History = () => {
     return <Loading />;
   }
   if (historyQuery.isError) {
+    if (historyQuery.error.data?.code === "UNAUTHORIZED")
+      return <UnauthorizedError />;
     return <Error />;
   }
   return (
