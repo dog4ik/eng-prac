@@ -7,23 +7,13 @@ import { useLikes } from "../../utils/useLikes";
 import ListBar from "../../components/ListBar";
 import useWordReducer from "../../utils/useWordReducer";
 import WordList from "../../components/WordList";
-import {
-  ExpandedRow,
-  MenuRow,
-  MenuWrapper,
-} from "../../components/MenuWrapper";
+import { MenuRow, MenuWrapper } from "../../components/MenuWrapper";
 import WordbookCtxProvider, {
   useWordbookCtx,
 } from "../../components/context/WordbookCtx";
 type ContextMenuProps = {};
 const ConextMenu = ({}: ContextMenuProps) => {
-  const {
-    selectedWords,
-    setSelectedWords,
-    anchorPoint,
-    setIsMenuOpen,
-    isMenuOpen,
-  } = useWordbookCtx();
+  const { anchorPoint, setIsMenuOpen, isMenuOpen } = useWordbookCtx();
   const { x, y } = anchorPoint;
   if (!isMenuOpen) return null;
   else
@@ -33,19 +23,6 @@ const ConextMenu = ({}: ContextMenuProps) => {
           title="Remove From Likes"
           onClick={() => setIsMenuOpen(false)}
         />
-        <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-        <ExpandedRow title="Add" x={x} y={y}>
-          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-        </ExpandedRow>
-        <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-        <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-        <ExpandedRow title="Add" x={x} y={y + 384}>
-          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-          <MenuRow title="Unlike" onClick={() => setIsMenuOpen(false)} />
-        </ExpandedRow>
       </MenuWrapper>
     );
 };
