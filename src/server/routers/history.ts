@@ -45,6 +45,34 @@ export const historyRouter = router({
       return count;
     }),
 
+  markWatched: protectedProcedure
+    .input(z.object({ episodeId: z.string(), isWatched: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const item = await prisma.watchHisory.findFirst({
+        where: { userId: ctx.userId, episodeId: input.episodeId },
+      });
+      if (item) {
+        if (input.isWatched) {
+          await prisma.watchHisory.update({
+            where: { id: item.id },
+            data: { time: 0, isFinished: input.isWatched },
+          });
+        } else {
+          await prisma.watchHisory.delete({ where: { id: item.id } });
+        }
+        return;
+      }
+      if (input.isWatched)
+        await prisma.watchHisory.create({
+          data: {
+            isFinished: true,
+            episodeId: input.episodeId,
+            time: 0,
+            userId: ctx.userId,
+          },
+        });
+    }),
+
   getPaginatedHistory: protectedProcedure
     .input(
       z.object({
