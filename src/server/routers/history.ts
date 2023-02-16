@@ -32,7 +32,7 @@ export const historyRouter = router({
       }
     }),
 
-  deleteHistory: protectedProcedure.mutation(async ({ ctx }) => {
+  deleteAllHistory: protectedProcedure.mutation(async ({ ctx }) => {
     await prisma.watchHisory.deleteMany({ where: { userId: ctx.userId } });
   }),
 

@@ -122,7 +122,7 @@ const History = () => {
       queryClient.history.getPaginatedHistory.invalidate();
     },
   });
-  const deleteMutation = trpc.history.deleteAllHisory.useMutation({
+  const deleteMutation = trpc.history.deleteAllHistory.useMutation({
     onSuccess() {
       notificator({ type: "success", message: "History Removed" });
       queryClient.history.getPaginatedHistory.invalidate();
