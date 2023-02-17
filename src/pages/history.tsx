@@ -17,6 +17,7 @@ type HistoryItemProps = {
   plot: string | null;
   poster: string | null;
   blurData: string | null;
+  isFinished: boolean;
   showId: string;
   duration: number;
   userTime: number;
@@ -31,6 +32,7 @@ const HistoryItem = ({
   season,
   showId,
   plot,
+  isFinished,
   poster,
   blurData,
   duration,
@@ -58,7 +60,9 @@ const HistoryItem = ({
         </div>
         <div
           className="absolute bottom-0 right-0 left-0 h-1 bg-white"
-          style={{ width: `${getPersent(duration, userTime)}%` }}
+          style={{
+            width: `${isFinished ? "100" : getPersent(duration, userTime)}%`,
+          }}
         ></div>
       </Link>
       <Link href={episodeHref.current} className="relative flex w-2/3 flex-col">
@@ -186,6 +190,7 @@ const History = () => {
                   blurData={item.Episode.blurData}
                   showId={item.Episode.Season?.showsId ?? ""}
                   userTime={item.time}
+                  isFinished={item.isFinished}
                   duration={item.Episode.duration}
                 />
               ));
