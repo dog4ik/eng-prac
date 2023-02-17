@@ -267,7 +267,6 @@ const Video = ({
     videoRef.current.volume = volume;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current || preventEvents) return;
-      videoRef.current.volume = volume;
       switch (e.code) {
         case "KeyF":
           toggleFullScreenMode();
