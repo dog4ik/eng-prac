@@ -33,7 +33,7 @@ model Wordbook {
   id          String   @id @default(cuid())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  name        String?  @default("My Wordbook")
+  name        String  @default("My Wordbook")
   description String?
   likes       Int      @default(0)
   words       Words[]
