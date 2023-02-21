@@ -1,9 +1,13 @@
 import React from "react";
 import { FiPlus } from "react-icons/fi";
 import Image from "next/image";
-import { Book } from "../utils/useWordbook";
 type Props = {
-  data: { name: string; count?: number; description?: string; picture: string };
+  data: {
+    name: string;
+    count?: number;
+    description?: string | null;
+    picture: string;
+  };
   setEditModal?: (value?: boolean | undefined) => void;
   setAddModal?: (value?: boolean | undefined) => void;
   isOwner: boolean;

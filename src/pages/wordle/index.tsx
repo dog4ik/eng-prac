@@ -1,11 +1,9 @@
-import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Loading from "../../components/ui/Loading";
 import { trpc } from "../../utils/trpc";
 import { z } from "zod";
-import { useAllWordbooks } from "../../utils/useAllWordbooks";
 type GameRowProps = {
   word: string;
   date: Date | null;
@@ -28,18 +26,6 @@ const GameRow = ({ word, date, isWin, id }: GameRowProps) => {
     if (!isWin)
       return <span className="w-1/3 text-end text-red-500">Lose</span>;
     return null;
-  };
-  const calculate = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
-    if (Math.floor(diff / 1000) < 60) return Math.floor(diff / 1000) + "s ago";
-    if (Math.floor(diff / (1000 * 60)) < 60)
-      return Math.floor(diff / (1000 * 60)) + "m ago";
-    if (Math.floor(diff / (1000 * 60 * 60)) < 24)
-      return Math.floor(diff / (1000 * 60 * 60)) + "h ago";
-    if (Math.floor(diff / (1000 * 60 * 60 * 24)) <= 30)
-      return Math.floor(diff / (1000 * 60 * 60 * 24)) + "d ago";
-    if (Math.floor(diff / (1000 * 60 * 60 * 24)) > 30)
-      return new Date(date).toLocaleDateString();
   };
 
   return (
@@ -76,20 +62,20 @@ const WordbookRow = ({
   );
 };
 const Index = () => {
-  const queryClient = useQueryClient();
+  const queryClient = trpc.useContext();
   const router = useRouter();
   const createWordleMutation = trpc.wordle.createGame.useMutation({
     onSettled() {
-      queryClient.invalidateQueries(trpc.wordle.getGames.getQueryKey());
+      queryClient.wordle.getGames.invalidate();
     },
-    onSuccess(data) {
-      router.push("/wordle/game/" + data.id);
+    async onSuccess(data) {
+      await router.push("/wordle/game/" + data.id);
     },
   });
   const getAllWordlesQuery = trpc.wordle.getGames.useQuery();
   const [maxTries, setMaxTries] = useState(6);
   const [selectedSource, setSelectedSource] = useState<string[]>([]);
-  const wordbooksQuery = useAllWordbooks();
+  const wordbooksQuery = trpc.wordle.getAvailableWordbooks.useQuery();
 
   const createGame = () => {
     if (createWordleMutation.isLoading || createWordleMutation.isSuccess)
@@ -104,8 +90,8 @@ const Index = () => {
 
   if (getAllWordlesQuery.isLoading || wordbooksQuery.isLoading)
     return <Loading />;
-
   if (getAllWordlesQuery.isSuccess && wordbooksQuery.isSuccess)
+    //TODO: handle state mess
     return (
       <div className="mx-5 mt-10 flex flex-col items-center justify-center gap-10 md:mx-20">
         <span className="text-2xl">Choose WordLists:</span>
@@ -114,11 +100,7 @@ const Index = () => {
             <WordbookRow
               id={item.id}
               title={item.name}
-              wordsAmount={
-                item.words.filter(
-                  (item) => item.eng.length > 3 && item.eng.length < 6
-                ).length
-              }
+              wordsAmount={item._count.words}
               key={item.id}
               onClick={(id) =>
                 selectedSource.includes(id)

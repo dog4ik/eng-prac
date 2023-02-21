@@ -4,13 +4,9 @@ import prisma from "../../../prisma/PrismaClient";
 import { TRPCError } from "@trpc/server";
 export const theaterRouter = router({
   getShows: procedure.query(async () => {
-    const shows = await prisma.shows
-      .findMany({
-        include: { _count: { select: { Season: {} } } },
-      })
-      .catch(() => {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      });
+    const shows = await prisma.shows.findMany({
+      include: { _count: { select: { Season: {} } } },
+    });
 
     if (shows === null) throw new TRPCError({ code: "NOT_FOUND" });
     return shows.map((show) => {
@@ -18,27 +14,23 @@ export const theaterRouter = router({
     });
   }),
   getSeasons: procedure
-    .input(z.object({ showId: z.string() }))
+    .input(z.object({ showId: z.string().max(50) }))
     .query(async ({ input }) => {
-      const seasons = await prisma.shows
-        .findFirst({
-          where: { id: input.showId },
-          include: {
-            Season: {
-              select: {
-                number: true,
-                blurData: true,
-                poster: true,
-                id: true,
-                _count: { select: { Episodes: {} } },
-              },
-              orderBy: { number: "asc" },
+      const seasons = await prisma.shows.findFirst({
+        where: { id: input.showId },
+        include: {
+          Season: {
+            select: {
+              number: true,
+              blurData: true,
+              poster: true,
+              id: true,
+              _count: { select: { Episodes: {} } },
             },
+            orderBy: { number: "asc" },
           },
-        })
-        .catch(() => {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        });
+        },
+      });
 
       if (seasons === null) throw new TRPCError({ code: "NOT_FOUND" });
       return {
@@ -62,39 +54,35 @@ export const theaterRouter = router({
     }),
 
   getEpisodes: procedure
-    .input(z.object({ showId: z.string(), number: z.number() }))
+    .input(z.object({ showId: z.string().max(50), number: z.number() }))
     .query(async ({ input, ctx }) => {
-      const episodes = await prisma.season
-        .findFirst({
-          where: {
-            showsId: input.showId,
-            number: input.number,
-          },
-          select: {
-            poster: true,
-            blurData: true,
-            number: true,
-            plot: true,
-            releaseDate: true,
-            Episodes: {
-              select: {
-                poster: true,
-                blurData: true,
-                id: true,
-                number: true,
-                releaseDate: true,
-                subSrc: true,
-                duration: true,
-                title: true,
-                rating: true,
-              },
-              orderBy: { number: "asc" },
+      const episodes = await prisma.season.findFirst({
+        where: {
+          showsId: input.showId,
+          number: input.number,
+        },
+        select: {
+          poster: true,
+          blurData: true,
+          number: true,
+          plot: true,
+          releaseDate: true,
+          Episodes: {
+            select: {
+              poster: true,
+              blurData: true,
+              id: true,
+              number: true,
+              releaseDate: true,
+              subSrc: true,
+              duration: true,
+              title: true,
+              rating: true,
             },
+            orderBy: { number: "asc" },
           },
-        })
-        .catch(() => {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        });
+        },
+      });
 
       if (episodes === null) throw new TRPCError({ code: "NOT_FOUND" });
       let history: {
@@ -128,40 +116,36 @@ export const theaterRouter = router({
   getEpisode: protectedProcedure
     .input(
       z.object({
-        showId: z.string(),
+        showId: z.string().max(50),
         episodeNumber: z.number(),
         seasonNumber: z.number(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const episode = await prisma.episode
-        .findFirst({
-          where: {
-            Season: { showsId: input.showId, number: input.seasonNumber },
-            number: input.episodeNumber,
-          },
-          select: {
-            releaseDate: true,
-            plot: true,
-            number: true,
-            title: true,
-            src: true,
-            subSrc: true,
-            rating: true,
-            duration: true,
-            id: true,
-            tmdbId: true,
-            Season: {
-              select: {
-                number: true,
-                showsId: true,
-              },
+      const episode = await prisma.episode.findFirst({
+        where: {
+          Season: { showsId: input.showId, number: input.seasonNumber },
+          number: input.episodeNumber,
+        },
+        select: {
+          releaseDate: true,
+          plot: true,
+          number: true,
+          title: true,
+          src: true,
+          subSrc: true,
+          rating: true,
+          duration: true,
+          id: true,
+          tmdbId: true,
+          Season: {
+            select: {
+              number: true,
+              showsId: true,
             },
           },
-        })
-        .catch(() => {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        });
+        },
+      });
       if (episode === null) throw new TRPCError({ code: "NOT_FOUND" });
       const history = await prisma.watchHisory.findFirst({
         where: { userId: ctx.userId, episodeId: episode.id },
@@ -184,7 +168,7 @@ export const theaterRouter = router({
       };
     }),
   getEpisodeSiblings: protectedProcedure
-    .input(z.object({ showId: z.string(), season: z.number() }))
+    .input(z.object({ showId: z.string().max(50), season: z.number() }))
     .query(async ({ input }) => {
       const siblings = await prisma.episode.findMany({
         where: { Season: { showsId: input.showId, number: input.season } },

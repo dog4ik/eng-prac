@@ -1,14 +1,14 @@
 import { useMemo } from "react";
 import { FiHeart } from "react-icons/fi";
-import { useUnLikeMutation, useLikeMutaton } from "../utils/useLikes";
 import { Word } from "../utils/useWordbook";
-interface Props extends Word {
+type Props = {
   isLiked: boolean;
   isSelected: boolean;
   onClick: (event: React.MouseEvent, word: Word) => void;
+  onLike: (isLiked: boolean) => void;
   index: number;
   postion: number;
-}
+} & Word;
 const ListItem = ({
   eng,
   rus,
@@ -16,14 +16,13 @@ const ListItem = ({
   index,
   isLiked,
   id,
+  onLike,
   isSelected,
   onClick,
   postion,
 }: Props) => {
-  const delikeMutation = useUnLikeMutation();
-  const likeMutation = useLikeMutaton();
   const calculate = (date: Date) => {
-    const diff = Date.now() - new Date(date).getTime();
+    const diff = Date.now() - date.getTime();
     if (Math.floor(diff / 1000) < 60) return Math.floor(diff / 1000) + "s ago";
     if (Math.floor(diff / (1000 * 60)) < 60)
       return Math.floor(diff / (1000 * 60)) + "m ago";
@@ -32,17 +31,10 @@ const ListItem = ({
     if (Math.floor(diff / (1000 * 60 * 60 * 24)) <= 30)
       return Math.floor(diff / (1000 * 60 * 60 * 24)) + "d ago";
     if (Math.floor(diff / (1000 * 60 * 60 * 24)) > 30)
-      return new Date(date).toLocaleDateString();
+      return date.toLocaleDateString();
   };
 
   const date = useMemo(() => calculate(createdAt), [createdAt]);
-  const handleLike = () => {
-    if (isLiked) {
-      delikeMutation.mutate({ eng });
-    } else {
-      likeMutation.mutate({ eng, rus });
-    }
-  };
   return (
     <div
       onClick={(e) => {
@@ -73,7 +65,7 @@ const ListItem = ({
       <div className="flex w-1/12 items-center justify-end gap-5">
         <FiHeart
           onClick={() => {
-            handleLike();
+            onLike(isLiked);
           }}
           size={27}
           className={

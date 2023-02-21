@@ -1,12 +1,12 @@
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import { FiX } from "react-icons/fi";
+import { trpc } from "../../utils/trpc";
 import useClose from "../../utils/useClose";
-import { useWordbook } from "../../utils/useWordbook";
 import Loading from "../ui/Loading";
 type ModalProps = {
   handleClose: () => void;
-  id?: string;
+  id: string;
 };
 type ModeType = "Normal" | "Last50" | undefined;
 type CardProps = {
@@ -35,7 +35,7 @@ const ModeCard = ({
   );
 };
 const TestModal = ({ id, handleClose }: ModalProps) => {
-  const wordbook = useWordbook(id);
+  const wordbook = trpc.words.getWordbook.useQuery({ id });
   const length = wordbook.data?.words ? wordbook.data.words.length : 0;
   const [mode, setMode] = useState<ModeType>();
   const [range, setRange] = useState<number>(0);

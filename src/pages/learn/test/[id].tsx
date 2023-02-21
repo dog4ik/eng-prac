@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import Title from "../../../components/Title";
 import Error from "../../../components/ui/Error";
 import Loading from "../../../components/ui/Loading";
-import { useWordbook, Word } from "../../../utils/useWordbook";
+import { trpc } from "../../../utils/trpc";
+import { Word } from "../../../utils/useWordbook";
 type Props = {
   word: Word;
   isSelected: boolean;
@@ -42,7 +43,7 @@ const createQ = (words: Word[] | undefined) => {
   for (let i = 0; i < 4; i++) {
     const index = Math.floor(Math.random() * words!.length);
     options.push(words![index]);
-    words = words?.filter((item, i) => i != index);
+    words = words?.filter((_, i) => i != index);
   }
   const answer =
     options[Math.floor(Math.random() * options.length)]?.rus.toLowerCase();
@@ -51,7 +52,9 @@ const createQ = (words: Word[] | undefined) => {
 const Learning = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
-  const wordQuery = useWordbook(props.id);
+  const wordQuery = trpc.words.getWordbook.useQuery({
+    id: props.id!.toString(),
+  });
   let words = wordQuery.data?.words;
   const [selected, setSelected] = useState<Word>();
   const [options, setOptions] = useState<Word[]>([]);

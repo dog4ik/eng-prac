@@ -1,4 +1,4 @@
-import axios, { Axios, AxiosError } from "axios";
+import axios from "axios";
 const getAccess_token = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("access_token");
@@ -21,7 +21,7 @@ async function refreshToken() {
     });
 }
 const authApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_LINK,
+  baseURL: "/api",
   headers: {
     Authorization: "Bearer " + getAccess_token(),
   },

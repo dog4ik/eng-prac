@@ -1,5 +1,6 @@
 import { useVirtualizer } from "@tanstack/react-virtual";
-import React, { forwardRef, Ref, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import { useLikeMutaton, useUnLikeMutation } from "../utils/useLikes";
 import { Word } from "../utils/useWordbook";
 import { useWordbookCtx } from "./context/WordbookCtx";
 import ListItem from "./ListItem";
@@ -25,6 +26,9 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
     paddingStart: 300,
     overscan: 10,
   });
+  const delikeMutation = useUnLikeMutation();
+  const likeMutation = useLikeMutaton();
+
   const handleKeyPress = (e: KeyboardEvent) => {
     switch (e.code) {
       case "ArrowDown":
@@ -79,33 +83,41 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
   };
   return (
     <div ref={itemsRef} tabIndex={0} onContextMenu={(e) => handleMenu(e)}>
-      {rowVirtualizer.getVirtualItems().map((item) => (
-        <ListItem
-          postion={item.start}
-          key={item.key}
-          onClick={(event, word) => {
-            handleSelect(event, word);
-          }}
-          isSelected={
-            selectedWords.findIndex(
-              (word) => word.eng == words![item.index].eng
-            ) != -1
-              ? true
-              : false
-          }
-          isLiked={
-            likes?.find((like) => like.eng === words![item.index].eng)?.eng ===
-            words![item.index].eng
-              ? true
-              : false
-          }
-          index={item.index + 1}
-          eng={words![item.index].eng}
-          rus={words![item.index].rus}
-          id={words![item.index].id}
-          createdAt={words![item.index].createdAt}
-        />
-      ))}
+      {rowVirtualizer.getVirtualItems().map((item) => {
+        const word = words![item.index];
+        return (
+          <ListItem
+            postion={item.start}
+            key={item.key}
+            onClick={(event, word) => {
+              handleSelect(event, word);
+            }}
+            isSelected={
+              selectedWords.findIndex((selWord) => selWord.eng == word.eng) !=
+              -1
+                ? true
+                : false
+            }
+            isLiked={
+              likes?.find((like) => like.eng === word.eng)?.eng === word.eng
+                ? true
+                : false
+            }
+            index={item.index + 1}
+            eng={word.eng}
+            onLike={(bool) => {
+              if (bool) {
+                delikeMutation.mutate([{ eng: word.eng }]);
+              } else {
+                likeMutation.mutate([{ eng: word.eng, rus: word.rus }]);
+              }
+            }}
+            rus={word.rus}
+            id={word.id}
+            createdAt={word.createdAt}
+          />
+        );
+      })}
     </div>
   );
 };

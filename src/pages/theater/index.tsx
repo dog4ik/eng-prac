@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import Title from "../../components/Title";
 import Error from "../../components/ui/Error";
+import NotFoundError from "../../components/ui/NotFoundError";
 import { trpc } from "../../utils/trpc";
 import useGridCols from "../../utils/useGrid";
 type ShowCardProps = {
@@ -64,6 +65,8 @@ const Shows = () => {
   const cols = useGridCols(270);
   const showsQuery = trpc.theater.getShows.useQuery();
   if (showsQuery.isError) {
+    if (showsQuery.error.data?.code == "NOT_FOUND")
+      return <NotFoundError text="Shows" />;
     return <Error />;
   }
   return (

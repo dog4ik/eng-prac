@@ -1,21 +1,12 @@
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import { FiX } from "react-icons/fi";
 import { trpc } from "../utils/trpc";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import superjson from "superjson";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBook, FiHeart, FiVolume2 } from "react-icons/fi";
-import useAudioMutation from "../utils/useAudioMutation";
 import useDebounce from "../utils/useDebounce";
-import { useLikeMutaton, useLikes, useUnLikeMutation } from "../utils/useLikes";
+import { useLikeMutaton, useUnLikeMutation } from "../utils/useLikes";
 import useToggle from "../utils/useToggle";
-type ApiWord = {
-  word: string;
-  score: number;
-};
 type AutoCompleteProps = {
   word: string;
   onClick: (word: string) => void;
@@ -73,7 +64,7 @@ const AutoComplete = ({ word, onClick, handleClose }: AutoCompleteProps) => {
           <div
             key={syn.word}
             className="flex w-full cursor-pointer items-center justify-between px-5 py-2"
-            onClick={(e) => {
+            onClick={() => {
               onClick(syn.word);
             }}
           >
@@ -119,14 +110,12 @@ const Translate = (
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useToggle(false);
   const debouncedSearch = useDebounce(searchTerm, 500);
-  const likesQuery = useLikes();
+  const likesQuery = trpc.words.getLikes.useQuery();
   const likeMutation = useLikeMutaton();
   const delikeMutation = useUnLikeMutation();
   const audioMutation = trpc.translate.textToSpeech.useMutation({
     async onSuccess(data) {
-      const array = data as unknown as { type: string; data: number[] };
-      const byteArray = Uint8Array.from(array.data).buffer;
-      console.log(data);
+      const byteArray = data.buffer;
       if (byteArray.byteLength == 0) return;
       const context = new AudioContext();
       const audioBuffer = await context.decodeAudioData(byteArray);
@@ -204,11 +193,17 @@ const Translate = (
                   <FiHeart
                     onClick={() => {
                       likesQuery.data?.find((item) => item.eng == searchTerm)
-                        ? delikeMutation.mutate({ eng: searchTerm })
-                        : likeMutation.mutate({
-                            eng: searchTerm,
-                            rus: translateMutation.data?.translations[0].text,
-                          });
+                        ? delikeMutation.mutate([
+                            {
+                              eng: searchTerm,
+                            },
+                          ])
+                        : likeMutation.mutate([
+                            {
+                              eng: searchTerm,
+                              rus: translateMutation.data?.translations[0].text,
+                            },
+                          ]);
                     }}
                     className={
                       likesQuery.data?.find((item) => item.eng == searchTerm)

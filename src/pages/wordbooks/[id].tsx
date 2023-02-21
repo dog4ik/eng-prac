@@ -3,8 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import useToggle from "../../utils/useToggle";
 import Loading from "../../components/ui/Loading";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { useWordbook, RemoveWordMutation } from "../../utils/useWordbook";
-import { useLikes } from "../../utils/useLikes";
+import { RemoveWordMutation } from "../../utils/useWordbook";
 import Error from "../../components/ui/Error";
 import PageHeader from "../../components/PageHeader";
 import ListBar from "../../components/ListBar";
@@ -17,6 +16,9 @@ import WordbookCtxProvider, {
   useWordbookCtx,
 } from "../../components/context/WordbookCtx";
 import { trpc } from "../../utils/trpc";
+import UnauthorizedError from "../../components/ui/UnauthorizedError";
+import { createPortal } from "react-dom";
+import { useLikeMutaton } from "../../utils/useLikes";
 export const getServerSideProps: GetServerSideProps<{
   id?: string;
 }> = async (context) => {
@@ -24,8 +26,9 @@ export const getServerSideProps: GetServerSideProps<{
   return { props: { id: id?.toString() } };
 };
 
-const Menu = ({ id }: { id?: string | string[] }) => {
+const Menu = ({ id }: { id: string }) => {
   const deleteMutation = RemoveWordMutation(id);
+  const likeMutation = useLikeMutaton();
   const {
     selectedWords,
     setSelectedWords,
@@ -38,11 +41,27 @@ const Menu = ({ id }: { id?: string | string[] }) => {
     return (
       <MenuWrapper x={anchorPoint.x} y={anchorPoint.y}>
         <MenuRow
-          title={`Delete (${selectedWords.length})`}
+          title={`Delete ${selectedWords.length} ${
+            selectedWords.length === 1 ? "word" : "words"
+          }`}
           onClick={() => {
             deleteMutation.mutate({
-              word: selectedWords.map((item) => item.eng),
+              wordsIds: selectedWords.map((item) => item.id),
+              wordbookId: id,
             });
+            setSelectedWords([]);
+            setIsMenuOpen(false);
+          }}
+        />
+        <MenuRow
+          title={`Like ${selectedWords.length} ${
+            selectedWords.length === 1 ? "word" : "words"
+          }`}
+          onClick={() => {
+            const words = selectedWords.map((item) => {
+              return { eng: item.eng, rus: item.rus };
+            });
+            likeMutation.mutate(words);
             setSelectedWords([]);
             setIsMenuOpen(false);
           }}
@@ -54,16 +73,15 @@ const Menu = ({ id }: { id?: string | string[] }) => {
 const Wordbook = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
 ) => {
-  const wordbookQuery = useWordbook(props.id);
-  const like = useLikes();
-  const user = trpc.user.credentials.useQuery();
+  const wordbookQuery = trpc.words.getWordbook.useQuery({ id: props.id! });
+  const likesQuery = trpc.words.getLikes.useQuery();
   const scrollListRef = useRef<HTMLDivElement>(null);
   const [modal, setModal] = useToggle(false);
   const [editWordbookModal, setEditWordbookModal] = useToggle(false);
   const [virtualListSize, setVirtualListSize] = useState<null | number>(null);
   const [words, dispatch] = useWordReducer();
+
   useEffect(() => {
-    console.log("fire");
     if (wordbookQuery.data?.words) {
       dispatch({
         type: "setWords",
@@ -75,7 +93,11 @@ const Wordbook = (
   }, [wordbookQuery.isSuccess, wordbookQuery.dataUpdatedAt]);
 
   if (wordbookQuery.isLoading) return <Loading />;
-  if (wordbookQuery.isError) return <Error />;
+  if (wordbookQuery.isError) {
+    if (wordbookQuery.error.data?.code == "UNAUTHORIZED")
+      return <UnauthorizedError />;
+    return <Error />;
+  }
   if (wordbookQuery.data && words.words)
     return (
       <>
@@ -83,16 +105,19 @@ const Wordbook = (
           <title>{wordbookQuery.data.name} </title>
         </Head>
         {modal && (
-          <AddWordsModal handleClose={() => setModal()} id={props.id} />
+          <AddWordsModal
+            handleClose={() => setModal()}
+            id={props.id!.toString()}
+          />
         )}
         {editWordbookModal && (
           <EditWordbookModal
             handleClose={() => setEditWordbookModal(false)}
-            id={props.id}
+            id={props.id!.toString()}
           />
         )}
         <WordbookCtxProvider>
-          <Menu id={props.id} />
+          {createPortal(<Menu id={props.id!.toString()} />, document.body)}
           <div
             className={`flex-1 px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 `}
             ref={scrollListRef}
@@ -114,13 +139,13 @@ const Wordbook = (
                   count: wordbookQuery.data.words.length ?? 0,
                   description: wordbookQuery.data.description,
                 }}
-                isOwner={wordbookQuery.data.userId === user.data?.id}
+                isOwner={wordbookQuery.data.isOwned}
               />
               <ListBar
                 onSort={(title) => {
                   dispatch({
                     type: "sort",
-                    words: [...wordbookQuery.data.words],
+                    words: [...(wordbookQuery.data?.words ?? [])],
                     sortTitle: title,
                   });
                 }}
@@ -128,20 +153,20 @@ const Wordbook = (
                   dispatch({
                     type: "search",
                     searchQuery: "",
-                    words: [...wordbookQuery.data.words],
+                    words: [...(wordbookQuery.data?.words ?? [])],
                   });
                 }}
                 onSearch={(event) =>
                   dispatch({
                     type: "search",
                     searchQuery: event.target.value,
-                    words: [...wordbookQuery.data.words],
+                    words: [...(wordbookQuery.data?.words ?? [])],
                   })
                 }
                 words={words}
               />
               <WordList
-                likes={like.data}
+                likes={likesQuery.data}
                 words={words.words}
                 scrollListRef={scrollListRef}
                 totalSize={(total) => setVirtualListSize(total)}

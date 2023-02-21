@@ -5,6 +5,7 @@ import { TmdbShowSeason, TmdbSearchShow, TmdbSeasonEpisode } from "./tmdb-api";
 
 type ReqestBody = {
   language?: string;
+  password: string;
 };
 type MyLibrary = {
   src: string;
@@ -50,7 +51,7 @@ export default async function handler(
 ) {
   if (req.method == "POST") {
     const body = req.body as ReqestBody;
-    if (req.socket.remoteAddress !== "::ffff:127.0.0.1") {
+    if (process.env.PASSWORD === body.password) {
       res.status(403).send("Forbidden");
       return;
     }

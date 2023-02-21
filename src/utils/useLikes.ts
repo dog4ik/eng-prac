@@ -1,78 +1,63 @@
-import {
-  QueryClient,
-  Updater,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import authApi from "./authApi";
-import { useUser } from "./useUser";
-import { Word } from "./useWordbook";
-const fetchLikes = async (): Promise<Word[]> => {
-  return (await authApi.get("/wordbooks/words/likes")).data;
-};
-const useLikes = () => {
-  const queryClient = useQueryClient();
-  const userdata = useUser();
-  if (userdata.isError) queryClient.setQueryData(["get-likes"], null);
+import { useNotifications } from "../components/context/NotificationCtx";
+import { trpc } from "./trpc";
 
-  return useQuery(["get-likes"], () => fetchLikes(), {
-    refetchOnWindowFocus: false,
-    enabled: userdata.isSuccess,
+const useLikeMutaton = () => {
+  const queryClient = trpc.useContext();
+  const notificator = useNotifications();
+
+  return trpc.words.like.useMutation({
+    async onMutate(variable) {
+      await queryClient.words.getLikes.cancel();
+      const snapShot = queryClient.words.getLikes.getData();
+      queryClient.words.getLikes.setData(undefined, (old) => {
+        return [
+          ...(old ?? []),
+          ...variable.map((item) => ({
+            eng: item.eng,
+            rus: item.rus ?? "",
+            createdAt: new Date(),
+            id: "I shouldn't exist and I need to be invalidated",
+          })),
+        ];
+      });
+      return { snapShot };
+    },
+    async onError(err, _, context) {
+      queryClient.words.getLikes.setData(undefined, context?.snapShot);
+      if (err.data?.code == "UNAUTHORIZED")
+        notificator({ type: "error", message: "Login to like words" });
+      else notificator({ type: "error", message: "Failed to like word" });
+    },
+    async onSettled() {
+      queryClient.words.getLikes.invalidate();
+    },
   });
 };
-const useLikeMutaton = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation(
-    async (word: { eng?: string; rus?: string }) => {
-      return await authApi.post("/wordbooks/words/likes", word);
-    },
-    {
-      async onMutate(variable) {
-        await queryClient.cancelQueries(["get-likes"]);
-        const snapShot = await queryClient.getQueryData(["get-likes"]);
-        queryClient.setQueryData<Word[]>(["get-likes"], (old: any) => [
-          ...old,
-          { eng: variable.eng, rus: variable.rus, date: Date.now() },
-        ]);
-        return { snapShot };
-      },
-      async onError(err, newlike, context) {
-        queryClient.setQueryData(["get-likes"], context?.snapShot);
-        console.log("like Error");
-      },
-      async onSettled() {
-        // queryClient.invalidateQueries(["get-likes"]);
-      },
-    }
-  );
-};
 const useUnLikeMutation = () => {
-  const queryClient = useQueryClient();
+  const queryClient = trpc.useContext();
+  const notificator = useNotifications();
 
-  return useMutation(
-    (word: { eng?: string }) => {
-      return authApi.delete("/wordbooks/words/likes", { data: word });
+  return trpc.words.unLike.useMutation({
+    async onMutate(variables) {
+      queryClient.words.getLikes.cancel();
+      const snapShot = queryClient.words.getLikes.getData();
+      queryClient.words.getLikes.setData(undefined, (old) =>
+        old?.filter(
+          (item) => !variables.map((item) => item.eng).includes(item.eng)
+        )
+      );
+      return { snapShot };
     },
-    {
-      async onMutate(variables) {
-        await queryClient.cancelQueries(["get-likes"]);
-        const snapShot = await queryClient.getQueryData(["get-likes"]);
-        queryClient.setQueryData<Word[]>(["get-likes"], (old) =>
-          old?.filter((item) => item.eng != variables.eng)
-        );
-        return { snapShot };
-      },
-      onError(err, newlike, context) {
-        queryClient.setQueryData(["get-likes"], context?.snapShot);
-        console.log("unlike Error");
-      },
-      async onSettled() {
-        // await queryClient.invalidateQueries(["get-likes"]);
-      },
-    }
-  );
+    onError(err, _, context) {
+      queryClient.words.getLikes.setData(undefined, context?.snapShot);
+      if (err.data?.code == "UNAUTHORIZED")
+        notificator({ type: "error", message: "Login to like words" });
+      else notificator({ type: "error", message: "Failed to unlike" });
+    },
+    async onSettled() {
+      //queryClient.words.getLikes.invalidate();
+    },
+  });
 };
 
-export { useLikes, fetchLikes, useLikeMutaton, useUnLikeMutation };
+export { useLikeMutaton, useUnLikeMutation };

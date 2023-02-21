@@ -8,18 +8,17 @@ import {
   FiMenu,
 } from "react-icons/fi";
 import usePopout from "../utils/usePopout";
-import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import SideBar from "./SideBar";
 import useToggle from "../utils/useToggle";
 import { trpc } from "../utils/trpc";
 const Popout = () => {
-  const queryClient = useQueryClient();
+  const queryClient = trpc.useContext();
   const router = useRouter();
   const handleLogout = async () => {
-    const keys = trpc.user.credentials.getQueryKey();
-    queryClient.removeQueries(keys);
-    queryClient.invalidateQueries(["userdata", "get-likes"]);
+    queryClient.user.credentials.reset();
+    queryClient.user.credentials.invalidate();
+    queryClient.words.getLikes.invalidate();
     if (typeof window != "undefined") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
@@ -92,7 +91,10 @@ const UserGreeting = ({ email }: { email: string }) => {
   );
 };
 const Navbar = () => {
-  const user = trpc.user.credentials.useQuery();
+  const user = trpc.user.credentials.useQuery(undefined, {
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
   const [isExpanded, setIsExpanded] = useToggle(false);
   return (
     <>

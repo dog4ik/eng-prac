@@ -6,7 +6,7 @@ export const historyRouter = router({
   updateHistory: protectedProcedure
     .input(
       z.object({
-        episodeId: z.string(),
+        episodeId: z.string().max(50),
         time: z.number(),
         isFinished: z.boolean(),
       })
@@ -37,7 +37,7 @@ export const historyRouter = router({
   }),
 
   deleteHistoryItem: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string().max(50) }))
     .mutation(async ({ ctx, input }) => {
       const count = await prisma.watchHisory.deleteMany({
         where: { id: input.id, userId: ctx.userId },
@@ -46,7 +46,7 @@ export const historyRouter = router({
     }),
 
   markWatched: protectedProcedure
-    .input(z.object({ episodeId: z.string(), isWatched: z.boolean() }))
+    .input(z.object({ episodeId: z.string().max(50), isWatched: z.boolean() }))
     .mutation(async ({ ctx, input }) => {
       const item = await prisma.watchHisory.findFirst({
         where: { userId: ctx.userId, episodeId: input.episodeId },

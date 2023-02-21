@@ -1,31 +1,5 @@
-import type { NextPage } from "next";
-import Image from "next/image";
-import Papa from "papaparse";
-import {
-  ReactElement,
-  Ref,
-  RefObject,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import Layout from "../components/Layout";
 import Title from "../components/Title";
-import { useAllWordbooks } from "../utils/useAllWordbooks";
-import { useUser } from "../utils/useUser";
-import { Book } from "../utils/useWordbook";
-const Card = ({ name, words }: Book) => {
-  return (
-    <div className=" flex w-60 cursor-pointer flex-col items-center rounded-lg bg-neutral-700">
-      <p>{name}</p>
-    </div>
-  );
-};
 const Home = () => {
-  const user = useUser();
-  const wordbooks = useAllWordbooks();
   return (
     <>
       <Title title="Home" />

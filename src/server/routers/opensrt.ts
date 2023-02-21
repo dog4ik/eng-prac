@@ -1,4 +1,4 @@
-import { number, string, z } from "zod";
+import { z } from "zod";
 import axios from "axios";
 import { router, procedure } from "../trpc";
 type opensrtSearchResponse = {

@@ -16,7 +16,7 @@ type WrapperProps = {
   getChildCount?: (count: number) => void;
 };
 type RowProps = {
-  onClick: (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => void;
+  onClick?: (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => void;
   title: string;
 };
 type ExpandedRowProps = {
@@ -27,9 +27,9 @@ export const ExpandedRow = ({ title, children }: ExpandedRowProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [childCount, setChildCount] = useState(0);
+  let timeout = useRef<NodeJS.Timeout>();
   const expandedRowRef = useRef<HTMLLIElement>(null);
   useLayoutEffect(() => {
-    console.log(childCount);
     if (expandedRowRef.current) {
       const { x, y } = expandedRowRef.current.getBoundingClientRect();
       let translateX: number = 0;
@@ -40,11 +40,23 @@ export const ExpandedRow = ({ title, children }: ExpandedRowProps) => {
       setTranslate({ x: translateX, y: translateY });
     }
   }, [expandedRowRef.current, childCount]);
+  useEffect(() => {
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current);
+    };
+  }, []);
   return (
     <li
       className="relative flex h-10 cursor-pointer items-center justify-between rounded-md pl-2 hover:bg-neutral-700"
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
+      onMouseEnter={() => {
+        clearTimeout(timeout.current);
+        setIsExpanded(true);
+      }}
+      onMouseLeave={() => {
+        timeout.current = setTimeout(() => {
+          setIsExpanded(false);
+        }, 200);
+      }}
       ref={expandedRowRef}
     >
       <span className="pointer-events-none text-white">{title}</span>

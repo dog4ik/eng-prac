@@ -9,26 +9,22 @@ export const usersRouter = router({
   create: procedure
     .input(
       z.object({
-        email: z.string().email(),
+        email: z.string().email().max(100),
         password: z.string().min(8).max(40),
       })
     )
     .mutation(async ({ input }) => {
       const passwordHash = await bcrypt.hash(input.password, 10);
-      const user = await prisma.user
-        .create({
-          data: {
-            email: input.email,
-            password: passwordHash,
-          },
-        })
-        .catch(() => {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        });
+      const user = await prisma.user.create({
+        data: {
+          email: input.email,
+          password: passwordHash,
+        },
+      });
       const access_token = jwt.sign(
         { id: user!.id },
         process.env.ACCESS_TOKEN_SECRET!,
-        { expiresIn: "20s" }
+        { expiresIn: "30m" }
       );
       const refresh_token = jwt.sign(
         { id: user!.id },
@@ -38,20 +34,16 @@ export const usersRouter = router({
     }),
 
   credentials: protectedProcedure.query(async ({ ctx }) => {
-    const user = await prisma.user
-      .findUnique({
-        where: { id: ctx.userId },
-        select: {
-          email: true,
-          name: true,
-          id: true,
-          notifications: true,
-          role: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      });
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId },
+      select: {
+        email: true,
+        name: true,
+        id: true,
+        notifications: true,
+        role: true,
+      },
+    });
     if (user === null) throw new TRPCError({ code: "NOT_FOUND" });
     return user;
   }),
@@ -59,7 +51,7 @@ export const usersRouter = router({
   login: procedure
     .input(
       z.object({
-        email: z.string().email(),
+        email: z.string().email().max(100),
         password: z.string().min(8).max(40),
       })
     )
@@ -77,7 +69,7 @@ export const usersRouter = router({
           const access_token = jwt.sign(
             { id: user.id },
             process.env.ACCESS_TOKEN_SECRET!,
-            { expiresIn: "20s" }
+            { expiresIn: "30m" }
           );
           const refresh_token = jwt.sign(
             { id: user!.id },

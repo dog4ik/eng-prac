@@ -17,13 +17,13 @@ const getAccess_token = () => {
 const authApi = axios.create(
   getAccess_token()
     ? {
-        baseURL: process.env.NEXT_PUBLIC_API_LINK,
+        baseURL: "/api",
         headers: {
           Authorization: "Bearer " + getAccess_token(),
         },
       }
     : {
-        baseURL: process.env.NEXT_PUBLIC_API_LINK,
+        baseURL: "/api",
       }
 );
 

@@ -1,21 +1,16 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import srtParser from "../utils/srtParser";
+import { trpc } from "../utils/trpc";
 import useClose from "../utils/useClose";
-import { useLikeMutaton, useLikes } from "../utils/useLikes";
+import { useLikeMutaton } from "../utils/useLikes";
 import useToggle from "../utils/useToggle";
 type Props = {
   time: number;
   videoRef: React.RefObject<HTMLVideoElement>;
   isPaused: boolean;
   subSrc: string | null;
-};
-type SubsType = {
-  id: number;
-  startTime: number;
-  endTime: number;
-  text: string;
 };
 const TranslateModal = ({
   word,
@@ -47,7 +42,7 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
   const [selectedWord, setSelectedWord] = useState<string>();
   const [isTranslateOpen, setIsTranslateOpen] = useToggle(false);
   const likeMutation = useLikeMutaton();
-  const likes = useLikes();
+  const likes = trpc.words.getLikes.useQuery();
   const subsQuery = useQuery<
     {
       id: number;
@@ -104,7 +99,9 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
               }}
               onContextMenu={(e) => {
                 e.preventDefault();
-                likeMutation.mutate({ eng: word.replace(/\W+\B/g, "").trim() });
+                likeMutation.mutate([
+                  { eng: word.replace(/\W+\B/g, "").trim() },
+                ]);
               }}
             >
               {word}

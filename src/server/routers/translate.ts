@@ -56,7 +56,7 @@ async function handleYandexToken(err: AxiosError) {
 
 export const translateRouter = router({
   autocomplete: procedure
-    .input(z.object({ text: z.string().max(30) }))
+    .input(z.object({ text: z.string().max(50) }))
     .mutation(async ({ input }) => {
       if (input.text.trim() == "") {
         return [];
@@ -73,7 +73,7 @@ export const translateRouter = router({
     }),
 
   dictionary: procedure
-    .input(z.object({ text: z.string().max(30) }))
+    .input(z.object({ text: z.string().max(50) }))
     .mutation(async ({ input }) => {
       if (input.text.trim() == "" || input.text.split(" ").length > 1) {
         return [];
@@ -107,7 +107,6 @@ export const translateRouter = router({
       const translate_token = await prisma.helper
         .findFirst()
         .catch((e) => console.log(e));
-
       const response = await axios
         .post<TranslateApi>(
           "https://translate.api.cloud.yandex.net/translate/v2/translate",
@@ -162,8 +161,6 @@ export const translateRouter = router({
           }
         )
         .then((data) => {
-          console.log(data.data);
-
           return data.data;
         })
         .catch(async (err) => {
@@ -176,6 +173,6 @@ export const translateRouter = router({
             });
           }
         });
-      return voice;
+      return new Uint8Array(voice);
     }),
 });

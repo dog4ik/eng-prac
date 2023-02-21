@@ -6,6 +6,7 @@ import { router } from "./trpc";
 import { usersRouter } from "./routers/users";
 import { wordleRouter } from "./routers/wordle";
 import { historyRouter } from "./routers/history";
+import { wordsRouter } from "./routers/words";
 
 export const appRouter = router({
   test: testRouter,
@@ -15,6 +16,7 @@ export const appRouter = router({
   user: usersRouter,
   wordle: wordleRouter,
   history: historyRouter,
+  words: wordsRouter,
 });
 
 export type AppRouter = typeof appRouter;

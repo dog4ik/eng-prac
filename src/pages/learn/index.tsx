@@ -1,15 +1,11 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { FiPlay, FiPlayCircle, FiX } from "react-icons/fi";
+import React, { useMemo, useState } from "react";
+import { FiPlay } from "react-icons/fi";
 import TestModal from "../../components/modals/TestModal";
 import Title from "../../components/Title";
 import Loading from "../../components/ui/Loading";
-import { useAllWordbooks } from "../../utils/useAllWordbooks";
+import { trpc } from "../../utils/trpc";
 import useGridCols from "../../utils/useGrid";
-import { useLikes } from "../../utils/useLikes";
 import useToggle from "../../utils/useToggle";
-import { useWordbook } from "../../utils/useWordbook";
 type CardProps = {
   name: string;
   wordsCount: number;
@@ -63,8 +59,8 @@ const Test = ({ name, wordsCount, liked, id, setId }: CardProps) => {
 };
 
 const Learning = () => {
-  const wordbooks = useAllWordbooks();
-  const likes = useLikes();
+  const wordbooks = trpc.words.getAllWordbooks.useQuery();
+  const likes = trpc.words.getLikes.useQuery();
   const ITEM_WIDTH = 260;
   const cols = useGridCols(ITEM_WIDTH);
   const [modalId, setModalId] = useState<string>();
@@ -97,16 +93,8 @@ const Learning = () => {
                 }}
                 id={wordbook.id}
                 name={wordbook.name}
-                wordsCount={wordbook.words.length}
-                liked={wordbook.words?.reduce((sum, word) => {
-                  if (
-                    likes.data!.findIndex((item) => {
-                      return item.eng == word.eng;
-                    }) != -1
-                  )
-                    sum = sum + 1;
-                  return sum;
-                }, 0)}
+                wordsCount={wordbook._count.words}
+                liked={wordbook.likesCount}
               />
             ))}
           </div>

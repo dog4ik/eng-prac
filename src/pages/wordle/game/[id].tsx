@@ -159,6 +159,7 @@ const Wordle = (
   const [currentRow, setCurrentRow] = useState<number>(0);
   const [tries, setTries] = useState<string[]>([]);
   const [wordleModal, setWordleModal] = useToggle(false);
+  const queryClient = trpc.useContext();
   const wordleQuery = trpc.wordle.getGame.useQuery(
     { id: props.id!.toString() },
     {

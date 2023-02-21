@@ -5,8 +5,6 @@ type Props = {
   children: ReactNode;
 };
 const Layout = ({ children }: Props) => {
-  // const user = useUser();
-  // if (user.isLoading) return <div></div>;
   return (
     <>
       <div className="flex max-h-screen min-h-screen flex-col overflow-hidden bg-neutral-800 text-white">
