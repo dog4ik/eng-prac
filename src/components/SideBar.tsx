@@ -13,21 +13,17 @@ import {
 
 const MenuIcon = ({
   children,
-  isExpanded,
   href,
   title,
 }: {
   children: ReactNode;
-  isExpanded: boolean;
   href: string;
   title?: string;
 }) => {
   return (
     <Link
       href={href}
-      className={`flex ${
-        isExpanded ? "flex-row px-4" : "flex-col "
-      } cursor-pointer items-center gap-1 py-4 hover:bg-neutral-500`}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl py-3 hover:bg-neutral-700`}
     >
       {children}
       <span className="text-sm">{title}</span>
@@ -36,42 +32,34 @@ const MenuIcon = ({
 };
 const SideBar = ({ isExpanded }: { isExpanded: boolean }) => {
   return (
-    <div className="fixed top-0 left-0 z-40 mt-20 hidden h-screen items-start bg-neutral-700 md:flex">
+    <div className="fixed top-0 left-0 z-40 mt-20 hidden h-screen items-start md:flex">
       <div
-        className={`flex flex-col justify-center  ${
+        className={`flex w-16 flex-col justify-center  ${
           isExpanded ? "w-40" : "w-16"
         }`}
       >
-        <MenuIcon href={"/"} title="Home" isExpanded={isExpanded}>
+        <MenuIcon href={"/"} title="Home">
           <FiHome size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-
-        <MenuIcon
-          href={"/wordbooks/liked"}
-          title="Likes"
-          isExpanded={isExpanded}
-        >
+        <MenuIcon href={"/wordbooks/liked"} title="Likes">
           <FiHeart size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-
-        <MenuIcon href={"/wordbooks"} title="Books" isExpanded={isExpanded}>
+        <MenuIcon href={"/wordbooks"} title="Books">
           <FiBook size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-
-        <MenuIcon href={"/learn"} title="Tests" isExpanded={isExpanded}>
+        <MenuIcon href={"/learn"} title="Tests">
           <FiCheck size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-
-        <MenuIcon href={"/translate"} title="Translate" isExpanded={isExpanded}>
+        <MenuIcon href={"/translate"} title="Translate">
           <FiGlobe size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-        <MenuIcon href={"/wordle"} title="Wordle" isExpanded={isExpanded}>
+        <MenuIcon href={"/wordle"} title="Wordle">
           <FiBold size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-        <MenuIcon href={"/theater"} title="Theater" isExpanded={isExpanded}>
+        <MenuIcon href={"/theater"} title="Theater">
           <FiTv size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
-        <MenuIcon href={"/history"} title="History" isExpanded={isExpanded}>
+        <MenuIcon href={"/history"} title="History">
           <FiClock size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>
       </div>
