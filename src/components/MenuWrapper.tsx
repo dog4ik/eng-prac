@@ -96,6 +96,9 @@ export const MenuWrapper = ({
   callerRef,
   onClose,
 }: WrapperProps) => {
+  if (typeof window != undefined) {
+    if (window.innerWidth < 640) return null;
+  }
   const [anchorPoint, setAnchorPoint] = useState({
     x,
     y,

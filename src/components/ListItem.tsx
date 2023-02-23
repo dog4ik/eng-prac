@@ -51,15 +51,15 @@ const ListItem = ({
       }`}
     >
       <div className="flex w-1/12 items-center">
-        <p className="truncate text-2xl">{index}</p>
+        <p className="truncate sm:text-2xl">{index}</p>
       </div>
-      <div title={rus} className="flex w-4/12 items-center">
-        <p className="truncate text-2xl">{rus}</p>
+      <div title={rus} className="flex w-5/12 items-center sm:w-4/12">
+        <p className="truncate sm:text-2xl">{rus}</p>
       </div>
-      <div title={eng} className="flex w-4/12 items-center">
-        <p className="truncate text-2xl">{eng}</p>
+      <div title={eng} className="flex w-5/12 items-center sm:w-4/12">
+        <p className="truncate sm:text-2xl">{eng}</p>
       </div>
-      <div className="flex w-2/12 items-center">
+      <div className="hidden w-2/12 items-center sm:flex">
         <p className="truncate text-2xl">{date}</p>
       </div>
       <div className="flex w-1/12 items-center justify-end gap-5">

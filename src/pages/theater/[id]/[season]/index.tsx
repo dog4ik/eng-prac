@@ -54,10 +54,38 @@ const EpisodeCard = ({
   const menuButtonRef = useRef<HTMLDivElement>(null);
   return (
     <>
-      <div className="group">
+      {showModal &&
+        createPortal(
+          <MenuWrapper
+            callerRef={menuButtonRef}
+            x={menuButtonRef.current?.getBoundingClientRect().right}
+            y={menuButtonRef.current?.getBoundingClientRect().bottom}
+            onClose={() => setShowModal(false)}
+          >
+            {isFinished ? (
+              <MenuRow
+                title="Mark as unwatched"
+                onClick={() => {
+                  setShowModal(false);
+                  onMarkWatched(false);
+                }}
+              />
+            ) : (
+              <MenuRow
+                title="Mark as watched"
+                onClick={() => {
+                  setShowModal(false);
+                  onMarkWatched(true);
+                }}
+              />
+            )}
+          </MenuWrapper>,
+          document.body
+        )}
+      <div className="group w-64 sm:w-80">
         <Link
           href={href}
-          className="max-xs relative flex aspect-video w-80 cursor-pointer items-end justify-center overflow-hidden rounded-xl bg-neutral-500 duration-200 hover:scale-105"
+          className="relative flex aspect-video cursor-pointer items-end justify-center overflow-hidden rounded-xl bg-neutral-500 duration-200 sm:hover:scale-105"
         >
           <Image
             draggable={false}
@@ -106,13 +134,9 @@ const EpisodeCard = ({
         </Link>
         <div className="flex items-center">
           <div className="flex w-full flex-col gap-1 py-3">
-            <div>
-              <Link href={href}>
-                <p className="max-w-xs truncate text-lg" title={title}>
-                  {title}
-                </p>
-              </Link>
-            </div>
+            <Link title={title} className="truncate text-lg" href={href}>
+              {title}
+            </Link>
             <div>
               <Link
                 href={href}
@@ -125,38 +149,10 @@ const EpisodeCard = ({
           <div
             ref={menuButtonRef}
             onClick={() => setShowModal()}
-            className={`cursor-pointer rounded-full p-2 ${
+            className={`hidden cursor-pointer rounded-full p-2 sm:block ${
               showModal ? "opacity-100" : "opacity-0"
             } transition-all duration-100 group-hover:opacity-100 hover:bg-neutral-700`}
           >
-            {showModal &&
-              createPortal(
-                <MenuWrapper
-                  callerRef={menuButtonRef}
-                  x={menuButtonRef.current?.getBoundingClientRect().right}
-                  y={menuButtonRef.current?.getBoundingClientRect().bottom}
-                  onClose={() => setShowModal(false)}
-                >
-                  {isFinished ? (
-                    <MenuRow
-                      title="Mark as unwatched"
-                      onClick={() => {
-                        setShowModal(false);
-                        onMarkWatched(false);
-                      }}
-                    />
-                  ) : (
-                    <MenuRow
-                      title="Mark as watched"
-                      onClick={() => {
-                        setShowModal(false);
-                        onMarkWatched(true);
-                      }}
-                    />
-                  )}
-                </MenuWrapper>,
-                document.body
-              )}
             <FiMoreVertical size={20} />
           </div>
         </div>

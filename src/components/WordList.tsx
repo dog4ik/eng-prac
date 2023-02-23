@@ -23,7 +23,7 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
     count: words?.length ?? 0,
     getScrollElement: () => scrollListRef.current,
     estimateSize: () => 64,
-    paddingStart: 300,
+    paddingStart: window.innerWidth < 640 ? 420 : 300,
     overscan: 10,
   });
   const delikeMutation = useUnLikeMutation();

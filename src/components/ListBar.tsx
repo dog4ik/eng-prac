@@ -89,7 +89,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
       <div className="flex w-1/12 items-center">
         <p className="text-md font-extrabold">#</p>
       </div>
-      <div className="flex w-4/12 items-center">
+      <div className="flex w-5/12 items-center sm:w-4/12">
         <div
           onClick={() => onSort("rus")}
           className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
@@ -118,7 +118,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
           />
         </div>
       </div>
-      <div className="flex w-4/12 items-center">
+      <div className="flex w-5/12 items-center sm:w-4/12">
         <div
           onClick={() => onSort("eng")}
           className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
@@ -147,7 +147,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
           />
         </div>
       </div>
-      <div className="flex w-2/12 items-center">
+      <div className="hidden w-2/12 items-center sm:flex">
         <div
           onClick={() => onSort("createdAt")}
           className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${

@@ -56,7 +56,7 @@ const Notififcation = ({
     >
       <p
         title={message}
-        className="break-all px-2 text-lg font-semibold text-white"
+        className="break-all px-2 font-semibold text-white sm:text-lg"
       >
         {message}
       </p>
