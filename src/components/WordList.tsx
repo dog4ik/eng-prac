@@ -23,7 +23,7 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
     count: words?.length ?? 0,
     getScrollElement: () => scrollListRef.current,
     estimateSize: () => 64,
-    paddingStart: 300,
+    paddingStart: window.innerWidth < 640 ? 420 : 300,
     overscan: 10,
   });
   const delikeMutation = useUnLikeMutation();
@@ -82,7 +82,12 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
       : setSelectedWords([word]);
   };
   return (
-    <div ref={itemsRef} tabIndex={0} onContextMenu={(e) => handleMenu(e)}>
+    <div
+      className="divide-y divide-neutral-600 sm:divide-y-0"
+      ref={itemsRef}
+      tabIndex={0}
+      onContextMenu={(e) => handleMenu(e)}
+    >
       {rowVirtualizer.getVirtualItems().map((item) => {
         const word = words![item.index];
         return (

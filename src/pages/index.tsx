@@ -16,7 +16,7 @@ const ShowCard = ({ season, href, imgUrl, blurData }: ShowCardProps) => {
   return (
     <Link
       href={href}
-      className="flex h-96 w-60 shrink-0 snap-center flex-col items-center gap-3 rounded-xl bg-neutral-700 p-1 duration-200 hover:scale-105"
+      className="flex h-52 w-32 shrink-0 snap-center flex-col items-center gap-3 rounded-xl bg-neutral-700 p-1 duration-200 hover:scale-105 sm:h-96 sm:w-60"
     >
       <div className="relative aspect-video w-full flex-1">
         <Image
@@ -29,7 +29,7 @@ const ShowCard = ({ season, href, imgUrl, blurData }: ShowCardProps) => {
         />
       </div>
       <div>
-        <span className="text-xl">{`Season ${season}`}</span>
+        <span className="text-lg sm:text-xl">{`Season ${season}`}</span>
       </div>
     </Link>
   );
@@ -44,7 +44,7 @@ const Home = () => {
       <div className="relative h-full w-full flex-1 overflow-hidden p-2 dark:text-white">
         <div className="absolute top-0 left-0 w-full animate-blob bg-purple-600 blur-3xl"></div>
         <div className="w-full py-2">
-          <span className="text-4xl">Shows for you</span>
+          <span className="text-xl sm:text-4xl">Shows for you</span>
         </div>
         <div className="flex h-full w-full snap-x gap-5 overflow-auto rounded-xl py-5">
           {randSeasons.data?.map((season) => (

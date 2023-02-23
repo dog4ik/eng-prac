@@ -148,11 +148,11 @@ const Translate = (
       <Head>
         <title>Translate</title>
       </Head>
-      <div className="flex flex-1 flex-col items-center gap-5">
+      <div className="mt-5 flex flex-1 flex-col items-center gap-5">
         <div className="flex w-full items-center justify-center">
-          <div className="flex w-2/3 justify-center rounded-xl border bg-white px-5 py-2 text-black">
-            <div className="relative w-1/2">
-              <div className=" flex h-32 border-r-2">
+          <div className="flex flex-col justify-center divide-y-2 rounded-xl border bg-white px-5 py-2 text-black md:w-2/3 md:flex-row md:divide-y-0 md:divide-x-2">
+            <div className="relative md:w-1/2">
+              <div className="flex md:h-32">
                 <textarea
                   value={searchTerm}
                   onChange={(e) => {
@@ -182,7 +182,7 @@ const Translate = (
                 />
               )}
             </div>
-            <div className="w-1/2">
+            <div className="md:w-1/2">
               <div className="flex h-full w-full bg-white outline-none ">
                 <div className="flex-1">
                   <span className="break-all">
@@ -221,7 +221,7 @@ const Translate = (
             </div>
           </div>
         </div>
-        <div className="flex h-60 w-2/3 flex-wrap overflow-y-auto rounded-xl bg-white">
+        <div className="flex h-60 w-full flex-wrap overflow-y-auto rounded-xl bg-white md:w-2/3">
           {dictionaryMutation.isLoading ? (
             <p className="text-balack">Loading..</p>
           ) : (

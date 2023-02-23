@@ -30,14 +30,10 @@ const MenuIcon = ({
     </Link>
   );
 };
-const SideBar = ({ isExpanded }: { isExpanded: boolean }) => {
+const SideBar = () => {
   return (
-    <div className="fixed top-0 left-0 z-40 mt-20 hidden h-screen items-start md:flex">
-      <div
-        className={`flex w-16 flex-col justify-center  ${
-          isExpanded ? "w-40" : "w-16"
-        }`}
-      >
+    <div className="fixed top-0 left-0 z-20 mt-20 hidden h-screen items-start md:flex">
+      <div className="flex w-16 flex-col justify-center">
         <MenuIcon href={"/"} title="Home">
           <FiHome size={25} className="stroke-2 group-hover:fill-white" />
         </MenuIcon>

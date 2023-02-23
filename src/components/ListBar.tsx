@@ -86,10 +86,10 @@ const SearchField = ({
 const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
   return (
     <div className="sticky top-0 z-10 flex h-16 w-full select-none border-b border-neutral-600 bg-neutral-800/95 px-2">
-      <div className="flex w-1/12 items-center">
+      <div className="hidden items-center sm:flex sm:w-1/12">
         <p className="text-md font-extrabold">#</p>
       </div>
-      <div className="flex w-4/12 items-center">
+      <div className="flex w-5/12 items-center sm:w-4/12">
         <div
           onClick={() => onSort("rus")}
           className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
@@ -118,7 +118,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
           />
         </div>
       </div>
-      <div className="flex w-4/12 items-center">
+      <div className="flex w-5/12 items-center sm:w-4/12">
         <div
           onClick={() => onSort("eng")}
           className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
@@ -147,7 +147,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
           />
         </div>
       </div>
-      <div className="flex w-2/12 items-center">
+      <div className="hidden w-2/12 items-center sm:flex">
         <div
           onClick={() => onSort("createdAt")}
           className={`flex cursor-pointer items-center gap-2 rounded-full p-1 transition-all duration-300 ${
@@ -177,7 +177,7 @@ const ListBar = ({ onSort, onClearSearch, onSearch, words }: ListBarProps) => {
           />
         </div>
       </div>
-      <div className="flex w-1/12 items-center justify-end gap-5">
+      <div className="flex w-2/12 items-center justify-end gap-5 sm:w-1/12">
         <SearchField onClear={onClearSearch} onChange={onSearch} />
       </div>
     </div>

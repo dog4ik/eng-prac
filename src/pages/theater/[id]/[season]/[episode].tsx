@@ -59,7 +59,7 @@ const SideBarEpisode = ({ episode, href, isCurrent }: SideBarType) => {
       }`}
       ref={itemRef}
     >
-      <div className="relative flex h-full w-1/2 items-center overflow-hidden rounded-lg xl:w-full">
+      <div className="relative flex h-full items-center overflow-hidden rounded-lg md:w-1/2 xl:w-full">
         <Image
           src={episode.poster ?? "PLACEHOLDER"}
           placeholder={episode.blurData ? "blur" : "empty"}

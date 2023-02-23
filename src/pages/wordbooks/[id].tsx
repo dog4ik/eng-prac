@@ -119,7 +119,7 @@ const Wordbook = (
         <WordbookCtxProvider>
           {createPortal(<Menu id={props.id!.toString()} />, document.body)}
           <div
-            className={`flex-1 px-5 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl md:px-20 `}
+            className={`flex-1 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl sm:px-5 md:px-20 `}
             ref={scrollListRef}
           >
             <div
