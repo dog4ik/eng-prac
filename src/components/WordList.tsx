@@ -82,7 +82,12 @@ const WordList = ({ scrollListRef, totalSize, likes, words }: ListProps) => {
       : setSelectedWords([word]);
   };
   return (
-    <div ref={itemsRef} tabIndex={0} onContextMenu={(e) => handleMenu(e)}>
+    <div
+      className="divide-y divide-neutral-600 sm:divide-y-0"
+      ref={itemsRef}
+      tabIndex={0}
+      onContextMenu={(e) => handleMenu(e)}
+    >
       {rowVirtualizer.getVirtualItems().map((item) => {
         const word = words![item.index];
         return (
