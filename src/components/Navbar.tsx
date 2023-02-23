@@ -12,17 +12,17 @@ import { useRouter } from "next/router";
 import SideBar from "./SideBar";
 import useToggle from "../utils/useToggle";
 import { trpc } from "../utils/trpc";
+import { useQueryClient } from "@tanstack/react-query";
+import ExpandedSideBar from "./ExpandedSideBar";
 const Popout = () => {
-  const queryClient = trpc.useContext();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const handleLogout = async () => {
-    queryClient.user.credentials.reset();
-    queryClient.user.credentials.invalidate();
-    queryClient.words.getLikes.invalidate();
     if (typeof window != "undefined") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
     }
+    queryClient.clear();
     await router.push("/");
   };
   return (
@@ -47,12 +47,12 @@ const GuestGreeting = () => {
   return (
     <div className="flex h-2/3 animate-fade-in items-center justify-center">
       <Link href={"/signup"}>
-        <button className="rounded-xl px-10 py-2  text-lg text-white/75 transition duration-75 hover:scale-105 hover:font-semibold hover:text-white">
+        <button className="rounded-xl px-5 py-1 text-lg text-white/75 transition duration-75 hover:scale-105 hover:font-semibold hover:text-white sm:py-2 sm:px-10">
           Sign up
         </button>
       </Link>
       <Link href={"/login"}>
-        <button className="rounded-full bg-white px-10 py-2 text-lg text-black transition duration-75 hover:scale-105">
+        <button className="rounded-full bg-white px-5 py-1 text-lg text-black transition duration-75 hover:scale-105 sm:py-2 sm:px-10">
           Login
         </button>
       </Link>
@@ -94,8 +94,9 @@ const Navbar = () => {
   const [isExpanded, setIsExpanded] = useToggle(false);
   return (
     <>
-      <SideBar isExpanded={isExpanded} />
-      <div className="fixed top-0 z-20 hidden h-full max-h-20 w-full flex-1 items-center justify-between gap-5 border-b border-neutral-700 bg-neutral-800 py-5 pr-16 dark:bg-neutral-800 dark:text-white md:flex ">
+      {isExpanded && <ExpandedSideBar handleClose={setIsExpanded} />}
+      <SideBar />
+      <div className="fixed top-0 z-20 flex h-full max-h-20 w-full flex-1 items-center justify-between gap-5 border-b border-neutral-700 bg-neutral-800 py-5 pr-2 dark:bg-neutral-800 dark:text-white sm:pr-16 ">
         <div
           onClick={() => setIsExpanded()}
           className="flex w-16 flex-col items-center justify-center gap-1 rounded-full py-4"
