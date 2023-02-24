@@ -38,7 +38,7 @@ export const getServerSideProps: GetServerSideProps<{
   return { props: { id, season, episode } };
 };
 
-const calcPersent = (first: number, second: number) => {
+const calcPercent = (first: number, second: number) => {
   return (first / second) * 100;
 };
 
@@ -177,7 +177,7 @@ const Theater = (
                 updateHistoryMutation.mutate({
                   time,
                   isFinished:
-                    calcPersent(time, episodeQuery.data?.duration ?? 0) > 95
+                    calcPercent(time, episodeQuery.data?.duration ?? 0) > 95
                       ? true
                       : false,
                   episodeId: episodeQuery.data?.id ?? "",

@@ -46,7 +46,7 @@ const EpisodeCard = ({
   userTime,
   isFinished,
 }: EpisodeCardProps) => {
-  const getPersent = (larger: number, smaller?: number) => {
+  const getPercent = (larger: number, smaller?: number) => {
     if (!smaller) return 0;
     return (smaller / larger) * 100;
   };
@@ -127,7 +127,7 @@ const EpisodeCard = ({
             <div
               className="h-1 bg-white "
               style={{
-                width: `${isFinished ? 100 : getPersent(duration, userTime)}%`,
+                width: `${isFinished ? 100 : getPercent(duration, userTime)}%`,
               }}
             />
           </div>

@@ -22,7 +22,7 @@ type HistoryItemProps = {
   duration: number;
   userTime: number;
 };
-const getPersent = (first: number, second: number) => {
+const getPercent = (first: number, second: number) => {
   return (second / first) * 100;
 };
 const HistoryItem = ({
@@ -61,7 +61,7 @@ const HistoryItem = ({
         <div
           className="absolute bottom-0 right-0 left-0 h-1 bg-white"
           style={{
-            width: `${isFinished ? "100" : getPersent(duration, userTime)}%`,
+            width: `${isFinished ? "100" : getPercent(duration, userTime)}%`,
           }}
         ></div>
       </Link>
