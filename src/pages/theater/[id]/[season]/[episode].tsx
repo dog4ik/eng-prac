@@ -183,7 +183,11 @@ const Theater = (
                   episodeId: episodeQuery.data?.id ?? "",
                 });
               }}
-              initialTime={episodeQuery.data?.history?.time ?? 0}
+              initialTime={
+                episodeQuery.data?.history?.isFinished
+                  ? 0
+                  : episodeQuery.data?.history?.time ?? 0
+              }
               isLoading={episodeQuery.isLoading}
               preventEvents={!videoEvents}
               title={episodeQuery.data?.title ?? ""}
