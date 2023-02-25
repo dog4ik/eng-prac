@@ -12,7 +12,7 @@ const Input = React.forwardRef(
       <div className="relative">
         <input
           ref={ref}
-          className="peer h-14 w-full select-none rounded-lg border-2 border-gray-300 pl-2 text-gray-900 placeholder-transparent focus:outline-none"
+          className="peer h-14 w-full rounded-lg border-2 border-gray-300 pl-2 text-gray-900 placeholder-transparent focus:outline-none"
           placeholder=" "
           {...props}
         />
