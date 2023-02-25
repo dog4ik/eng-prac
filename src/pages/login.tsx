@@ -78,7 +78,7 @@ const Login = () => {
           >
             <Input
               onChange={(e) => {
-                setEmail(e.target.value);
+                setEmail(e.currentTarget.value);
               }}
               value={email}
               style={{
