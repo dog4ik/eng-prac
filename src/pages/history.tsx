@@ -43,7 +43,7 @@ const HistoryItem = ({
     <div className="group flex max-h-64 max-w-5xl rounded-xl">
       <Link
         href={episodeHref.current}
-        className="relative mr-2 aspect-video w-1/3 overflow-hidden rounded-xl duration-200 hover:scale-105"
+        className="relative mr-2 aspect-video w-1/2 overflow-hidden rounded-xl duration-200 sm:w-1/3 sm:hover:scale-105"
       >
         <Image
           className="object-cover"
@@ -65,23 +65,26 @@ const HistoryItem = ({
           }}
         ></div>
       </Link>
-      <Link href={episodeHref.current} className="relative flex w-2/3 flex-col">
-        <div className="block">
-          <span className="w-5/6 truncate whitespace-normal p-1 text-xl font-semibold line-clamp-2">
+      <Link
+        href={episodeHref.current}
+        className="relative flex w-1/2 flex-col sm:w-2/3"
+      >
+        <div>
+          <span className="w-5/6 truncate whitespace-normal p-1 text-sm font-semibold line-clamp-2 sm:text-xl">
             {title}
           </span>
           <div className="flex items-center gap-1 text-neutral-300">
             <Link
               href={`theater/${showId}/${season}/`}
-              className="p-1 duration-100 hover:text-white"
+              className="p-1 duration-100 sm:hover:text-white"
             >
               Season {season}
             </Link>
-            <span>|</span>
-            <span className="p-1">Episode {episode}</span>
+            <span className="hidden sm:inline">|</span>
+            <span className="hidden p-1 sm:inline">Episode {episode}</span>
           </div>
         </div>
-        <div className="block p-1">
+        <div className="hidden p-1 sm:block">
           <p
             title={plot ?? ""}
             className="overflow-hidden overflow-ellipsis whitespace-normal text-neutral-300 line-clamp-2"
@@ -94,7 +97,7 @@ const HistoryItem = ({
             e.preventDefault();
             onDelete();
           }}
-          className="absolute right-0 top-0 flex items-center justify-center rounded-full p-2 opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-neutral-700"
+          className="absolute right-0 top-0 flex items-center justify-center rounded-full p-2 transition-all duration-200 sm:opacity-0 sm:group-hover:opacity-100 sm:hover:bg-neutral-700"
         >
           <FiX size={30} />
         </div>
@@ -161,7 +164,7 @@ const History = () => {
   return (
     <>
       <Title title="History" />
-      <div className="flex h-full w-full flex-col-reverse p-5 md:flex-row">
+      <div className="flex h-full w-full flex-col-reverse  md:flex-row">
         <div className="md:w-2/3">
           <div className="flex items-center gap-1">
             <div className="flex items-center justify-center">
@@ -207,7 +210,7 @@ const History = () => {
           <span className="p-2 text-2xl font-semibold">Options</span>
           <div className="my-4 flex items-center gap-3">
             <button
-              className="flex items-center gap-4 rounded-full p-2 duration-100 hover:bg-neutral-700"
+              className="flex items-center gap-4 rounded-full p-2 duration-100 sm:hover:bg-neutral-700"
               onClick={() => deleteMutation.mutate()}
             >
               <FiTrash size={40} />

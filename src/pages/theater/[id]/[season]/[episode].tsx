@@ -90,11 +90,52 @@ const Theater = (
   const [videoEvents, setVideoEvents] = useToggle(true);
   const [height, setHeight] = useState(0);
   const [nextEp, setNextEp] = useState<NextEpisode>(null);
+  const queryClient = trpc.useContext();
   const containerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     setHeight(containerRef.current?.clientHeight ?? 0);
   }, []);
-  const updateHistoryMutation = trpc.history.updateHistory.useMutation();
+  const updateHistoryMutation = trpc.history.updateHistory.useMutation({
+    async onMutate(variable) {
+      await queryClient.theater.getEpisodes.cancel();
+      const getEpisodesSnapShot = queryClient.theater.getEpisodes.getData();
+      //TODO: missing update on history page
+
+      //Season page update
+      queryClient.theater.getEpisodes.setData(
+        { showId: props.id?.toString()!, number: +props.season! },
+        (old) => {
+          if (old) {
+            const modifiedHistory = old.history.map((item) => {
+              if (item.episodeId != episodeQuery.data?.id) return item;
+              return { ...variable };
+            });
+            return { ...old, history: modifiedHistory };
+          }
+          return old;
+        }
+      );
+      //Self update
+      queryClient.theater.getEpisode.setData(
+        {
+          showId: props.id?.toString()!,
+          episodeNumber: +props.episode!,
+          seasonNumber: +props.season!,
+        },
+        (old) => {
+          if (old) {
+            const modifiedHistory = {
+              time: variable.time,
+              isFinished: variable.isFinished,
+            };
+            return { ...old, history: modifiedHistory };
+          }
+          return old;
+        }
+      );
+      return { getEpisodesSnapShot };
+    },
+  });
   const episodeQuery = trpc.theater.getEpisode.useQuery(
     {
       showId: props.id!.toString(),
@@ -171,7 +212,7 @@ const Theater = (
 
       <div className="flex w-full flex-col justify-between gap-3 p-4 xl:flex-row">
         <div className="flex flex-col gap-2 xl:w-3/4" ref={containerRef}>
-          <div className="">
+          <div>
             <Video
               onHistoryUpdate={(time) => {
                 updateHistoryMutation.mutate({
@@ -183,7 +224,11 @@ const Theater = (
                   episodeId: episodeQuery.data?.id ?? "",
                 });
               }}
-              initialTime={episodeQuery.data?.history?.time ?? 0}
+              initialTime={
+                episodeQuery.data?.history?.isFinished
+                  ? 0
+                  : episodeQuery.data?.history?.time ?? 0
+              }
               isLoading={episodeQuery.isLoading}
               preventEvents={!videoEvents}
               title={episodeQuery.data?.title ?? ""}
