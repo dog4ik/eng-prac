@@ -118,9 +118,13 @@ const Wordbook = (
         )}
         <WordbookCtxProvider>
           {createPortal(<Menu id={props.id!.toString()} />, document.body)}
+          {/*
+          HACK:: pray to god navbar always will be 80px 
+        */}
           <div
             className={`flex-1 scrollbar-thin scrollbar-thumb-white scrollbar-track-rounded-xl scrollbar-thumb-rounded-2xl sm:px-5 md:px-20 `}
             ref={scrollListRef}
+            style={{ maxHeight: "calc(100vh - 80px)" }}
           >
             <div
               className="relative"

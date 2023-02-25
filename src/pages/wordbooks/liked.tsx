@@ -122,9 +122,13 @@ const Liked = () => {
       </Head>
       <WordbookCtxProvider>
         <ConextMenu />
+        {/*
+          HACK:: pray to god navbar always will be 80px 
+        */}
         <div
           className="w-full flex-1 overflow-y-auto sm:px-5 md:px-20"
           ref={scrollListRef}
+          style={{ maxHeight: "calc(100vh - 80px)" }}
         >
           <div
             className="relative"
