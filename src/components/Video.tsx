@@ -431,14 +431,12 @@ const Video = ({
           </ActionWrapper>
         )}
         {showCaptions && (
-          <div className="absolute bottom-20 left-1/2 flex -translate-x-1/2 items-center justify-center">
-            <Subtitles
-              subSrc={subSrc}
-              videoRef={videoRef}
-              isPaused={isPaused}
-              time={Math.floor(time * 1000)}
-            />
-          </div>
+          <Subtitles
+            subSrc={subSrc}
+            videoRef={videoRef}
+            isPaused={isPaused}
+            time={Math.floor(time * 1000)}
+          />
         )}
         {isEnded && !isLoading && (
           <EndSelection
