@@ -150,7 +150,7 @@ export const theaterRouter = router({
       if (episode === null) throw new TRPCError({ code: "NOT_FOUND" });
       const history = await prisma.watchHisory.findFirst({
         where: { userId: ctx.userId, episodeId: episode.id },
-        select: { isFinished: true, time: true, updatedAt: true },
+        select: { isFinished: true, time: true },
       });
       return {
         releaseDate: episode.releaseDate,
