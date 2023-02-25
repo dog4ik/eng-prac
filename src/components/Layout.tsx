@@ -6,12 +6,10 @@ type Props = {
 const Layout = ({ children }: Props) => {
   return (
     <>
-      <div className="flex max-h-screen min-h-screen flex-col overflow-hidden bg-neutral-800 text-white">
-        <Navbar />
-        <main className="flex flex-1 flex-col overflow-y-auto bg-neutral-800 md:ml-16 ">
-          {children}
-        </main>
-      </div>
+      <Navbar />
+      <main className="flex flex-1 flex-col overflow-y-auto bg-neutral-800 text-white md:ml-16 ">
+        {children}
+      </main>
     </>
   );
 };

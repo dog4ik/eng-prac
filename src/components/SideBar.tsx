@@ -32,7 +32,7 @@ const MenuIcon = ({
 };
 const SideBar = () => {
   return (
-    <div className="fixed top-0 left-0 z-20 mt-20 hidden h-screen items-start md:flex">
+    <div className="fixed top-0 left-0 z-20 mt-20 hidden h-screen items-start text-white md:flex">
       <div className="flex w-16 flex-col justify-center">
         <MenuIcon href={"/"} title="Home">
           <FiHome size={25} className="stroke-2 group-hover:fill-white" />

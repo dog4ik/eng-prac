@@ -35,7 +35,7 @@ const ExpandedSideBar = ({ handleClose }: { handleClose: () => void }) => {
   const [open, setOpen] = useClose(handleClose, 300);
   return (
     <div
-      className={`fixed top-0 left-0 z-30 h-screen w-screen backdrop-blur-sm backdrop-filter transition-opacity duration-300 ${
+      className={`fixed top-0 left-0 z-30 h-screen w-screen text-white backdrop-blur-sm backdrop-filter transition-opacity duration-300 ${
         open ? "animate-fade-in" : "opacity-0"
       }`}
       onClick={() => setOpen()}
