@@ -8,7 +8,7 @@ const Layout = ({ children }: Props) => {
     <>
       <div className="flex max-h-screen min-h-screen flex-col overflow-hidden bg-neutral-800 text-white">
         <Navbar />
-        <main className="mt-20 flex flex-1 flex-col overflow-y-auto bg-neutral-800 md:ml-16 ">
+        <main className="flex flex-1 flex-col overflow-y-auto bg-neutral-800 md:ml-16 ">
           {children}
         </main>
       </div>
