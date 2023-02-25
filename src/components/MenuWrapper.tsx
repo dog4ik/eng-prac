@@ -145,7 +145,7 @@ export const MenuWrapper = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute z-50 w-60 rounded-md bg-neutral-900"
+      className="fixed z-50 w-60 rounded-md bg-neutral-900"
       style={{
         top: anchorPoint.y ?? 0,
         left: anchorPoint.x ?? 0,

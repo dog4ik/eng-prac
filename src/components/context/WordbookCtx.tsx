@@ -26,7 +26,7 @@ const WordbookCtxProvider = ({ children }: { children: ReactNode }) => {
   const handleMenu = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      setAnchorPoint({ x: e.pageX, y: e.pageY });
+      setAnchorPoint({ x: e.clientX, y: e.clientY });
       setIsMenuOpen(true);
     },
     [setAnchorPoint]
