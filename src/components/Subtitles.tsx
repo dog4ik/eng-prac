@@ -81,35 +81,38 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
       <div className="absolute bottom-20 left-1/2 flex -translate-x-1/2 cursor-auto flex-col items-center justify-center gap-2 bg-black/80">
         {chunk?.map((row, i) => (
           <div key={i} className="flex gap-2">
-            {row.split(" ").map((word, index) => (
-              <span
-                className={`cursor-pointer truncate rounded-md text-2xl hover:outline 2xl:text-4xl ${
-                  likes.data?.find(
-                    (item) =>
-                      item.eng.toLowerCase() ==
-                      word.replace(/\W+\B/g, "").trim().toLowerCase()
-                  )
-                    ? "bg-pink-500"
-                    : ""
-                }`}
-                key={index}
-                onClick={() => {
-                  setSelectedWord(word.replace(/\W+\B/g, "").trim());
-                  translateMutation.mutate({
-                    text: word.replace(/\W+\B/g, "").trim(),
-                  });
-                  setIsTranslateOpen(true);
-                }}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  likeMutation.mutate([
-                    { eng: word.replace(/\W+\B/g, "").trim() },
-                  ]);
-                }}
-              >
-                {word}
-              </span>
-            ))}
+            {row.split(" ").map((word, index) => {
+              const isLiked = !!likes.data?.find(
+                (item) =>
+                  item.eng.toLowerCase() ==
+                  word.replace(/\W+\B/g, "").trim().toLowerCase()
+              );
+              return (
+                <span
+                  className={`cursor-pointer truncate rounded-md text-2xl hover:outline 2xl:text-4xl ${
+                    isLiked ? "bg-pink-500" : ""
+                  }`}
+                  key={index}
+                  onClick={() => {
+                    setSelectedWord(word);
+                    if (selectedWord != word)
+                      translateMutation.mutate({
+                        text: word.replace(/\W+\B/g, "").trim(),
+                      });
+                    setIsTranslateOpen(true);
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    if (!isLiked)
+                      likeMutation.mutate([
+                        { eng: word.replace(/\W+\B/g, "").trim() },
+                      ]);
+                  }}
+                >
+                  {word}
+                </span>
+              );
+            })}
           </div>
         ))}
       </div>
