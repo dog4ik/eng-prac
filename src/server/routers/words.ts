@@ -31,7 +31,13 @@ export const wordsRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const translateCaller = translateRouter.createCaller(ctx);
-      input.map(async (item) => {
+      const translatedInput: {
+        rus: string;
+        eng: string;
+      }[] = [];
+      let failedCount = 0;
+      for (let i = 0; i < input.length; i++) {
+        const item = input[i];
         let translatedWord = item.rus;
         if (!item.rus) {
           translatedWord = await translateCaller
@@ -44,17 +50,22 @@ export const wordsRouter = router({
               });
             });
         }
-        return { eng: item.eng, rus: translatedWord };
-      });
+        if (!translatedWord) {
+          failedCount++;
+          continue;
+        }
+        translatedInput.push({ eng: item.eng, rus: translatedWord });
+      }
 
       // TODO: Skip dublicates
       await prisma.words.createMany({
-        data: input.map((item) => ({
+        data: translatedInput.map((item) => ({
           eng: item.eng,
-          rus: item.rus!,
+          rus: item.rus,
           likedById: ctx.userId,
         })),
       });
+      return failedCount;
     }),
 
   unLike: protectedProcedure
