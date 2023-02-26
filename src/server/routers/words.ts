@@ -14,6 +14,7 @@ export const wordsRouter = router({
         createdAt: true,
         id: true,
       },
+      orderBy: { createdAt: "desc" },
     });
     return likes;
   }),
@@ -36,9 +37,19 @@ export const wordsRouter = router({
         eng: string;
       }[] = [];
       let failedCount = 0;
-      for (let i = 0; i < input.length; i++) {
-        const item = input[i];
+      const likes = await prisma.words.findMany({
+        where: { likedById: ctx.userId },
+        select: {
+          eng: true,
+        },
+      });
+      const uniqueInput = input.filter(
+        (item) => !likes.map((like) => like.eng).includes(item.eng)
+      );
+      for (let i = 0; i < uniqueInput.length; i++) {
+        const item = uniqueInput[i];
         let translatedWord = item.rus;
+
         if (!item.rus) {
           translatedWord = await translateCaller
             .translate({ text: item.eng })
@@ -57,7 +68,6 @@ export const wordsRouter = router({
         translatedInput.push({ eng: item.eng, rus: translatedWord });
       }
 
-      // TODO: Skip dublicates
       await prisma.words.createMany({
         data: translatedInput.map((item) => ({
           eng: item.eng,
@@ -138,6 +148,7 @@ export const wordsRouter = router({
                 eng: true,
                 likedById: true,
               },
+              orderBy: { createdAt: "desc" },
             },
             name: true,
             likes: true,
