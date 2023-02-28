@@ -291,7 +291,7 @@ const Theater = (
           )}
         </div>
         {siblingsQuery.isSuccess && (
-          <div>
+          <div className="w-full xl:w-1/3">
             <div
               style={{ height: height }}
               className="flex flex-col px-2 scrollbar-track-neutral-700 scrollbar-thumb-white scrollbar-w-1 xl:mr-10 xl:max-w-xl xl:overflow-y-auto "
