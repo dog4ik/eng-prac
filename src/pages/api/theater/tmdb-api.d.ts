@@ -32,7 +32,7 @@ type TmdbSeasonEpisode = {
   id: number;
   production_code: string | null;
   season_number: number;
-  still_path: string | null;
+  still_path: string;
   vote_average: number;
   vote_count: number;
 };
