@@ -1,27 +1,20 @@
 import axios from "axios";
-import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../../prisma/PrismaClient";
-import { TmdbShowSeason, TmdbSearchShow, TmdbSeasonEpisode } from "./tmdb-api";
+import { NextApiRequest, NextApiResponse } from "next";
+import { TmdbSearchShow, TmdbShowSeason } from "./tmdb-api";
 
-type ReqestBody = {
+type ResponseEntry = {
+  title: string;
+  season: number;
+  episode: number;
+  previews: number;
+  duration: string;
+  href: string;
+  subs: string[];
+};
+type ReqBody = {
   language?: string;
   password: string;
-};
-type MyLibrary = {
-  src: string;
-  subSrc: string | null;
-  duration: number;
-} & TmdbSeasonEpisode;
-type LibEpisode = {
-  number: number;
-  src: string;
-  subSrc: null | string;
-  duration: number;
-};
-type LibItem = {
-  title: string;
-  episodes: LibEpisode[];
-  season: number;
 };
 const generateBase64Image = async (path: string) => {
   return await axios
@@ -30,219 +23,173 @@ const generateBase64Image = async (path: string) => {
     })
     .then((data) => Buffer.from(data.data, "binary").toString("base64"));
 };
-
-const filterEpisodes = (local: LibEpisode[], tmdb: TmdbSeasonEpisode[]) => {
-  return tmdb
-    .filter((te) => local.map((le) => le.number).includes(te.episode_number))
-    .map((item) => {
-      const e = local.find((i) => i.number == item.episode_number);
-      return {
-        ...item,
-        src: e!.src,
-        subSrc: e!.subSrc,
-        duration: e!.duration,
-      };
-    });
-};
 const IMG_BASE_URL = "https://image.tmdb.org/t/p/original";
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method == "POST") {
-    const body = req.body as ReqestBody;
-    if (process.env.PASSWORD === body.password) {
-      res.status(403).send("Forbidden");
-      return;
-    }
-    const tmdbApi = axios.create({
-      baseURL: "http://api.themoviedb.org/3",
-      params: {
-        api_key: process.env.TMDB_TOKEN,
-        language: body.language ?? "en-US",
+  const body = req.body as ReqBody;
+  const tmdbApi = axios.create({
+    baseURL: "http://api.themoviedb.org/3",
+    params: {
+      api_key: process.env.TMDB_TOKEN,
+      language: body.language ?? "en-US",
+    },
+    headers: {
+      "Accept-Encoding": "compress",
+    },
+  });
+  const serverLibrary = await axios
+    .get<ResponseEntry[]>(process.env.MEDIA_SERVER_LINK + "/summary")
+    .then((data) => data.data);
+  let library: Map<string, Map<number, number[]>> = serverLibrary.reduce(
+    (acc, ep) => {
+      let { title, episode, season } = ep;
+      if (!acc.has(title)) {
+        let map: Map<number, number[]> = new Map();
+        map.set(season, [episode]);
+        acc.set(title, map);
+      } else {
+        let nestedSeasons = acc.get(title);
+        if (!nestedSeasons?.has(season)) {
+          nestedSeasons?.set(season, [episode]);
+        } else {
+          let curr = nestedSeasons.get(season);
+          curr?.push(episode);
+          nestedSeasons.set(season, curr!);
+        }
+        acc.set(title, nestedSeasons!);
+      }
+      return acc;
+    },
+    new Map()
+  );
+  let serverShowsTmdbIds: number[] = [];
+  for (const [show, seasons] of library) {
+    const tmdbSearchResult = await tmdbApi
+      .get<TmdbSearchShow>("/search/tv", {
+        params: { query: show },
+      })
+      .then((data) => data.data)
+      .catch(null);
+    if (tmdbSearchResult === null) continue;
+    let topSearchResult = tmdbSearchResult.results[0];
+    serverShowsTmdbIds.push(topSearchResult.id);
+    let showPosterBlur = topSearchResult.poster_path
+      ? await generateBase64Image(topSearchResult.poster_path).catch(() => null)
+      : null;
+    let myShow = await prisma.shows.upsert({
+      where: { tmdbId: topSearchResult.id },
+      create: {
+        tmdbId: topSearchResult.id,
+        title: topSearchResult.name,
+        plot: topSearchResult.overview,
+        poster: IMG_BASE_URL + topSearchResult.poster_path,
+        backdrop: IMG_BASE_URL + topSearchResult.backdrop_path,
+        rating: topSearchResult.vote_average,
+        originalLanguage: topSearchResult.original_language,
+        releaseDate: topSearchResult.first_air_date,
+        blurData: showPosterBlur,
       },
-      headers: {
-        "Accept-Encoding": "compress",
+      update: {
+        tmdbId: topSearchResult.id,
+        title: topSearchResult.name,
+        plot: topSearchResult.overview,
+        poster: IMG_BASE_URL + topSearchResult.poster_path,
+        backdrop: IMG_BASE_URL + topSearchResult.backdrop_path,
+        rating: topSearchResult.vote_average,
+        originalLanguage: topSearchResult.original_language,
+        releaseDate: topSearchResult.first_air_date,
+        blurData: showPosterBlur,
+      },
+      select: { id: true },
+    });
+    await prisma.season.deleteMany({
+      where: {
+        showsId: myShow.id,
+        number: { notIn: Array.from(seasons.keys()) },
       },
     });
-    const library = (
-      await axios.get<LibItem[]>(process.env.MEDIA_SERVER_LINK + "/show")
-    ).data;
-    if (library.length == 0 || !library) {
-      await prisma.shows.deleteMany();
-      res.status(200).send("empty library");
-      return;
-    }
-
-    const myFreshLibrary: {
-      showsIds: number[];
-      seasonsIds: number[];
-      episodesIds: Set<number>;
-    } = { episodesIds: new Set(), seasonsIds: [], showsIds: [] };
-
-    for (let i = 0; i < library.length; i++) {
-      const tmdbSearchResult = await tmdbApi
-        .get<TmdbSearchShow>("/search/tv", {
-          params: { query: library[i].title },
-        })
-        .catch(() => {
-          return null;
-        });
-      if (tmdbSearchResult === null) continue;
-      const season = await tmdbApi
+    //map seasons
+    for (const [season, episodes] of seasons) {
+      const tmdbSeason = await tmdbApi
         .get<TmdbShowSeason>(
-          `/tv/${tmdbSearchResult.data.results[0].id}/season/${library[i].season}`
+          `/tv/${tmdbSearchResult.results[0].id}/season/${season}`
         )
-        .catch(() => null);
-      if (season === null) continue;
-      const myEpisodes: MyLibrary[] = filterEpisodes(
-        library[i].episodes,
-        season.data.episodes
-      );
-      let showBlurdata: string | null = null;
-      let seasonBlurdata: string | null = null;
-      let episodesBlurdata: Map<number, string> = new Map();
-      if (tmdbSearchResult.data.results[0].poster_path) {
-        showBlurdata = await generateBase64Image(
-          tmdbSearchResult.data.results[0].poster_path
-        );
-      }
-      if (season.data.poster_path) {
-        seasonBlurdata = await generateBase64Image(
-          season.data.poster_path
-        ).catch(() => null);
-      }
-
-      for (let i = 0; i < myEpisodes.length; i++) {
-        const episode = myEpisodes[i];
-        if (episode.still_path) {
-          const base64 = await generateBase64Image(episode.still_path).catch(
-            () => null
-          );
-          if (base64 != null) episodesBlurdata.set(episode.id, base64);
-        }
-        myFreshLibrary.episodesIds.add(episode.id);
-      }
-      myFreshLibrary.showsIds.push(tmdbSearchResult.data.results[0].id);
-      myFreshLibrary.seasonsIds.push(season.data.id);
-
-      await prisma.shows.upsert({
+        .then((data) => data.data)
+        .catch(null);
+      if (tmdbSeason === null) continue;
+      let seasonPosterBlur = tmdbSeason.poster_path
+        ? await generateBase64Image(tmdbSeason.poster_path).catch(null)
+        : null;
+      let mySeason = await prisma.season.upsert({
+        where: { tmdbId: tmdbSeason.id },
         create: {
-          releaseDate: tmdbSearchResult.data.results[0].first_air_date,
-          title: tmdbSearchResult.data.results[0].name,
-          rating: tmdbSearchResult.data.results[0].vote_average.toString(),
-          poster: IMG_BASE_URL + tmdbSearchResult.data.results[0].poster_path,
-          blurData: showBlurdata,
-          scannedDate: new Date(),
-          backdrop:
-            IMG_BASE_URL + tmdbSearchResult.data.results[0].backdrop_path,
-          plot: tmdbSearchResult.data.results[0].overview,
-          tmdbId: tmdbSearchResult.data.results[0].id,
-          Season: {
-            create: {
-              number: season.data.season_number,
-              releaseDate: season.data.air_date,
-              poster: IMG_BASE_URL + season.data.poster_path,
-              blurData: seasonBlurdata,
-              scannedDate: new Date(),
-              plot: season.data.overview,
-              tmdbId: season.data.id,
-              Episodes: {
-                createMany: {
-                  data: myEpisodes.map((item) => {
-                    return {
-                      number: item.episode_number,
-                      src: item.src,
-                      subSrc: item.subSrc,
-                      title: item.name,
-                      externalSubs: [],
-                      releaseDate: item.air_date,
-                      rating: item.vote_average.toString(),
-                      poster: IMG_BASE_URL + item.still_path,
-                      blurData: episodesBlurdata.get(item.id) ?? null,
-                      plot: item.overview,
-                      duration: item.duration,
-                      tmdbId: item.id,
-                    };
-                  }),
-                  skipDuplicates: true,
-                },
-              },
-            },
-          },
+          number: tmdbSeason.season_number,
+          poster: IMG_BASE_URL + tmdbSeason.poster_path,
+          plot: tmdbSeason.overview,
+          tmdbId: tmdbSeason.id,
+          releaseDate: tmdbSeason.air_date,
+          showsId: myShow.id,
+          blurData: seasonPosterBlur,
         },
         update: {
-          Season: {
-            upsert: {
-              create: {
-                number: season.data.season_number,
-                releaseDate: season.data.air_date,
-                poster: IMG_BASE_URL + season.data.poster_path,
-                blurData: seasonBlurdata,
-                scannedDate: new Date(),
-                plot: season.data.overview,
-                tmdbId: season.data.id,
-                Episodes: {
-                  createMany: {
-                    data: myEpisodes.map((item) => {
-                      return {
-                        number: item.episode_number,
-                        src: item.src,
-                        subSrc: item.subSrc,
-                        title: item.name,
-                        externalSubs: [],
-                        releaseDate: item.air_date,
-                        rating: item.vote_average.toString(),
-                        poster: IMG_BASE_URL + item.still_path,
-                        blurData: episodesBlurdata.get(item.id) ?? null,
-                        plot: item.overview,
-                        duration: item.duration,
-                        tmdbId: item.id,
-                      };
-                    }),
-                    skipDuplicates: true,
-                  },
-                },
-              },
-              update: {
-                Episodes: {
-                  createMany: {
-                    data: myEpisodes.map((item) => {
-                      return {
-                        number: item.episode_number,
-                        src: item.src,
-                        subSrc: item.subSrc,
-                        title: item.name,
-                        externalSubs: [],
-                        releaseDate: item.air_date,
-                        rating: item.vote_average.toString(),
-                        poster: IMG_BASE_URL + item.still_path,
-                        blurData: episodesBlurdata.get(item.id) ?? null,
-                        plot: item.overview,
-                        duration: item.duration,
-                        tmdbId: item.id,
-                      };
-                    }),
-                    skipDuplicates: true,
-                  },
-                },
-              },
-              where: { tmdbId: season.data.id },
-            },
-          },
+          number: tmdbSeason.season_number,
+          poster: IMG_BASE_URL + tmdbSeason.poster_path,
+          plot: tmdbSeason.overview,
+          tmdbId: tmdbSeason.id,
+          releaseDate: tmdbSeason.air_date,
+          showsId: myShow.id,
+          blurData: seasonPosterBlur,
         },
-        where: { tmdbId: tmdbSearchResult.data.results[0].id },
+        select: { id: true },
+      });
+      if (!tmdbSeason?.episodes) continue;
+      //filter all episodes and those who in response
+      let tmdbEpisodes = tmdbSeason.episodes.filter((ep) =>
+        episodes.includes(ep.episode_number)
+      );
+      console.log(tmdbEpisodes);
+      await prisma.episode.deleteMany({
+        where: {
+          seasonId: mySeason.id,
+          tmdbId: { notIn: tmdbEpisodes.map((item) => item.id) },
+        },
+      });
+      //Handle Episodes
+      await prisma.episode.createMany({
+        data: await Promise.all(
+          tmdbEpisodes.map(async (ep) => {
+            let rowItem = serverLibrary.find(
+              (item) =>
+                item.title === show &&
+                item.season === ep.season_number &&
+                item.episode === ep.episode_number
+            )!;
+            return {
+              number: ep.episode_number,
+              blurData: ep.still_path
+                ? await generateBase64Image(ep.still_path)
+                : null,
+              releaseDate: ep.air_date,
+              tmdbId: ep.id,
+              plot: ep.overview,
+              title: ep.name,
+              poster: IMG_BASE_URL + ep.still_path,
+              rating: ep.vote_average,
+              duration: parseFloat(rowItem.duration),
+              src: rowItem.href,
+              seasonId: mySeason.id,
+              externalSubs: rowItem.subs,
+            };
+          })
+        ),
+        skipDuplicates: true,
       });
     }
-    await prisma.season.deleteMany({
-      where: { tmdbId: { notIn: myFreshLibrary.seasonsIds } },
-    });
     await prisma.shows.deleteMany({
-      where: { tmdbId: { notIn: myFreshLibrary.showsIds } },
+      where: { tmdbId: { notIn: serverShowsTmdbIds } },
     });
-    await prisma.episode.deleteMany({
-      where: { tmdbId: { notIn: Array.from(myFreshLibrary.episodesIds) } },
-    });
-    res.status(200).send("done");
   }
+  res.status(200).send("done");
 }
