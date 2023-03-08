@@ -231,7 +231,7 @@ const Season = (
           {episodesQuery.isSuccess &&
             episodesQuery.data.episodes.map((episode) => (
               <EpisodeCard
-                haveSubs={episode.subSrc !== null}
+                haveSubs={episode.externalSubs.length > 0}
                 duration={episode.duration}
                 key={episode.id}
                 img={episode.poster}
