@@ -123,13 +123,13 @@ model Episode {
   subSrc       String?
   externalSubs String[]
   releaseDate  String
-  rating       String?
-  poster       String?
+  rating       Float
+  poster       String
   blurData     String?
   plot         String?
-  Season       Season?       @relation(fields: [seasonId], references: [id])
+  Season       Season?       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId     String?
-  tmdbId       Int?          @unique
+  tmdbId       Int          @unique
   scannedDate  DateTime      @default(now())
   duration     Float
   WatchHisory  WatchHisory[]
@@ -143,24 +143,25 @@ model Season {
   plot        String?
   poster      String?
   blurData    String?
-  Shows       Shows     @relation(fields: [showsId], references: [id])
-  tmdbId      Int?      @unique
+  Shows       Shows     @relation(fields: [showsId], references: [id], onDelete: Cascade)
+  tmdbId      Int      @unique
   showsId     String
   scannedDate DateTime  @default(now())
 }
 
 model Shows {
-  Season      Season[]
-  id          String   @id @default(cuid())
-  title       String
-  releaseDate String
-  poster      String?
-  blurData    String?
-  backdrop    String?
-  rating      String?
-  plot        String?
-  tmdbId      Int?     @unique
-  scannedDate DateTime @default(now())
+  Season           Season[]
+  id               String   @id @default(cuid())
+  title            String
+  releaseDate      String
+  poster           String?
+  blurData         String?
+  backdrop         String?
+  rating           Float
+  plot             String
+  originalLanguage String
+  tmdbId           Int     @unique
+  scannedDate      DateTime @default(now())
 }
 
 enum NotificationType {
