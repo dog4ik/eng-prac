@@ -120,7 +120,6 @@ model Episode {
   title        String
   number       Int
   src          String
-  subSrc       String?
   externalSubs String[]
   releaseDate  String
   rating       Float
