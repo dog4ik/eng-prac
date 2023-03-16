@@ -116,22 +116,23 @@ model WatchHisory {
 }
 
 model Episode {
-  id           String        @id @default(cuid())
-  title        String
-  number       Int
-  src          String
-  externalSubs String[]
-  releaseDate  String
-  rating       Float
-  poster       String
-  blurData     String?
-  plot         String?
-  Season       Season?       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
-  seasonId     String?
-  tmdbId       Int          @unique
-  scannedDate  DateTime      @default(now())
-  duration     Float
-  WatchHisory  WatchHisory[]
+  id             String        @id @default(cuid())
+  title          String
+  number         Int
+  src            String
+  previewsAmount Int
+  externalSubs   String[]
+  releaseDate    String
+  rating         Float
+  poster         String
+  blurData       String?
+  plot           String?
+  Season         Season?       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  seasonId       String?
+  tmdbId         Int          @unique
+  scannedDate    DateTime      @default(now())
+  duration       Float
+  WatchHisory    WatchHisory[]
 }
 
 model Season {
