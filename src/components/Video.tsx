@@ -267,6 +267,7 @@ const Video = ({
     videoRef.current.volume = volume;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current || preventEvents) return;
+      //TODO: fix dvorak and other layouts issue! Or maybe thats fine???
       switch (e.code) {
         case "KeyF":
           toggleFullScreenMode();

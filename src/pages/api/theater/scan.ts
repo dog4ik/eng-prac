@@ -175,6 +175,7 @@ export default async function handler(
               tmdbId: ep.id,
               plot: ep.overview,
               title: ep.name,
+              previewsAmount: rowItem.previews,
               poster: IMG_BASE_URL + ep.still_path,
               rating: ep.vote_average,
               duration: parseFloat(rowItem.duration),
