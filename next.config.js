@@ -4,6 +4,12 @@ const nextConfig = {
   swcMinify: true,
   images: {
     domains: ["images.unsplash.com", "image.tmdb.org", "localhost"],
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
   },
 };
 
