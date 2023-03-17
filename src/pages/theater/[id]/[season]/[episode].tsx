@@ -234,6 +234,8 @@ const Theater = (
               title={episodeQuery.data?.title ?? ""}
               next={nextEp}
               src={episodeQuery.data?.src ?? ""}
+              previewsAmount={episodeQuery.data?.previewsAmount ?? 0}
+              previewsSrc={episodeQuery.data?.preiewsSrc ?? ""}
               subSrc={
                 customSrt ??
                 (episodeQuery.data?.subSrc == null
