@@ -195,8 +195,7 @@ const Video = ({
     videoRef.current.volume = state;
   };
   const togglePlay = (state?: boolean) => {
-    console.log("toggled play");
-
+    resetShowTimeout();
     if (typeof state !== "undefined") {
       state ? videoRef.current?.play() : videoRef.current?.pause();
       return;
@@ -208,7 +207,7 @@ const Video = ({
     }
   };
   const toggleFullScreenMode = (state?: boolean) => {
-    console.log("toggled full screen");
+    resetShowTimeout();
     if (typeof state != "undefined") {
       state
         ? videoContainerRef.current?.requestFullscreen()
@@ -223,6 +222,7 @@ const Video = ({
   };
   const toggleCaptions = () => {
     if (subSrc === null) return;
+    resetShowTimeout();
     setShowCaptions();
   };
   const toggleMute = () => {
@@ -261,6 +261,14 @@ const Video = ({
     const percent = Math.min(Math.max(0, offsetX), rect.width) / rect.width;
     videoRef.current!.currentTime = percent * duration;
   };
+  const resetShowTimeout = () => {
+    setShowControls(true);
+    clearTimeout(showControlsTimeout.current);
+    showControlsTimeout.current = setTimeout(
+      () => setShowControls(false),
+      5000
+    );
+  };
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -278,30 +286,38 @@ const Video = ({
           break;
         case "KeyC":
           toggleCaptions();
+          resetShowTimeout();
           break;
         case "KeyJ":
           videoRef.current.currentTime -= 10;
+          resetShowTimeout();
           break;
         case "KeyK":
           togglePlay();
           break;
         case "KeyL":
           videoRef.current.currentTime += 10;
+          resetShowTimeout();
           break;
         case "ArrowLeft":
           videoRef.current.currentTime -= 5;
+          resetShowTimeout();
           break;
         case "ArrowRight":
           videoRef.current.currentTime += 5;
+          resetShowTimeout();
           break;
         case "ArrowUp":
           changeVolume(videoRef.current.volume + 0.05);
+          resetShowTimeout();
           break;
         case "ArrowDown":
           changeVolume(videoRef.current.volume - 0.05);
+          resetShowTimeout();
           break;
         case "KeyM":
           toggleMute();
+          resetShowTimeout();
           break;
       }
     };
@@ -364,20 +380,17 @@ const Video = ({
             onClick={handleClick}
             onPlay={() => {
               setIsPaused(false);
+              resetShowTimeout();
             }}
             onPause={() => {
               setIsPaused(true);
+              resetShowTimeout();
             }}
             onVolumeChange={(e) => setVolume(e.currentTarget.volume)}
             onDoubleClick={handleDoubleClick}
             onContextMenu={(e) => e.preventDefault()}
             onMouseMove={() => {
-              setShowControls(true);
-              clearTimeout(showControlsTimeout.current);
-              showControlsTimeout.current = setTimeout(
-                () => setShowControls(false),
-                1500
-              );
+              resetShowTimeout();
             }}
             onTimeUpdate={(e) => {
               (showCaptions || showControls) &&
