@@ -129,7 +129,7 @@ model Episode {
   plot           String?
   Season         Season?       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId       String?
-  tmdbId         Int          @unique
+  tmdbId         Int           @unique
   scannedDate    DateTime      @default(now())
   duration       Float
   WatchHisory    WatchHisory[]
@@ -144,7 +144,7 @@ model Season {
   poster      String?
   blurData    String?
   Shows       Shows     @relation(fields: [showsId], references: [id], onDelete: Cascade)
-  tmdbId      Int      @unique
+  tmdbId      Int       @unique
   showsId     String
   scannedDate DateTime  @default(now())
 }
@@ -160,7 +160,7 @@ model Shows {
   rating           Float
   plot             String
   originalLanguage String
-  tmdbId           Int     @unique
+  tmdbId           Int      @unique
   scannedDate      DateTime @default(now())
 }
 
