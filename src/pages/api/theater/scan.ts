@@ -102,7 +102,9 @@ export default async function handler(
         releaseDate: topSearchResult.first_air_date,
         blurData: showPosterBlur,
       },
-      select: { id: true },
+      select: {
+        id: true,
+      },
     });
     await prisma.season.deleteMany({
       where: {
@@ -112,6 +114,26 @@ export default async function handler(
     });
     //map seasons
     for (const [season, episodes] of seasons) {
+      //skip unnessasary api call
+      console.log(myShow.id, season);
+      const localSeason = await prisma.season.findFirst({
+        where: { showsId: myShow.id, number: season },
+        select: { Episodes: { select: { number: true } }, id: true },
+      });
+      if (
+        localSeason &&
+        episodes.every((ep) =>
+          localSeason.Episodes.map((ep) => ep.number).includes(ep)
+        )
+      ) {
+        await prisma.episode.deleteMany({
+          where: { seasonId: localSeason.id, number: { notIn: episodes } },
+        });
+        console.log(`Skipped ${season} season of ${topSearchResult.name}`);
+        continue;
+      }
+
+      console.log(`Getting ${season} season of ${topSearchResult.name}`);
       const tmdbSeason = await tmdbApi
         .get<TmdbShowSeason>(
           `/tv/${tmdbSearchResult.results[0].id}/season/${season}`
@@ -149,7 +171,6 @@ export default async function handler(
       let tmdbEpisodes = tmdbSeason.episodes.filter((ep) =>
         episodes.includes(ep.episode_number)
       );
-      console.log(tmdbEpisodes);
       await prisma.episode.deleteMany({
         where: {
           seasonId: mySeason.id,
@@ -188,9 +209,9 @@ export default async function handler(
         skipDuplicates: true,
       });
     }
-    await prisma.shows.deleteMany({
-      where: { tmdbId: { notIn: serverShowsTmdbIds } },
-    });
   }
+  await prisma.shows.deleteMany({
+    where: { tmdbId: { notIn: serverShowsTmdbIds } },
+  });
   res.status(200).send("done");
 }
