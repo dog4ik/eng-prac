@@ -539,9 +539,13 @@ const Video = ({
                       src={
                         previewsSrc +
                         "/" +
-                        Math.round(
-                          (previewPosition / timelineRef.current!.offsetWidth) *
-                            previewsAmount
+                        Math.max(
+                          Math.round(
+                            (previewPosition /
+                              timelineRef.current!.offsetWidth) *
+                              previewsAmount
+                          ),
+                          1
                         )
                       }
                       X={previewPosition}
