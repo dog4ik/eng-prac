@@ -386,6 +386,10 @@ const Video = ({
       document.removeEventListener("mousemove", handleMouseMove);
     };
   }, [timelineRef.current, isScubbing.current, time]);
+  useEffect(() => {
+    setIsError(false);
+    setIsMetadataLoading(true);
+  }, [src]);
   if (isError) {
     return (
       <VideoError
