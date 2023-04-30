@@ -220,6 +220,12 @@ const Video = ({
   const [volume, setVolume] = useState(0.3);
   const [time, setTime] = useState(initialTime);
   const [duration, setDuration] = useState(0);
+  const shouldShowControls =
+    (showControls || isScubbing.current || isEnded) &&
+    !isMetadataLoading &&
+    !isError &&
+    videoRef.current;
+
   const changeVolume = (state: number) => {
     if (!videoRef.current) return;
     if (state > 1) {
@@ -388,7 +394,8 @@ const Video = ({
   }, [timelineRef.current, isScubbing.current, time]);
   useEffect(() => {
     setIsError(false);
-    setIsMetadataLoading(true);
+    //TODO: onSourceChange event
+    // setIsMetadataLoading(true);
   }, [src]);
   if (isError) {
     return (
@@ -435,8 +442,7 @@ const Video = ({
               resetShowTimeout();
             }}
             onTimeUpdate={(e) => {
-              (showCaptions || showControls) &&
-                setTime(e.currentTarget.currentTime);
+              setTime(e.currentTarget.currentTime);
               handleSync(e.currentTarget.currentTime);
             }}
             onPlaying={() => setIsWaiting(false)}
@@ -505,148 +511,144 @@ const Video = ({
           />
         )}
         {(isMetadataLoading || isWaiting || isLoading) && <Loading />}
-        {(showControls || isScubbing.current || isEnded) &&
-          !isMetadataLoading &&
-          !isError &&
-          videoRef.current && (
-            <>
-              {isFullScreen && (
-                <div className="absolute top-5 left-5">
-                  <span className="text-2xl">{title}</span>
-                </div>
-              )}
+        {videoRef.current && (
+          <div
+            className={`${
+              shouldShowControls ? "opacity-100" : "opacity-0"
+            } transition-opacity duration-200`}
+          >
+            {isFullScreen && (
+              <div className="absolute top-5 left-5">
+                <span className="text-2xl">{title}</span>
+              </div>
+            )}
+            <div
+              onMouseMove={() => {
+                clearTimeout(showControlsTimeout.current);
+                setShowControls(true);
+              }}
+              className={`absolute bottom-0 left-0 right-0 animate-fade-in transition-opacity`}
+            >
               <div
-                onMouseMove={() => {
-                  clearTimeout(showControlsTimeout.current);
-                  setShowControls(true);
+                className="group flex h-4 cursor-pointer items-end"
+                ref={timelineRef}
+                onMouseDown={handleScubbing}
+                onMouseMove={(e) => {
+                  if (!timelineRef.current) return;
+                  let bounds = timelineRef.current.getBoundingClientRect();
+                  setPreviewPosition(e.pageX - bounds.left);
                 }}
-                className={`absolute bottom-0 left-0 right-0 animate-fade-in transition-opacity`}
+                onMouseLeave={() => {
+                  setPreviewPosition(null);
+                }}
+                onResize={(e) => e.currentTarget.getBoundingClientRect().width}
               >
-                <div
-                  className="group flex h-4 cursor-pointer items-end"
-                  ref={timelineRef}
-                  onMouseDown={handleScubbing}
-                  onMouseMove={(e) => {
-                    if (!timelineRef.current) return;
-                    let bounds = timelineRef.current.getBoundingClientRect();
-                    setPreviewPosition(e.pageX - bounds.left);
-                  }}
-                  onMouseLeave={() => {
-                    setPreviewPosition(null);
-                  }}
-                  onResize={(e) =>
-                    e.currentTarget.getBoundingClientRect().width
-                  }
-                >
-                  {previewPosition !== null && (
-                    <Preview
-                      src={
-                        previewsSrc +
-                        "/" +
-                        Math.max(
-                          Math.round(
-                            (previewPosition /
-                              timelineRef.current!.offsetWidth) *
-                              previewsAmount
-                          ),
-                          1
-                        )
-                      }
-                      X={previewPosition}
-                      timelineWidth={timelineRef.current!.offsetWidth}
-                      time={formatDuration(
-                        Math.max(
-                          Math.round(
-                            (duration * previewPosition) /
-                              timelineRef.current!.offsetWidth
-                          ),
-                          0
-                        )
-                      )}
-                    />
-                  )}
-                  <div className="absolute left-0 right-0 flex h-1.5 w-full bg-neutral-900">
-                    <div
-                      className="after:content-[' '] flex h-full items-center justify-end rounded-md bg-white after:translate-x-2 after:rounded-full after:bg-white after:p-2 after:opacity-0 after:transition-opacity after:duration-150 after:group-hover:opacity-100"
-                      style={{
-                        width: `${
-                          (videoRef.current.currentTime / duration) * 100
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
+                {previewPosition !== null && (
+                  <Preview
+                    src={
+                      previewsSrc +
+                      "/" +
+                      Math.max(
+                        Math.round(
+                          (previewPosition / timelineRef.current!.offsetWidth) *
+                            previewsAmount
+                        ),
+                        1
+                      )
+                    }
+                    X={previewPosition}
+                    timelineWidth={timelineRef.current!.offsetWidth}
+                    time={formatDuration(
+                      Math.max(
+                        Math.round(
+                          (duration * previewPosition) /
+                            timelineRef.current!.offsetWidth
+                        ),
+                        0
+                      )
+                    )}
+                  />
+                )}
+                <div className="absolute left-0 right-0 flex h-1.5 w-full bg-neutral-900">
+                  <div
+                    className="after:content-[' '] flex h-full items-center justify-end rounded-md bg-white after:translate-x-2 after:rounded-full after:bg-white after:p-2 after:opacity-0 after:transition-opacity after:duration-150 after:group-hover:opacity-100"
+                    style={{
+                      width: `${
+                        (videoRef.current.currentTime / duration) * 100
+                      }%`,
+                    }}
+                  ></div>
                 </div>
-                <div className="flex items-center justify-between bg-black/70">
-                  <div className="flex gap-4">
+              </div>
+              <div className="flex items-center justify-between bg-black/70">
+                <div className="flex gap-4">
+                  <div
+                    className="cursor-pointer p-2"
+                    onClick={() => togglePlay()}
+                  >
+                    {isPaused ? <FiPlay size={30} /> : <FiPause size={30} />}
+                  </div>
+                  <div className="group flex items-center transition-all duration-300">
                     <div
                       className="cursor-pointer p-2"
-                      onClick={() => togglePlay()}
+                      onClick={() => toggleMute()}
                     >
-                      {isPaused ? <FiPlay size={30} /> : <FiPause size={30} />}
+                      <VolumeIcon volume={volume} isMuted={isMuted} />
                     </div>
-                    <div className="group flex items-center transition-all duration-300">
-                      <div
-                        className="cursor-pointer p-2"
-                        onClick={() => toggleMute()}
+
+                    <input
+                      className="h-1.5 w-0 origin-left scale-x-0 rounded-lg bg-neutral-800 accent-white transition-all duration-300 group-hover:w-20 group-hover:scale-x-100"
+                      onChange={(e) => {
+                        changeVolume(e.target.valueAsNumber / 100);
+                      }}
+                      type={"range"}
+                      min={0}
+                      max={100}
+                      value={!isMuted ? volume * 100 : 0}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-center">
+                    <span>
+                      {formatDuration(time) + " / " + formatDuration(duration)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex select-none items-center gap-5">
+                  <div
+                    className={`${
+                      subSrc ? "cursor-pointer" : "cursor-not-allowed"
+                    }`}
+                    onClick={() => toggleCaptions()}
+                  >
+                    <div
+                      className={`flex items-center justify-center rounded-sm border-2 px-2 py-0.5 ${
+                        showCaptions && subSrc
+                          ? "border-black bg-white"
+                          : "border-white bg-black"
+                      }`}
+                    >
+                      <span
+                        className={`text-xs font-semibold ${
+                          showCaptions && subSrc ? "text-black" : "text-white"
+                        }`}
                       >
-                        <VolumeIcon volume={volume} isMuted={isMuted} />
-                      </div>
-
-                      <input
-                        className="h-1.5 w-0 origin-left scale-x-0 rounded-lg bg-neutral-800 accent-white transition-all duration-300 group-hover:w-20 group-hover:scale-x-100"
-                        onChange={(e) => {
-                          changeVolume(e.target.valueAsNumber / 100);
-                        }}
-                        type={"range"}
-                        min={0}
-                        max={100}
-                        value={!isMuted ? volume * 100 : 0}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-center">
-                      <span>
-                        {formatDuration(time) +
-                          " / " +
-                          formatDuration(duration)}
+                        cc
                       </span>
                     </div>
                   </div>
-
-                  <div className="flex select-none items-center gap-5">
-                    <div
-                      className={`${
-                        subSrc ? "cursor-pointer" : "cursor-not-allowed"
-                      }`}
-                      onClick={() => toggleCaptions()}
-                    >
-                      <div
-                        className={`flex items-center justify-center rounded-sm border-2 px-2 py-0.5 ${
-                          showCaptions && subSrc
-                            ? "border-black bg-white"
-                            : "border-white bg-black"
-                        }`}
-                      >
-                        <span
-                          className={`text-xs font-semibold ${
-                            showCaptions && subSrc ? "text-black" : "text-white"
-                          }`}
-                        >
-                          cc
-                        </span>
-                      </div>
-                    </div>
-                    <div
-                      className="cursor-pointer p-2 hover:scale-105"
-                      onClick={() => toggleFullScreenMode()}
-                    >
-                      <FiMaximize size={30} />
-                    </div>
+                  <div
+                    className="cursor-pointer p-2 hover:scale-105"
+                    onClick={() => toggleFullScreenMode()}
+                  >
+                    <FiMaximize size={30} />
                   </div>
                 </div>
               </div>
-            </>
-          )}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
