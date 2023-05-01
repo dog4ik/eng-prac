@@ -48,8 +48,8 @@ const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
   const subsQuery = useQuery<
     {
       id: number;
-      startTime: string | number;
-      endTime: string | number;
+      startTime: number;
+      endTime: number;
       text: string;
     }[]
   >(
