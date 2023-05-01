@@ -16,12 +16,36 @@ type ReqBody = {
   language?: string;
   password: string;
 };
+type BackdropSaveReq = {
+  url: string;
+  show: string;
+};
+type PosterSaveReq = {
+  url: string;
+  show: string;
+  season?: number;
+  episode?: number;
+};
 const generateBase64Image = async (path: string) => {
   return await axios
     .get("https://image.tmdb.org/t/p/w45" + path, {
       responseType: "arraybuffer",
     })
     .then((data) => Buffer.from(data.data, "binary").toString("base64"));
+};
+const uploadBackdrop = async (reqest: BackdropSaveReq) => {
+  const serverURL = process.env.MEDIA_SERVER_LINK;
+  if (!serverURL) throw Error("env");
+  return await axios
+    .post<string>(`${serverURL}/savebackdrop`, reqest)
+    .then((data) => `${serverURL}${data.data}/backdrop`);
+};
+const uploadPoster = async (reqest: PosterSaveReq) => {
+  const serverURL = process.env.MEDIA_SERVER_LINK;
+  if (!serverURL) throw Error("env");
+  return await axios
+    .post<string>(`${serverURL.toLowerCase()}/saveposter`, reqest)
+    .then((data) => `${serverURL}${data.data}/poster`);
 };
 const IMG_BASE_URL = "https://image.tmdb.org/t/p/original";
 export default async function handler(
@@ -78,14 +102,25 @@ export default async function handler(
     let showPosterBlur = topSearchResult.poster_path
       ? await generateBase64Image(topSearchResult.poster_path).catch(() => null)
       : null;
+    //make it here
+    let showPosterUrl = await uploadPoster({
+      url: IMG_BASE_URL + topSearchResult.poster_path,
+      show,
+    });
+    let showBackdropUrl = await uploadBackdrop({
+      url: IMG_BASE_URL + topSearchResult.backdrop_path,
+      show,
+    });
+    console.log(showPosterUrl, showBackdropUrl);
+
     let myShow = await prisma.shows.upsert({
       where: { tmdbId: topSearchResult.id },
       create: {
         tmdbId: topSearchResult.id,
         title: topSearchResult.name,
         plot: topSearchResult.overview,
-        poster: IMG_BASE_URL + topSearchResult.poster_path,
-        backdrop: IMG_BASE_URL + topSearchResult.backdrop_path,
+        poster: showPosterUrl,
+        backdrop: showBackdropUrl,
         rating: topSearchResult.vote_average,
         originalLanguage: topSearchResult.original_language,
         releaseDate: topSearchResult.first_air_date,
@@ -95,8 +130,8 @@ export default async function handler(
         tmdbId: topSearchResult.id,
         title: topSearchResult.name,
         plot: topSearchResult.overview,
-        poster: IMG_BASE_URL + topSearchResult.poster_path,
-        backdrop: IMG_BASE_URL + topSearchResult.backdrop_path,
+        poster: showPosterUrl,
+        backdrop: showBackdropUrl,
         rating: topSearchResult.vote_average,
         originalLanguage: topSearchResult.original_language,
         releaseDate: topSearchResult.first_air_date,
@@ -144,11 +179,18 @@ export default async function handler(
       let seasonPosterBlur = tmdbSeason.poster_path
         ? await generateBase64Image(tmdbSeason.poster_path).catch(null)
         : null;
+      //make it also here
+      //TODO: handle error
+      const seasonPosterUrl = await uploadPoster({
+        url: IMG_BASE_URL + tmdbSeason.poster_path,
+        show,
+        season: tmdbSeason.season_number,
+      });
       let mySeason = await prisma.season.upsert({
         where: { tmdbId: tmdbSeason.id },
         create: {
           number: tmdbSeason.season_number,
-          poster: IMG_BASE_URL + tmdbSeason.poster_path,
+          poster: seasonPosterUrl,
           plot: tmdbSeason.overview,
           tmdbId: tmdbSeason.id,
           releaseDate: tmdbSeason.air_date,
@@ -157,7 +199,7 @@ export default async function handler(
         },
         update: {
           number: tmdbSeason.season_number,
-          poster: IMG_BASE_URL + tmdbSeason.poster_path,
+          poster: seasonPosterUrl,
           plot: tmdbSeason.overview,
           tmdbId: tmdbSeason.id,
           releaseDate: tmdbSeason.air_date,
@@ -178,9 +220,16 @@ export default async function handler(
         },
       });
       //Handle Episodes
+      //make it also here
       await prisma.episode.createMany({
         data: await Promise.all(
           tmdbEpisodes.map(async (ep) => {
+            const episodePosterUrl = await uploadPoster({
+              url: IMG_BASE_URL + ep.still_path,
+              show,
+              season: ep.season_number,
+              episode: ep.episode_number,
+            });
             let rowItem = serverLibrary.find(
               (item) =>
                 item.title === show &&
@@ -197,7 +246,7 @@ export default async function handler(
               plot: ep.overview,
               title: ep.name,
               previewsAmount: rowItem.previews,
-              poster: IMG_BASE_URL + ep.still_path,
+              poster: episodePosterUrl,
               rating: ep.vote_average,
               duration: parseFloat(rowItem.duration),
               src: rowItem.href,
