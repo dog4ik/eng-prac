@@ -1,4 +1,4 @@
-type TmdbSeasonEpisode = {
+export type TmdbSeasonEpisode = {
   air_date: string;
   episode_number: number;
   crew: {
@@ -37,7 +37,7 @@ type TmdbSeasonEpisode = {
   vote_count: number;
 };
 
-type TmdbShowSeason = {
+export type TmdbShowSeason = {
   _id: string;
   air_date: string;
   episodes: TmdbSeasonEpisode[];
@@ -47,7 +47,7 @@ type TmdbShowSeason = {
   poster_path: string | null;
   season_number: number;
 };
-type TmdbSearchShow = {
+export type TmdbSearchShow = {
   page: number;
   results: {
     poster_path: string | null;
@@ -67,5 +67,3 @@ type TmdbSearchShow = {
   total_results: number;
   total_pages: number;
 };
-
-export { TmdbSeasonEpisode, TmdbSearchShow, TmdbShowSeason };

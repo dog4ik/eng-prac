@@ -1,7 +1,7 @@
 import axios from "axios";
 import prisma from "../../../../prisma/PrismaClient";
 import { NextApiRequest, NextApiResponse } from "next";
-import { TmdbSearchShow, TmdbShowSeason } from "./tmdb-api";
+import { TmdbSearchShow, TmdbShowSeason } from "./tmdbTypes";
 
 type ResponseEntry = {
   title: string;
