@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["filteredRelationCount"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -16,52 +15,51 @@ model User {
   email         String          @unique
   password      String
   name          String?
-  notifications Json[]
-  createdAt     DateTime        @default(now())
+  created_at    DateTime        @default(now())
   role          Role            @default(user)
-  Wordbook      Wordbook[]
-  learnedWords  Words[]         @relation("learnedBy")
-  likedWords    Words[]         @relation("likedBy")
-  Stats         Stats[]
-  Tests         Tests[]
-  Notifications Notifications[]
-  Wordle        Wordle[]
-  WatchHisory   WatchHisory[]
+  wordbook      Wordbook[]
+  learned_words Words[]         @relation("learnedBy")
+  liked_words   Words[]         @relation("likedBy")
+  stats         Stats[]
+  tests         Tests[]
+  notifications Notifications[]
+  wordle        Wordle[]
+  watch_hisory  WatchHistory[]
 }
 
 model Wordbook {
   id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  name        String  @default("My Wordbook")
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String
+  name        String   @default("My Wordbook")
   description String?
   likes       Int      @default(0)
   words       Words[]
   private     Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  created_at  DateTime @default(now())
 }
 
 model Stats {
-  id           String  @id @default(cuid())
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  translated   Int     @default(0)
-  rightanswers Int     @default(0)
-  wronganswers Int     @default(0)
-  lvl          Int     @default(0)
-  points       Int?    @default(0)
-  private      Boolean @default(true)
+  id            String  @id @default(cuid())
+  user          User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id       String
+  translated    Int     @default(0)
+  right_answers Int     @default(0)
+  wrong_answers Int     @default(0)
+  lvl           Int     @default(0)
+  points        Int?    @default(0)
+  private       Boolean @default(true)
 }
 
 model Tests {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  name      String   @default("My Test")
-  data      Json[]
-  likes     Int      @default(0)
-  createdAt DateTime @default(now())
-  private   Boolean  @default(true)
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String
+  name       String   @default("My Test")
+  data       Json[]
+  likes      Int      @default(0)
+  created_at DateTime @default(now())
+  private    Boolean  @default(true)
 }
 
 model Helper {
@@ -70,98 +68,98 @@ model Helper {
 }
 
 model Words {
-  id          String    @id @default(cuid())
-  eng         String
-  rus         String
-  createdAt   DateTime  @default(now())
-  Wordbook    Wordbook? @relation(fields: [wordbookId], references: [id], onDelete: Cascade)
-  wordbookId  String?
-  LikedBy     User?     @relation("likedBy", fields: [likedById], references: [id], onDelete: Cascade)
-  likedById   String?
-  LearnedBy   User?     @relation("learnedBy", fields: [learnedById], references: [id], onDelete: Cascade)
-  learnedById String?
+  id            String    @id @default(cuid())
+  eng           String
+  rus           String
+  created_at    DateTime  @default(now())
+  wordbook      Wordbook? @relation(fields: [wordbook_id], references: [id], onDelete: Cascade)
+  wordbook_id   String?
+  liked_by      User?     @relation("likedBy", fields: [liked_by_id], references: [id], onDelete: Cascade)
+  liked_by_id   String?
+  learned_by    User?     @relation("learnedBy", fields: [learned_by_id], references: [id], onDelete: Cascade)
+  learned_by_id String?
 }
 
 model Notifications {
-  id        String           @id @default(cuid())
-  createdAt DateTime         @default(now())
-  type      NotificationType @default(default)
-  title     String
-  text      String
-  User      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String?
+  id         String           @id @default(cuid())
+  created_at DateTime         @default(now())
+  type       NotificationType @default(default)
+  title      String
+  text       String
+  user       User?            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    String?
 }
 
 model Wordle {
-  id         String    @id @default(cuid())
-  word       String
-  maxTries   Int       @default(6)
-  tries      String[]  @default([])
-  User       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String?
-  createdAt  DateTime  @default(now())
-  finishDate DateTime?
+  id          String    @id @default(cuid())
+  word        String
+  max_tries   Int       @default(6)
+  tries       String[]  @default([])
+  user        User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String?
+  created_at  DateTime  @default(now())
+  finish_date DateTime?
 }
 
-model WatchHisory {
-  id         String   @id @default(cuid())
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  isFinished Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  Episode    Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  episodeId  String
-  time       Int
+model WatchHistory {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     String
+  is_finished Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  episode     Episode  @relation(fields: [episode_id], references: [id], onDelete: Cascade)
+  episode_id  String
+  time        Int
 }
 
 model Episode {
-  id             String        @id @default(cuid())
-  title          String
-  number         Int
-  src            String
-  previewsAmount Int
-  externalSubs   String[]
-  releaseDate    String
-  rating         Float
-  poster         String
-  blurData       String?
-  plot           String?
-  Season         Season?       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
-  seasonId       String?
-  tmdbId         Int           @unique
-  scannedDate    DateTime      @default(now())
-  duration       Float
-  WatchHisory    WatchHisory[]
+  id              String         @id @default(cuid())
+  title           String
+  number          Int
+  src             String
+  previews_amount Int
+  external_subs   String[]
+  release_date    String
+  rating          Float
+  poster          String
+  blur_data       String?
+  plot            String?
+  season          Season?        @relation(fields: [season_id], references: [id], onDelete: Cascade)
+  season_id       String?
+  tmdb_id         Int            @unique
+  scanned_date    DateTime       @default(now())
+  duration        Float
+  watch_hisory    WatchHistory[]
 }
 
 model Season {
-  id          String    @id @default(cuid())
-  Episodes    Episode[]
-  number      Int
-  releaseDate String
-  plot        String?
-  poster      String?
-  blurData    String?
-  Shows       Shows     @relation(fields: [showsId], references: [id], onDelete: Cascade)
-  tmdbId      Int       @unique
-  showsId     String
-  scannedDate DateTime  @default(now())
+  id           String    @id @default(cuid())
+  episodes     Episode[]
+  number       Int
+  release_date String
+  plot         String?
+  poster       String?
+  blur_data    String?
+  shows        Shows     @relation(fields: [shows_id], references: [id], onDelete: Cascade)
+  tmdb_id      Int       @unique
+  shows_id     String
+  scanned_date DateTime  @default(now())
 }
 
 model Shows {
-  Season           Season[]
-  id               String   @id @default(cuid())
-  title            String
-  releaseDate      String
-  poster           String?
-  blurData         String?
-  backdrop         String?
-  rating           Float
-  plot             String
-  originalLanguage String
-  tmdbId           Int      @unique
-  scannedDate      DateTime @default(now())
+  season            Season[]
+  id                String   @id @default(cuid())
+  title             String
+  release_date      String
+  poster            String?
+  blur_data         String?
+  backdrop          String?
+  rating            Float
+  plot              String
+  original_language String
+  tmdb_id           Int      @unique
+  scanned_date      DateTime @default(now())
 }
 
 enum NotificationType {

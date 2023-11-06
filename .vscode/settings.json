@@ -1,4 +1,0 @@
-{
-  "prisma.trace.server": "off",
-  "githubPullRequests.ignoredPullRequestBranches": ["master"]
-}

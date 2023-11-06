@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 
 export default function useToggle(defaultValue: boolean) {
@@ -5,7 +6,7 @@ export default function useToggle(defaultValue: boolean) {
 
   function toggleValue(value?: boolean) {
     setValue((currentValue) =>
-      typeof value === "boolean" ? value : !currentValue
+      typeof value === "boolean" ? value : !currentValue,
     );
   }
 
