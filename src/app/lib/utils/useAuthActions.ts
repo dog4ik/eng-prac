@@ -3,6 +3,7 @@ import { use } from "react";
 import { ActionPayload } from "../actions/ActionPayload";
 import refreshTokenAction from "../actions/refreshToken";
 import { AuthQueryType } from "./authAction";
+import { errorFromActionPayload } from "../actions/errors";
 
 function getRefreshToken() {
   return typeof localStorage == "undefined"
@@ -23,7 +24,9 @@ export function useAuthQuery<T>(query: AuthQueryType<ActionPayload<T>>) {
       }),
     );
   }
-  return result.data!;
+  if (result.type == "error") {
+    throw errorFromActionPayload(result.error);
+  } else return result.data;
 }
 
 export function useAuthMutation<T extends ActionPayload<T["data"]>>(

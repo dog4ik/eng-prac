@@ -1,17 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getShows } from "../lib/serverFunctions/theater";
 import BlockGrid from "../components/ui/BlockGrid";
+import { getAllShows } from "../lib/mediaServer";
 
 type ShowCardProps = {
   img: string | null;
   blurData: string | null;
   title: string;
   seasons: number;
-  id: string;
+  id: number;
 };
 
-const ShowCard = ({ img, title, seasons, id, blurData }: ShowCardProps) => {
+function ShowCard({ img, title, seasons, id, blurData }: ShowCardProps) {
   return (
     <div className="w-full">
       <Link
@@ -52,16 +52,16 @@ const ShowCard = ({ img, title, seasons, id, blurData }: ShowCardProps) => {
       </div>
     </div>
   );
-};
+}
 
-const LoadingCard = () => {
+function LoadingCard() {
   return (
     <div className="h-72 w-52 animate-pulse rounded-xl bg-neutral-400"></div>
   );
-};
+}
 
 async function Shows() {
-  let shows = await getShows();
+  let shows = await getAllShows();
   return (
     <>
       <BlockGrid elementSize={208}>
@@ -70,7 +70,7 @@ async function Shows() {
             id={show.id}
             img={show.poster}
             blurData={show.blur_data}
-            seasons={show.seasonsCount}
+            seasons={show.seasons_count}
             title={show.title}
             key={show.id}
           />

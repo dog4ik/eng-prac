@@ -11,18 +11,17 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
+  id            String         @id @default(cuid())
+  email         String         @unique
   password      String
   name          String?
-  created_at    DateTime        @default(now())
-  role          Role            @default(user)
+  created_at    DateTime       @default(now())
+  role          Role           @default(user)
   wordbook      Wordbook[]
-  learned_words Words[]         @relation("learnedBy")
-  liked_words   Words[]         @relation("likedBy")
+  learned_words Words[]        @relation("learnedBy")
+  liked_words   Words[]        @relation("likedBy")
   stats         Stats[]
   tests         Tests[]
-  notifications Notifications[]
   wordle        Wordle[]
   watch_hisory  WatchHistory[]
 }
@@ -80,16 +79,6 @@ model Words {
   learned_by_id String?
 }
 
-model Notifications {
-  id         String           @id @default(cuid())
-  created_at DateTime         @default(now())
-  type       NotificationType @default(default)
-  title      String
-  text       String
-  user       User?            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  user_id    String?
-}
-
 model Wordle {
   id          String    @id @default(cuid())
   word        String
@@ -108,58 +97,9 @@ model WatchHistory {
   is_finished Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  episode     Episode  @relation(fields: [episode_id], references: [id], onDelete: Cascade)
+  video_id    Int
   episode_id  String
   time        Int
-}
-
-model Episode {
-  id              String         @id @default(cuid())
-  title           String
-  number          Int
-  src             String
-  previews_amount Int
-  external_subs   String[]
-  release_date    String
-  rating          Float
-  poster          String
-  blur_data       String?
-  plot            String?
-  season          Season?        @relation(fields: [season_id], references: [id], onDelete: Cascade)
-  season_id       String?
-  tmdb_id         Int            @unique
-  scanned_date    DateTime       @default(now())
-  duration        Float
-  watch_hisory    WatchHistory[]
-}
-
-model Season {
-  id           String    @id @default(cuid())
-  episodes     Episode[]
-  number       Int
-  release_date String
-  plot         String?
-  poster       String?
-  blur_data    String?
-  shows        Shows     @relation(fields: [shows_id], references: [id], onDelete: Cascade)
-  tmdb_id      Int       @unique
-  shows_id     String
-  scanned_date DateTime  @default(now())
-}
-
-model Shows {
-  season            Season[]
-  id                String   @id @default(cuid())
-  title             String
-  release_date      String
-  poster            String?
-  blur_data         String?
-  backdrop          String?
-  rating            Float
-  plot              String
-  original_language String
-  tmdb_id           Int      @unique
-  scanned_date      DateTime @default(now())
 }
 
 enum NotificationType {

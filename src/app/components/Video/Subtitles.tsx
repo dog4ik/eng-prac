@@ -1,6 +1,8 @@
 "use client";
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import useClose from "../../../utils/useClose";
+import useToggle from "../../../utils/useToggle";
+import srtParser from "../../../utils/srtParser";
 
 type Props = {
   time: number;
@@ -38,31 +40,19 @@ const TranslateModal = ({
 };
 
 const Subtitles = ({ time, videoRef, isPaused, subSrc }: Props) => {
+  return null;
   const [chunk, setChunk] = useState<string[]>();
   const [selectedWord, setSelectedWord] = useState<string>();
   const [isTranslateOpen, setIsTranslateOpen] = useToggle(false);
   const likeMutation = useLikeMutaton();
   const likes = trpc.words.getLikes.useQuery();
-  const subsQuery = useQuery<
-    {
-      id: number;
-      startTime: number;
-      endTime: number;
-      text: string;
-    }[]
-  >(
-    ["subs", subSrc],
-    () => axios.get(subSrc ?? "").then((data) => srtParser(data.data)),
-    { enabled: subSrc != null },
-  );
-  const translateMutation = trpc.translate.translate.useMutation();
+  // const translateMutation = trpc.translate.translate.useMutation();
 
   useEffect(() => {
-    setChunk(
-      subsQuery.data
-        ?.find((c) => c.endTime > time && c.startTime < time)
-        ?.text.split(/\n+/g),
-    );
+    setChunk();
+    // subsQuery.data
+    //   ?.find((c) => c.endTime > time && c.startTime < time)
+    //   ?.text.split(/\n+/g),
   }, [time, subsQuery.isSuccess]);
 
   useEffect(() => {

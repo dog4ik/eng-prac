@@ -1,3 +1,5 @@
+"use client";
+
 const timeMs = function (val: string) {
   const regex = /(\d+):(\d{2}):(\d{2}),(\d{3})/;
   const parts = regex.exec(val);

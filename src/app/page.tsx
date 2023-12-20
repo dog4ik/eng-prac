@@ -1,16 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import prisma from "../../prisma/PrismaClient";
-import { type Season } from "@prisma/client";
+import { getAllShows } from "./lib/mediaServer";
 
 type ShowCardProps = {
-  season: number;
   imgUrl: string | null;
   blurData: string | null;
+  title: string;
   href: string;
 };
 
-const ShowCard = ({ season, href, imgUrl, blurData }: ShowCardProps) => {
+const ShowCard = ({ href, imgUrl, blurData, title }: ShowCardProps) => {
   return (
     <Link
       href={href}
@@ -27,24 +26,14 @@ const ShowCard = ({ season, href, imgUrl, blurData }: ShowCardProps) => {
         />
       </div>
       <div>
-        <span className="text-lg sm:text-xl">{`Season ${season}`}</span>
+        <span className="text-lg sm:text-xl">{`${title}`}</span>
       </div>
     </Link>
   );
 };
 
-async function getRandomSeasons() {
-  const seasons = await prisma.$queryRawUnsafe(
-    'SELECT "id","blur_data","number","poster","shows_id" FROM "Season" ORDER BY RANDOM() LIMIT 10;',
-  );
-  return seasons as Pick<
-    Season,
-    "id" | "blur_data" | "number" | "poster" | "shows_id"
-  >[];
-}
-
 const Home = async () => {
-  const randSeasons = await getRandomSeasons();
+  const shows = await getAllShows();
   return (
     <>
       <div className="relative h-full w-full flex-1 overflow-hidden p-2 dark:text-white">
@@ -53,13 +42,13 @@ const Home = async () => {
           <span className="text-xl sm:text-4xl">Shows for you</span>
         </div>
         <div className="flex h-full w-full snap-x gap-5 overflow-auto rounded-xl py-5">
-          {randSeasons.map((season) => (
+          {shows.map((show) => (
             <ShowCard
-              imgUrl={season.poster}
-              blurData={season.blur_data}
-              season={season.number}
-              key={season.id}
-              href={`/theater/${season.shows_id}/${season.number}`}
+              imgUrl={show.poster}
+              blurData={show.blur_data}
+              title={show.title}
+              key={show.id}
+              href={`/theater/${show.id}`}
             />
           ))}
         </div>

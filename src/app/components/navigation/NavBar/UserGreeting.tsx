@@ -49,7 +49,6 @@ export default function userGreeting({ userQuery }: Props) {
   const userRef = useRef<HTMLDivElement>(null);
   const [profilePopout, setProfilePopout] = usePopout(userRef);
   let user = useAuthQuery(userQuery);
-  console.log(user);
   return (
     <div className="flex animate-fade-in items-center justify-center gap-7">
       <div

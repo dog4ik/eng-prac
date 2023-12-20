@@ -1,6 +1,6 @@
 import Link from "next/link";
 import SubtitlesSelectButton from "./SubtitlesSelectButton";
-import { getEpisode } from "../../../../lib/serverFunctions/theater";
+import { getEpisode } from "../../../../lib/mediaServer";
 
 type Props = {
   showId: string;
@@ -13,8 +13,7 @@ export default async function EpisodeBar({
   episodeNumber,
   seasonNumber,
 }: Props) {
-  let episode = await getEpisode(showId, seasonNumber, episodeNumber);
-  if (!episode) return null;
+  let episode = await getEpisode(+showId, seasonNumber, episodeNumber);
   return (
     <div className="flex flex-col">
       <div className="flex flex-col justify-between lg:flex-row lg:items-center">
@@ -24,14 +23,14 @@ export default async function EpisodeBar({
           </div>
           <div>
             <Link
-              href={`/theater/${episode.showId}/${episode.seasonNumber}`}
+              href={`/theater/${episode.id}/${seasonNumber}`}
               className="cursor-pointer text-sm hover:underline"
             >
-              {`Season ${episode.seasonNumber}`}
+              {`Season ${seasonNumber}`}
             </Link>
           </div>
         </div>
-        {episode.tmdbId && <SubtitlesSelectButton />}
+        {episode.id && <SubtitlesSelectButton />}
       </div>
       {episode.plot && (
         <div className="min-h-20 mt-4 w-full rounded-lg bg-neutral-700 p-2">

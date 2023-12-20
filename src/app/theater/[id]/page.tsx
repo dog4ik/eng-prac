@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { Suspense } from "react";
-import TheaterHeader from "../../../components/TheaterHeader";
-import { getSeasons } from "../../lib/serverFunctions/theater";
 import BlockGrid from "../../components/ui/BlockGrid";
 import SpinnerPage from "../../components/loading/SpinnerPage";
+import TheaterHeader from "../../components/theater/TheaterHeader";
+import { getSeasons, getShowById } from "../../lib/mediaServer";
 
 type SeasonCardProps = {
   img: string | null;
@@ -63,29 +63,32 @@ function LoadingCard() {
 }
 
 export default async function Seasons({ params }: { params: { id: string } }) {
-  let season = await getSeasons(params.id);
+  let [seasons, show] = await Promise.all([
+    getSeasons(+params.id),
+    getShowById(+params.id),
+  ]);
 
   return (
     <Suspense fallback={<SpinnerPage />}>
       <div className="flex flex-col gap-10 px-1 py-4 md:px-20">
-        {season && (
+        {show && (
           <TheaterHeader
-            description={season.plot}
-            blurData={season.blurData}
-            img={season.poster}
-            title={season.title}
-            subtitle={season.releaseDate}
-            ratings={Number(season.rating)}
+            description={show.plot}
+            blurData={show.blur_data}
+            img={show.poster}
+            title={show.title}
+            subtitle={show.release_date}
+            ratings={show.rating}
           />
         )}
         <BlockGrid elementSize={160}>
-          {season?.seasons.map((season) => (
+          {seasons.map((season) => (
             <SeasonCard
               key={season.id}
               img={season.poster}
-              blurData={season.blurData}
+              blurData={season.blur_data}
               title={`Season ${season.number}`}
-              episodes={season.episodesCount}
+              episodes={season.episodes_count}
               href={params.id + "/" + season.number.toString()}
             />
           ))}

@@ -1,4 +1,4 @@
-import { ErrorType } from "./ActionPayload";
+import { ActionPayload, ErrorType } from "./ActionPayload";
 export class BaseError {
   type: ErrorType;
   message: string | undefined;
@@ -42,4 +42,13 @@ export class UnknownError extends BaseError {
   constructor(message?: string) {
     super("unknown", message);
   }
+}
+
+export function errorFromActionPayload<T>(
+  payload: ActionPayload<T>["error"] extends undefined
+    ? never
+    : ActionPayload<T>["error"],
+) {
+  if (payload == undefined) throw new UnknownError("This should never happen");
+  return new BaseError(payload.type, payload.message);
 }

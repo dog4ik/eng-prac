@@ -18,7 +18,7 @@ async function Navbar() {
       className="sticky top-0 z-20 flex h-full max-h-20 w-full flex-1 items-center justify-end gap-5 border-b
         border-neutral-700 bg-neutral-800 py-5 pr-2 text-white dark:bg-neutral-800 dark:text-white sm:pr-16 "
     >
-      <ErrorBoundary fallback={<GuestGreeting />}>
+      <ErrorBoundary FallbackComponent={GuestGreeting}>
         <Suspense fallback={<LoadingFallback />}>
           <UserGreeting userQuery={user} />
         </Suspense>

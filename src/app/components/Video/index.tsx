@@ -1,16 +1,15 @@
 "use client";
-import React, { ReactNode, use, useEffect, useRef, useState } from "react";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { FiMaximize, FiPause, FiPlay } from "react-icons/fi";
 import useToggle from "../../../utils/useToggle";
 import Subtitles from "./Subtitles";
 import AutoPlay from "./AutoPlay";
 import formatDuration from "../../../utils/formatDuration";
-import Loading from "../../../components/ui/Loading";
 import VolumeIcon from "./VolumeIcon";
 import { useVideoContext } from "./VideoContext";
 import ScrubbingPreview from "./ScubbingPreview";
 import { updateHistoryAction } from "../../lib/actions/authorized/history";
-import { type getEpisode } from "../../lib/serverFunctions/theater";
+import Spinner from "../loading/Spinner";
 
 export type NextEpisode = {
   title: string;
@@ -20,7 +19,15 @@ export type NextEpisode = {
 
 type Props = {
   next: NextEpisode;
-  episodePromise: ReturnType<typeof getEpisode>;
+  id: number;
+  previewsAmount: number;
+  previewsSrc: string;
+  src: string;
+  title: string;
+  history?: {
+    isFinished: boolean;
+    time: number;
+  };
 };
 
 function VideoError({ onRefresh }: { onRefresh: () => void }) {
@@ -47,9 +54,23 @@ function ActionWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-function Video({ episodePromise, next }: Props) {
-  let { src, title, previewsAmount, previewsSrc, id, history } =
-    use(episodePromise)!;
+function Loading() {
+  return (
+    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <Spinner />
+    </div>
+  );
+}
+
+function Video({
+  previewsAmount,
+  previewsSrc,
+  id,
+  src,
+  title,
+  next,
+  history,
+}: Props) {
   let initialTime = history?.isFinished ? 0 : history?.time ?? 0;
   let videoRef = useRef<HTMLVideoElement>(null);
   let videoContainerRef = useRef<HTMLDivElement>(null);
@@ -137,7 +158,7 @@ function Video({ episodePromise, next }: Props) {
   const handleSync = (curTime: number) => {
     if (Math.abs(curTime - lastSynced.current) > 5 && !isScubbing.current) {
       updateHistoryAction({
-        episodeId: id,
+        episodeId: id.toString(),
         isFinished: false,
         time: Math.floor(curTime),
       });
@@ -351,7 +372,7 @@ function Video({ episodePromise, next }: Props) {
           onEnded={(e) => {
             setIsEnded(true);
             updateHistoryAction({
-              episodeId: id,
+              episodeId: id.toString(),
               isFinished: true,
               time: e.currentTarget.currentTime,
             });

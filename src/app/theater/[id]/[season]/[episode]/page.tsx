@@ -1,11 +1,10 @@
 import Video from "../../../../components/Video";
 import EpisodeBar from "./EpisodeBar";
 import SiblingsList from "./SiblingsList";
-import SubtitlesModal from "./SubtitlesModal";
-import { getEpisode } from "../../../../lib/serverFunctions/theater";
 import { Suspense } from "react";
 import Spinner from "../../../../components/loading/Spinner";
 import VideoCtxProvider from "../../../../components/Video/VideoContext";
+import { getEpisode } from "../../../../lib/mediaServer";
 
 function SiblingsListLoading() {
   return (
@@ -32,31 +31,46 @@ async function Theater({
     episode: string;
   };
 }) {
-  let episode = getEpisode(params.id, +params.season, +params.episode);
+  let episode = await getEpisode(+params.id, +params.season, +params.episode);
+  console.log(episode);
 
   return (
     <>
       <div className="flex w-full flex-col justify-between gap-3 p-4 xl:flex-row">
         <div className="flex flex-col gap-2 xl:w-3/4">
           <VideoCtxProvider>
-            <SubtitlesModal
-              tmdbIdPromise={episode.then((data) => data?.tmdbId)}
-            />
+            {
+              // <SubtitlesModal tmdbId={episode.id} />
+            }
             <Suspense fallback={<EpisodeBarLoading />}>
-              <Video episodePromise={episode} next={null} />
+              <Video
+                title={episode.title}
+                id={episode.id}
+                history={undefined}
+                src={
+                  process.env.MEDIA_SERVER_URL! +
+                  `/api/watch?id=${episode.video_id}`
+                }
+                previewsAmount={episode.previews_amount}
+                previewsSrc={
+                  process.env.MEDIA_SERVER_URL! +
+                  `/api/previews?id=${episode.video_id}&number=`
+                }
+                next={null}
+              />
             </Suspense>
             <Suspense fallback={<EpisodeBarLoading />}>
               <EpisodeBar
                 episodeNumber={+params.episode}
                 seasonNumber={+params.season}
-                showId={params.id}
+                showId={params.id.toString()}
               />
             </Suspense>
           </VideoCtxProvider>
         </div>
         <Suspense fallback={<SiblingsListLoading />}>
           <SiblingsList
-            showId={params.id}
+            showId={params.id.toString()}
             season={+params.season}
             currentEpisodeNumber={+params.episode}
           />

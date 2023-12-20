@@ -77,15 +77,18 @@ export async function markWatchedAction(id: string, isWatched: boolean) {
 }
 
 export async function getHistoryForEpisodes(episodesIds: string[]) {
+  "use server";
   let userId = tryGetUserId();
-  let history = await prisma.watchHistory.findMany({
-    where: { episode_id: { in: episodesIds }, user_id: userId },
-    select: {
-      episode_id: true,
-      id: true,
-      time: true,
-      is_finished: true,
-    },
-  });
+  let history = await prisma.watchHistory
+    .findMany({
+      where: { episode_id: { in: episodesIds }, user_id: userId },
+      select: {
+        episode_id: true,
+        id: true,
+        time: true,
+        is_finished: true,
+      },
+    })
+    .catch((e) => console.log(e));
   return history;
 }

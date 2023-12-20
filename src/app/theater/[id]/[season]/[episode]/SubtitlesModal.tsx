@@ -6,7 +6,7 @@ import useClose from "../../../../../utils/useClose";
 import Input from "../../../../components/ui/Input";
 import { downloadSubs, getSubsList } from "../../../../lib/TheaterActions";
 type ModalProps = {
-  tmdbIdPromise: Promise<number | undefined>;
+  tmdbId: number;
 };
 
 type RowProps = {
@@ -51,8 +51,7 @@ const Error = ({ onRetry }: { onRetry: () => void }) => {
   );
 };
 
-const SrtModal = ({ tmdbIdPromise }: ModalProps) => {
-  let tmdbId = use(tmdbIdPromise);
+const SrtModal = ({ tmdbId }: ModalProps) => {
   const [open, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useClose(() => setIsOpen(false), 200);
   const [currentId, setCurrentId] = useState<string>();
